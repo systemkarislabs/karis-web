@@ -82,17 +82,17 @@ export const api = {
     request<{ conversation: import('./types').Conversation }>('PATCH', `/api/conversations/${id}`, data),
 
   startTakeover: (id: string, reason?: string) =>
-    request<{ takeover: import('./types').HumanTakeover }>('POST', `/api/conversations/${id}/takeover`, { reason }),
+    request<{ takeover: import('./types').HumanTakeover }>('POST', `/api/conversations/${id}/human-takeover`, { reason }),
 
   endTakeover: (id: string, enableAi = true) =>
-    request<{ takeover: import('./types').HumanTakeover }>('DELETE', `/api/conversations/${id}/takeover`, { enableAi }),
+    request<{ takeover: import('./types').HumanTakeover }>('POST', `/api/conversations/${id}/human-takeover/end`, { enableAi }),
 
   // Messages
   getMessages: (conversationId: string) =>
-    request<{ messages: import('./types').Message[] }>('GET', `/api/conversations/${conversationId}/messages`),
+    request<{ messages: import('./types').Message[] }>('GET', `/api/messages/conversation/${conversationId}`),
 
   sendMessage: (conversationId: string, content: string) =>
-    request<{ message: import('./types').Message }>('POST', `/api/conversations/${conversationId}/messages`, { content, direction: 'OUTBOUND', senderType: 'HUMAN' }),
+    request<{ message: import('./types').Message }>('POST', `/api/messages/conversation/${conversationId}`, { content, direction: 'OUTBOUND', senderType: 'HUMAN' }),
 
   // WhatsApp
   getWhatsappStatus: () =>

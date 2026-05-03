@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { api } from '@/lib/api'
+import { useToast } from '@/components/Toast'
 import type { WhatsappConnection } from '@/lib/types'
 
 type Status = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'ERROR'
@@ -26,6 +27,7 @@ function StatusPill({ status }: { status: Status }) {
 }
 
 export default function WhatsAppPage() {
+  const { toast } = useToast()
   const [status, setStatus] = useState<Status>('DISCONNECTED')
   const [connection, setConnection] = useState<WhatsappConnection | null>(null)
   const [qrCode, setQrCode] = useState<string | null>(null)
@@ -63,9 +65,16 @@ export default function WhatsAppPage() {
     try {
       const data = await api.connectWhatsapp()
       setStatus('CONNECTING')
-      if (data.qrCode) setQrCode(data.qrCode)
-    } catch { /* noop */ }
-    finally { setConnecting(false) }
+      if (data.qrCode) {
+        setQrCode(data.qrCode)
+      } else {
+        toast('Conectando… o QR Code aparecerá em instantes. Clique em "Atualizar QR" se demorar.', 'info')
+      }
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Erro ao conectar WhatsApp', 'error')
+    } finally {
+      setConnecting(false)
+    }
   }
 
   async function handleDisconnect() {
@@ -166,20 +175,46 @@ export default function WhatsAppPage() {
 
             {/* Actions */}
             <div className="flex gap-3 flex-wrap">
-              {status !== 'CONNECTED' && (
+              {/* DISCONNECTED / ERROR → botão Conectar */}
+              {(status === 'DISCONNECTED' || status === 'ERROR') && (
                 <button
                   onClick={handleConnect}
-                  disabled={connecting || status === 'CONNECTING'}
+                  disabled={connecting}
                   className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-60 transition-opacity hover:opacity-90"
                   style={{ background: 'linear-gradient(135deg,#0D9488,#0F766E)' }}
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 12h14" /><path d="M12 5l7 7-7 7" />
                   </svg>
-                  {connecting ? 'Iniciando…' : status === 'CONNECTING' ? 'Aguardando QR…' : 'Conectar'}
+                  {connecting ? 'Iniciando…' : 'Conectar'}
                 </button>
               )}
 
+              {/* CONNECTING → atualizar QR + forçar reconexão */}
+              {status === 'CONNECTING' && (
+                <>
+                  <button
+                    onClick={fetchStatus}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90"
+                    style={{ background: 'linear-gradient(135deg,#0D9488,#0F766E)' }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                    </svg>
+                    Atualizar QR
+                  </button>
+                  <button
+                    onClick={handleConnect}
+                    disabled={connecting}
+                    className="px-4 py-2.5 rounded-xl text-sm font-medium disabled:opacity-60 transition-colors hover:bg-yellow-50"
+                    style={{ border: '1px solid #F59E0B', color: '#92400E' }}
+                  >
+                    {connecting ? 'Reconectando…' : 'Forçar reconexão'}
+                  </button>
+                </>
+              )}
+
+              {/* CONNECTED / CONNECTING → Desconectar */}
               {(status === 'CONNECTED' || status === 'CONNECTING') && (
                 <button
                   onClick={handleDisconnect}
@@ -188,16 +223,6 @@ export default function WhatsAppPage() {
                   style={{ border: '1px solid var(--danger)', color: 'var(--danger)' }}
                 >
                   {disconnecting ? 'Desconectando…' : 'Desconectar'}
-                </button>
-              )}
-
-              {(status === 'CONNECTING') && (
-                <button
-                  onClick={fetchStatus}
-                  className="px-4 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-gray-100"
-                  style={{ color: 'var(--muted)', border: '1px solid var(--border)' }}
-                >
-                  Atualizar QR
                 </button>
               )}
             </div>

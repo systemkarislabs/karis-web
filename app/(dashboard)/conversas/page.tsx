@@ -94,7 +94,7 @@ export default function ConversasPage() {
 
   useEffect(() => {
     api.getConversations()
-      .then(d => setConversations(d.conversations))
+      .then(d => setConversations(d?.conversations ?? []))
       .catch(() => toast('Erro ao carregar conversas', 'error'))
       .finally(() => setLoading(false))
   }, [toast])

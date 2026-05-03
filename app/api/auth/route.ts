@@ -1,23 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// POST /api/auth — salva token em cookie httpOnly após login
-export async function POST(req: NextRequest) {
-  const { token } = await req.json()
+const COOKIE_NAME = 'karis_token'
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 7 // 7 days
 
-  const res = NextResponse.json({ ok: true })
-  res.cookies.set('karis_token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7, // 7 dias
-    path: '/',
-  })
-  return res
+/** POST /api/auth — called after login to persist token in httpOnly cookie */
+export async function POST(req: NextRequest) {
+  try {
+    const { token } = await req.json()
+    if (!token || typeof token !== 'string') {
+      return NextResponse.json({ error: 'Token inválido' }, { status: 400 })
+    }
+
+    const res = NextResponse.json({ ok: true })
+    res.cookies.set(COOKIE_NAME, token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: COOKIE_MAX_AGE,
+      secure: process.env.NODE_ENV === 'production',
+    })
+    return res
+  } catch {
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
+  }
 }
 
-// DELETE /api/auth — limpa cookie no logout
+/** DELETE /api/auth — called on logout to clear cookie */
 export async function DELETE() {
   const res = NextResponse.json({ ok: true })
-  res.cookies.delete('karis_token')
+  res.cookies.set(COOKIE_NAME, '', {
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0,
+  })
   return res
 }

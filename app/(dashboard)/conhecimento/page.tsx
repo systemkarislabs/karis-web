@@ -72,7 +72,7 @@ export default function ConhecimentoPage() {
 
   useEffect(() => {
     api.getKnowledge()
-      .then(d => setItems(d.knowledgeBases))
+      .then(d => setItems(d?.knowledgeBases ?? []))
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])

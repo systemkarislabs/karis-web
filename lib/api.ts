@@ -1,0 +1,106 @@
+'use client'
+
+const BASE = process.env.NEXT_PUBLIC_API_URL!
+
+function getToken(): string | null {
+  if (typeof window === 'undefined') return null
+  return localStorage.getItem('karisAuthToken')
+}
+
+async function request<T>(
+  method: string,
+  path: string,
+  body?: unknown,
+  auth = true
+): Promise<T> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (auth) {
+    const token = getToken()
+    if (token) headers['Authorization'] = `Bearer ${token}`
+  }
+
+  const res = await fetch(`${BASE}${path}`, {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
+    cache: 'no-store',
+  })
+
+  if (res.status === 401) {
+    localStorage.removeItem('karisAuthToken')
+    localStorage.removeItem('karisCurrentUser')
+    window.location.href = '/login'
+    throw new Error('Sessão expirada')
+  }
+
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.message || 'Erro na requisição')
+  return data as T
+}
+
+export const api = {
+  // Auth
+  login: (email: string, password: string) =>
+    request<{ token: string; user: import('./types').User }>('POST', '/api/auth/login', { email, password }, false),
+
+  register: (data: { name: string; email: string; password: string; companyName: string }) =>
+    request<{ token: string; user: import('./types').User }>('POST', '/api/auth/register', data, false),
+
+  // Dashboard
+  getStats: () =>
+    request<import('./types').DashboardStats>('GET', '/api/companies/me/stats'),
+
+  // Assistant
+  getAssistant: () =>
+    request<{ assistant: import('./types').Assistant }>('GET', '/api/assistant'),
+
+  upsertAssistant: (data: Partial<import('./types').Assistant>) =>
+    request<{ assistant: import('./types').Assistant }>('PUT', '/api/assistant', data),
+
+  // Knowledge
+  getKnowledge: () =>
+    request<{ knowledgeBases: import('./types').KnowledgeBase[] }>('GET', '/api/knowledge'),
+
+  createKnowledge: (data: { title: string; content: string }) =>
+    request<{ knowledgeBase: import('./types').KnowledgeBase }>('POST', '/api/knowledge', data),
+
+  deleteKnowledge: (id: string) =>
+    request<{ message: string }>('DELETE', `/api/knowledge/${id}`),
+
+  // Contacts
+  getContacts: () =>
+    request<{ contacts: import('./types').Contact[] }>('GET', '/api/contacts'),
+
+  // Conversations
+  getConversations: () =>
+    request<{ conversations: import('./types').Conversation[] }>('GET', '/api/conversations'),
+
+  getConversation: (id: string) =>
+    request<{ conversation: import('./types').Conversation & { messages: import('./types').Message[] } }>('GET', `/api/conversations/${id}`),
+
+  updateConversation: (id: string, data: { aiEnabled?: boolean; status?: string }) =>
+    request<{ conversation: import('./types').Conversation }>('PATCH', `/api/conversations/${id}`, data),
+
+  startTakeover: (id: string, reason?: string) =>
+    request<{ takeover: import('./types').HumanTakeover }>('POST', `/api/conversations/${id}/takeover`, { reason }),
+
+  endTakeover: (id: string, enableAi = true) =>
+    request<{ takeover: import('./types').HumanTakeover }>('DELETE', `/api/conversations/${id}/takeover`, { enableAi }),
+
+  // Messages
+  getMessages: (conversationId: string) =>
+    request<{ messages: import('./types').Message[] }>('GET', `/api/conversations/${conversationId}/messages`),
+
+  sendMessage: (conversationId: string, content: string) =>
+    request<{ message: import('./types').Message }>('POST', `/api/conversations/${conversationId}/messages`, { content, direction: 'OUTBOUND', senderType: 'HUMAN' }),
+
+  // WhatsApp
+  getWhatsappStatus: () =>
+    request<{ status: string; connection: import('./types').WhatsappConnection | null }>('GET', '/api/whatsapp/status'),
+
+  connectWhatsapp: () =>
+    request<{ instanceName: string; qrCode: string | null; status: string }>('POST', '/api/whatsapp/connect'),
+
+  disconnectWhatsapp: () =>
+    request<{ message: string }>('DELETE', '/api/whatsapp/disconnect'),
+}

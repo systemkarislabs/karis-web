@@ -2,9 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { Download, MessageSquareText } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useToast } from '@/components/Toast'
 import type { Conversation } from '@/lib/types'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { SectionHeader } from '@/components/ui/SectionHeader'
 
 // ── Lead stage (stored in conv.campaign field as prefix "stage:xxx") ────────
 type LeadStage = 'novo' | 'analise' | 'aprovado' | 'descartado'
@@ -139,21 +143,14 @@ export default function ConversasPage() {
 
   return (
     <div className="max-w-3xl mx-auto flex flex-col gap-4">
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h2 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Conversas</h2>
-          <p className="text-sm" style={{ color: 'var(--muted)' }}>{conversations.length} no total</p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={markAllRead}
-            disabled={markingAll || totalUnread === 0}
-            className="px-3.5 py-2 rounded-xl text-sm font-medium disabled:opacity-60"
-            style={{ background: 'var(--surface)', color: 'var(--muted)', border: '1px solid var(--border-soft)' }}
-          >
-            Marcar tudo como lido{totalUnread > 0 ? ` (${totalUnread})` : ''}
-          </button>
+      <SectionHeader
+        title="Conversas"
+        description={`${conversations.length} no total`}
+        right={
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            <Button onClick={markAllRead} disabled={markingAll || totalUnread === 0} loading={markingAll} variant="ghost">
+              Marcar tudo como lido{totalUnread > 0 ? ` (${totalUnread})` : ''}
+            </Button>
 
           {/* Status filter */}
           <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border-soft)' }}>
@@ -167,17 +164,17 @@ export default function ConversasPage() {
           </div>
 
           {/* Export */}
-          <button onClick={() => { if (!filtered.length) return toast('Nenhuma conversa para exportar', 'warning'); exportCSV(filtered); toast(`${filtered.length} conversas exportadas`, 'success') }}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium"
-            style={{ background: 'var(--teal-soft)', color: 'var(--teal)', border: '1px solid #99F6E4' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            CSV
-          </button>
-        </div>
-      </div>
+            <Button
+              onClick={() => { if (!filtered.length) return toast('Nenhuma conversa para exportar', 'warning'); exportCSV(filtered); toast(`${filtered.length} conversas exportadas`, 'success') }}
+              variant="ghost"
+              style={{ background: 'var(--teal-soft)', color: 'var(--teal)', border: '1px solid #99F6E4' }}
+            >
+              <Download size={16} aria-hidden="true" />
+              CSV
+            </Button>
+          </div>
+        }
+      />
 
       {/* Stage filter pills */}
       <div className="flex gap-2 flex-wrap">
@@ -200,17 +197,14 @@ export default function ConversasPage() {
       </div>
 
       {/* List */}
-      <div className="ui-card rounded-2xl overflow-hidden">
+      <Card className="overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-40">
             <div className="ui-spinner" />
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-40 gap-2">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
-              strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--muted)' }}>
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
+            <MessageSquareText size={32} aria-hidden="true" style={{ color: 'var(--muted)' }} />
             <p className="text-sm" style={{ color: 'var(--muted)' }}>Nenhuma conversa encontrada</p>
           </div>
         ) : (
@@ -270,7 +264,7 @@ export default function ConversasPage() {
             })}
           </ul>
         )}
-      </div>
+      </Card>
     </div>
   )
 }

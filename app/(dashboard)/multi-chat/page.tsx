@@ -4,6 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import type { Conversation, HumanTakeover, Message } from '@/lib/types'
+import { Card } from '@/components/ui/Card'
+import { Input } from '@/components/ui/Input'
+import { SectionHeader } from '@/components/ui/SectionHeader'
 
 function MessageBubble({ msg }: { msg: Message }) {
   const isOutbound = msg.direction === 'OUTBOUND'
@@ -234,21 +237,15 @@ export default function MultiChatPage() {
 
   return (
     <div className="flex flex-col gap-4 h-[calc(100vh-112px)]">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h2 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Multi-chat</h2>
-          <p className="text-sm" style={{ color: 'var(--muted)' }}>Atenda múltiplas conversas em uma única tela</p>
-        </div>
-      </div>
+      <SectionHeader title="Multi-chat" description="Atenda múltiplas conversas em uma única tela" />
 
       {loading ? (
         <div className="flex items-center justify-center h-64">
-          <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--teal)', borderTopColor: 'transparent' }} />
+          <div className="ui-spinner" />
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 min-h-0">
-          <div className="lg:col-span-1 rounded-2xl overflow-hidden flex flex-col min-h-0"
-            style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-soft)' }}>
+          <Card className="lg:col-span-1 overflow-hidden flex flex-col min-h-0">
             <div className="p-3 flex flex-col gap-2" style={{ borderBottom: '1px solid var(--border-soft)' }}>
               <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
                 {(['ALL', 'OPEN', 'CLOSED'] as const).map(f => (
@@ -277,13 +274,12 @@ export default function MultiChatPage() {
                   </button>
                 ))}
               </div>
-              <input
+              <Input
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder="Buscar por nome ou telefone…"
                 aria-label="Buscar conversas"
-                className="w-full px-3 py-2 rounded-xl text-sm outline-none"
-                style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)' }}
+                className="h-10"
               />
             </div>
 
@@ -355,10 +351,9 @@ export default function MultiChatPage() {
                 </ul>
               )}
             </div>
-          </div>
+          </Card>
 
-          <div className="lg:col-span-2 rounded-2xl overflow-hidden flex flex-col min-h-0"
-            style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-soft)' }}>
+          <Card className="lg:col-span-2 overflow-hidden flex flex-col min-h-0">
             {!active ? (
               <div className="flex-1 flex items-center justify-center text-sm" style={{ color: 'var(--muted)' }}>
                 Selecione uma conversa
@@ -504,7 +499,7 @@ export default function MultiChatPage() {
                 </form>
               </>
             )}
-          </div>
+          </Card>
         </div>
       )}
     </div>

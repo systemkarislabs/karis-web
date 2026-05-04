@@ -6,9 +6,14 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
   PieChart, Pie, Cell,
 } from 'recharts'
+import { Clock, MessageSquareText, Users, Zap } from 'lucide-react'
 import DashboardLayout from './(dashboard)/layout'
 import { api } from '@/lib/api'
 import type { DashboardStats, Conversation } from '@/lib/types'
+import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { SectionHeader } from '@/components/ui/SectionHeader'
 
 type WhatsappStatus = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'ERROR'
 
@@ -68,8 +73,7 @@ function Gauge({ value, max, label }: { value: number; max: number; label: strin
 // ── Mini stat card ──────────────────────────────────────────────────────────
 function StatCard({ label, value, icon, trend }: { label: string; value: number | string; icon: React.ReactNode; trend?: number }) {
   return (
-    <div className="rounded-2xl p-5 flex items-center gap-4"
-      style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-soft)' }}>
+    <Card className="p-5 flex items-center gap-4">
       <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
         style={{ background: 'var(--teal-soft)', color: 'var(--teal)' }}>
         {icon}
@@ -84,7 +88,7 @@ function StatCard({ label, value, icon, trend }: { label: string; value: number 
           {trend >= 0 ? '+' : ''}{trend}%
         </span>
       )}
-    </div>
+    </Card>
   )
 }
 
@@ -200,38 +204,26 @@ function DashboardContent() {
     : 0
 
   return (
-    <div className="max-w-5xl mx-auto flex flex-col gap-6">
-      {/* Welcome */}
-      <div>
-        <h2 className="text-xl font-semibold mb-0.5" style={{ color: 'var(--text)' }}>
-          {stats?.company.name ?? 'Bem-vindo'}
-        </h2>
-        <p className="text-sm" style={{ color: 'var(--muted)' }}>Visão geral da operação</p>
-      </div>
+    <div className="max-w-6xl mx-auto flex flex-col gap-6">
+      <SectionHeader
+        title={stats?.company.name ?? 'Bem-vindo'}
+        description="Visão geral da operação"
+      />
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Contatos" value={stats?.stats.contacts ?? 0} icon={
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
+          <Users size={20} aria-hidden="true" />
         } />
         <StatCard label="Conversas" value={stats?.stats.conversations ?? 0} icon={
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
+          <MessageSquareText size={20} aria-hidden="true" />
         } />
         <StatCard label="Abertas" value={openCount} icon={
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-          </svg>
+          <Clock size={20} aria-hidden="true" />
         } />
         {stats?.company.entitlements.ai && (
           <StatCard label="Taxa de IA" value={`${aiRate}%`} icon={
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2a10 10 0 1 0 10 10" /><path d="M12 6v6l4 2" />
-            </svg>
+            <Zap size={20} aria-hidden="true" />
           } />
         )}
       </div>
@@ -240,8 +232,7 @@ function DashboardContent() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
         {/* Line chart - 2/3 width */}
-        <div className="lg:col-span-2 rounded-2xl p-5"
-          style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-soft)' }}>
+        <Card className="lg:col-span-2 p-5">
           <p className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Conversas — últimos 7 dias</p>
           <ResponsiveContainer width="100%" height={180}>
             <LineChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
@@ -258,14 +249,13 @@ function DashboardContent() {
                 strokeDasharray="4 2" dot={false} name="Abertas" />
             </LineChart>
           </ResponsiveContainer>
-        </div>
+        </Card>
 
         {/* Pie + Gauge - 1/3 */}
         {stats?.company.entitlements.ai && (
           <div className="flex flex-col gap-4">
           {/* Pie */}
-          <div className="rounded-2xl p-5 flex-1"
-            style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-soft)' }}>
+          <Card className="p-5 flex-1">
             <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>IA vs Humano</p>
             <div className="flex items-center gap-3">
               <PieChart width={80} height={80}>
@@ -282,16 +272,15 @@ function DashboardContent() {
                 ))}
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Gauge */}
-          <div className="rounded-2xl p-5"
-            style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-soft)' }}>
+          <Card className="p-5">
             <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text)' }}>Taxa IA</p>
             <div className="flex justify-center">
               <Gauge value={aiRate} max={100} label="% respondido por IA" />
             </div>
-          </div>
+          </Card>
         </div>
         )}
       </div>
@@ -300,62 +289,54 @@ function DashboardContent() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* WhatsApp */}
         {stats?.company.entitlements.whatsapp && (
-          <div className="rounded-2xl p-5 flex flex-col gap-3"
-            style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-soft)' }}>
+          <Card className="p-5 flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>WhatsApp</span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-                style={{
-                  background: waStatus === 'CONNECTED' ? '#D1FAE5' : waStatus === 'CONNECTING' ? '#FEF3C7' : waStatus === 'ERROR' ? '#FEF2F2' : '#F3F4F6',
-                  color: waStatus === 'CONNECTED' ? '#065F46' : waStatus === 'CONNECTING' ? '#92400E' : waStatus === 'ERROR' ? '#991B1B' : '#6B7280',
-                }}>
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: waStatus === 'CONNECTED' ? '#10B981' : waStatus === 'CONNECTING' ? '#F59E0B' : waStatus === 'ERROR' ? '#EF4444' : '#9CA3AF' }} />
+              <Badge
+                dot
+                variant={waStatus === 'CONNECTED' ? 'success' : waStatus === 'CONNECTING' ? 'warning' : waStatus === 'ERROR' ? 'danger' : 'neutral'}
+              >
                 {waStatus === 'CONNECTED' ? 'Conectado' : waStatus === 'CONNECTING' ? 'Conectando…' : waStatus === 'ERROR' ? 'Erro' : 'Desconectado'}
-              </span>
+              </Badge>
             </div>
             <p className="text-sm" style={{ color: 'var(--muted)' }}>
               {waConnected ? 'Seu número está ativo e recebendo mensagens.' : 'Conecte seu número para receber mensagens.'}
             </p>
             <div className="flex items-center gap-2 flex-wrap">
               {waConnected ? (
-                <button
+                <Button
                   type="button"
                   onClick={handleDisconnectWhatsapp}
-                  disabled={waBusy !== null}
-                  className="px-3.5 py-2 rounded-xl text-sm font-medium disabled:opacity-60"
-                  style={{ border: '1px solid var(--danger)', color: 'var(--danger)' }}
+                  loading={waBusy === 'disconnect'}
+                  variant="danger"
                 >
-                  {waBusy === 'disconnect' ? 'Desconectando…' : 'Desconectar'}
-                </button>
+                  Desconectar
+                </Button>
               ) : (
-                <button
+                <Button
                   type="button"
                   onClick={handleConnectWhatsapp}
-                  disabled={waBusy !== null || waStatus === 'CONNECTING'}
-                  className="px-3.5 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-60"
-                  style={{ background: 'linear-gradient(135deg,#0D9488,#0F766E)' }}
+                  loading={waBusy === 'connect' || waStatus === 'CONNECTING'}
+                  variant="primary"
                 >
-                  {waBusy === 'connect' || waStatus === 'CONNECTING' ? 'Conectando…' : 'Conectar'}
-                </button>
+                  Conectar
+                </Button>
               )}
               <Link href="/whatsapp" className="text-sm font-medium hover:underline" style={{ color: 'var(--teal)' }}>
                 Gerenciar conexão →
               </Link>
             </div>
-          </div>
+          </Card>
         )}
 
         {/* Assistente */}
         {stats?.company.entitlements.ai && (
-          <div className="rounded-2xl p-5 flex flex-col gap-3"
-            style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-soft)' }}>
+          <Card className="p-5 flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Assistente IA</span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-                style={{ background: stats?.assistant?.isActive ? '#D1FAE5' : '#F3F4F6', color: stats?.assistant?.isActive ? '#065F46' : '#6B7280' }}>
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: stats?.assistant?.isActive ? '#10B981' : '#9CA3AF' }} />
+              <Badge dot variant={stats?.assistant?.isActive ? 'success' : 'neutral'}>
                 {stats?.assistant?.isActive ? 'Ativo' : 'Inativo'}
-              </span>
+              </Badge>
             </div>
             <p className="text-sm" style={{ color: 'var(--muted)' }}>
               {stats?.assistant ? `${stats.assistant.name}` : 'Nenhum assistente configurado.'}
@@ -363,13 +344,12 @@ function DashboardContent() {
             <Link href="/assistente" className="text-sm font-medium hover:underline" style={{ color: 'var(--teal)' }}>
               Configurar assistente →
             </Link>
-          </div>
+          </Card>
         )}
       </div>
 
       {/* Quick links */}
-      <div className="rounded-2xl p-5"
-        style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-soft)' }}>
+      <Card className="p-5">
         <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Acesso rápido</p>
         <div className="flex flex-wrap gap-2">
           {[
@@ -378,13 +358,14 @@ function DashboardContent() {
             ...(stats?.company.entitlements.ai ? [{ href: '/conhecimento', label: 'Base de conhecimento' }] : []),
           ].map(l => (
             <Link key={l.href} href={l.href}
-              className="px-3.5 py-1.5 rounded-xl text-sm font-medium transition-colors hover:opacity-80"
-              style={{ background: 'var(--teal-soft)', color: 'var(--teal)' }}>
+              className="ui-btn ui-btn-ghost h-9 px-3 text-sm rounded-[var(--radius-md)]"
+              style={{ background: 'var(--teal-soft)', color: 'var(--teal)' }}
+            >
               {l.label}
             </Link>
           ))}
         </div>
-      </div>
+      </Card>
     </div>
   )
 }

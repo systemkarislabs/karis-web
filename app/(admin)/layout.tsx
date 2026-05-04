@@ -3,38 +3,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { BadgeCheck, Building2, LayoutGrid, LogOut, Menu } from 'lucide-react'
 
 const navItems = [
-  { href: '/admin', label: 'Visão geral', icon: 'grid' },
-  { href: '/admin/empresas', label: 'Empresas', icon: 'building' },
-  { href: '/admin/planos', label: 'Planos', icon: 'badge' },
+  { href: '/admin', label: 'Visão geral', icon: LayoutGrid },
+  { href: '/admin/empresas', label: 'Empresas', icon: Building2 },
+  { href: '/admin/planos', label: 'Planos', icon: BadgeCheck },
 ]
-
-function Icon({ name }: { name: string }) {
-  if (name === 'grid') {
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
-        <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
-      </svg>
-    )
-  }
-  if (name === 'building') {
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 21h18" /><path d="M9 8h1" /><path d="M9 12h1" /><path d="M9 16h1" />
-        <path d="M14 8h1" /><path d="M14 12h1" /><path d="M14 16h1" />
-        <path d="M7 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16" />
-      </svg>
-    )
-  }
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 7h-9" /><path d="M14 17H5" />
-      <circle cx="17" cy="17" r="3" /><circle cx="7" cy="7" r="3" />
-    </svg>
-  )
-}
 
 function Sidebar({ collapsed }: { collapsed: boolean }) {
   const pathname = usePathname()
@@ -94,7 +69,7 @@ function Sidebar({ collapsed }: { collapsed: boolean }) {
               title={collapsed ? item.label : undefined}
             >
               <span className="flex-shrink-0" style={{ color: active ? 'var(--accent)' : 'var(--muted)' }}>
-                <Icon name={item.icon} />
+                <item.icon size={18} aria-hidden="true" />
               </span>
               {!collapsed && <span className="truncate">{item.label}</span>}
             </Link>
@@ -113,11 +88,7 @@ function Sidebar({ collapsed }: { collapsed: boolean }) {
             border: '1px solid rgba(239,68,68,.22)',
           }}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
+          <LogOut size={18} aria-hidden="true" className="flex-shrink-0" />
           {!collapsed && <span>Sair</span>}
         </button>
       </div>
@@ -157,9 +128,7 @@ function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
         className="h-10 w-10 inline-flex items-center justify-center rounded-lg transition-colors"
         style={{ color: 'var(--muted)', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.06)' }}
       >
-        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
-        </svg>
+        <Menu size={18} aria-hidden="true" />
       </button>
 
       <div className="flex-1 min-w-0">

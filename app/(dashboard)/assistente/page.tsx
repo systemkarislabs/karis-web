@@ -3,8 +3,13 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { Check, Info } from 'lucide-react'
 import { api } from '@/lib/api'
 import type { Assistant } from '@/lib/types'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { Input, Textarea } from '@/components/ui/Input'
+import { SectionHeader } from '@/components/ui/SectionHeader'
 
 export default function AssistentePage() {
   const router = useRouter()
@@ -57,12 +62,9 @@ export default function AssistentePage() {
 
   return (
     <div className="max-w-2xl mx-auto flex flex-col gap-6">
-      <div>
-        <h2 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Assistente IA</h2>
-        <p className="text-sm" style={{ color: 'var(--muted)' }}>Configure o comportamento do seu assistente</p>
-      </div>
+      <SectionHeader title="Assistente IA" description="Configure o comportamento do seu assistente" />
 
-      <div className="rounded-2xl p-6 ui-card">
+      <Card className="p-6">
         {loading ? (
           <div className="flex items-center justify-center h-40">
             <div className="ui-spinner" />
@@ -93,55 +95,48 @@ export default function AssistentePage() {
 
             {/* Name */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium" style={{ color: 'var(--text)' }}>Nome do assistente</label>
-              <input
+              <label htmlFor="assistant-name" className="text-sm font-medium" style={{ color: 'var(--text)' }}>Nome do assistente</label>
+              <Input
+                id="assistant-name"
                 type="text"
                 value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                 placeholder="Ex: Karis, Atendente, Sofia…"
                 required
-                className="ui-input w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-all"
               />
             </div>
 
             {/* Instructions */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium" style={{ color: 'var(--text)' }}>Instruções do sistema</label>
+              <label htmlFor="assistant-instructions" className="text-sm font-medium" style={{ color: 'var(--text)' }}>Instruções do sistema</label>
               <p className="text-xs" style={{ color: 'var(--muted)' }}>
                 Descreva como o assistente deve se comportar, o tom, limitações e informações da empresa.
               </p>
-              <textarea
+              <Textarea
+                id="assistant-instructions"
                 value={form.instructions}
                 onChange={e => setForm(f => ({ ...f, instructions: e.target.value }))}
                 placeholder="Você é um assistente de atendimento da [Empresa]. Seja sempre cordial, objetivo e responda em português. Não forneça informações sobre preços sem consultar um humano."
-                rows={8}
-                className="ui-input w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-all"
-                style={{ resize: 'vertical', lineHeight: '1.6' }}
+                style={{ lineHeight: '1.6' }}
               />
             </div>
 
             <div className="flex items-center gap-3">
-              <button
-                type="submit"
-                disabled={saving}
-                className="ui-btn-primary px-5 py-2.5 rounded-xl text-sm font-medium disabled:opacity-60 transition-opacity"
-              >
-                {saving ? 'Salvando…' : 'Salvar alterações'}
-              </button>
+              <Button type="submit" variant="primary" loading={saving}>
+                Salvar alterações
+              </Button>
               {saved && (
                 <span className="text-sm flex items-center gap-1.5" style={{ color: 'var(--teal)' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
+                  <Check size={16} aria-hidden="true" />
                   Salvo!
                 </span>
               )}
             </div>
           </form>
         )}
-      </div>
+      </Card>
 
-      <div className="rounded-2xl p-5 ui-card flex flex-col gap-3">
+      <Card className="p-5 flex flex-col gap-3">
         <div>
           <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Base de Conhecimento</p>
           <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
@@ -151,22 +146,20 @@ export default function AssistentePage() {
         <div>
           <Link
             href="/conhecimento"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-opacity"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[var(--radius-md)] text-sm font-medium transition-opacity"
             style={{ background: 'var(--teal-soft)', color: 'var(--teal)', border: '1px solid #99F6E4' }}
           >
             Abrir base de conhecimento
           </Link>
         </div>
-      </div>
+      </Card>
 
       {/* Info card */}
       <div
         className="rounded-2xl p-5 flex gap-3"
         style={{ background: '#EFF6FF', border: '1px solid #BFDBFE' }}
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
-          <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
-        </svg>
+        <Info size={18} aria-hidden="true" color="#3B82F6" className="flex-shrink-0 mt-0.5" />
         <div>
           <p className="text-sm font-medium" style={{ color: '#1D4ED8' }}>Dica</p>
           <p className="text-sm mt-0.5" style={{ color: '#1E40AF' }}>

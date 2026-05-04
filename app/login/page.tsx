@@ -3,6 +3,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
+import { MessagesSquare } from 'lucide-react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { Input } from '@/components/ui/Input'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -34,41 +39,39 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex items-center gap-2 justify-center mb-8">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#0D9488,#0F766E)' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,var(--primary),var(--primary-600))' }}>
+            <MessagesSquare size={18} aria-hidden="true" color="white" />
           </div>
           <span className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Karis Atende</span>
         </div>
 
         {/* Card */}
-        <div className="rounded-2xl p-8" style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-soft)' }}>
+        <Card className="p-8">
           <h1 className="text-xl font-semibold mb-1" style={{ color: 'var(--text)' }}>Entrar</h1>
           <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>Acesse sua conta para continuar</p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium" style={{ color: 'var(--text)' }}>E-mail</label>
-              <input
-                type="email" value={email} onChange={e => setEmail(e.target.value)} required
+              <label htmlFor="login-email" className="text-sm font-medium" style={{ color: 'var(--text)' }}>E-mail</label>
+              <Input
+                id="login-email"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
                 placeholder="seu@email.com"
-                className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-all"
-                style={{ border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }}
-                onFocus={e => e.target.style.borderColor = 'var(--teal)'}
-                onBlur={e => e.target.style.borderColor = 'var(--border)'}
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium" style={{ color: 'var(--text)' }}>Senha</label>
-              <input
-                type="password" value={password} onChange={e => setPassword(e.target.value)} required
+              <label htmlFor="login-password" className="text-sm font-medium" style={{ color: 'var(--text)' }}>Senha</label>
+              <Input
+                id="login-password"
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
                 placeholder="••••••••"
-                className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-all"
-                style={{ border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }}
-                onFocus={e => e.target.style.borderColor = 'var(--teal)'}
-                onBlur={e => e.target.style.borderColor = 'var(--border)'}
               />
             </div>
 
@@ -76,19 +79,15 @@ export default function LoginPage() {
               <p className="text-sm px-3 py-2 rounded-lg" style={{ background: '#FEF2F2', color: 'var(--danger)' }}>{error}</p>
             )}
 
-            <button
-              type="submit" disabled={loading}
-              className="w-full py-2.5 rounded-xl text-sm font-medium text-white transition-opacity disabled:opacity-60"
-              style={{ background: 'linear-gradient(135deg,#0D9488,#0F766E)' }}
-            >
-              {loading ? 'Entrando…' : 'Entrar'}
-            </button>
+            <Button type="submit" variant="primary" loading={loading} className="w-full">
+              Entrar
+            </Button>
           </form>
-        </div>
+        </Card>
 
         <p className="text-center text-sm mt-4" style={{ color: 'var(--muted)' }}>
           Sem conta?{' '}
-          <a href="/cadastro" style={{ color: 'var(--teal)' }} className="font-medium hover:underline">Criar conta</a>
+          <Link href="/cadastro" style={{ color: 'var(--teal)' }} className="font-medium hover:underline">Criar conta</Link>
         </p>
       </div>
     </div>

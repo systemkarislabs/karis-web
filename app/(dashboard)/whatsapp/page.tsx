@@ -2,30 +2,16 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { AlertCircle, ArrowRight, Check, RefreshCw } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useToast } from '@/components/Toast'
 import type { WhatsappConnection } from '@/lib/types'
+import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
+import { SectionHeader } from '@/components/ui/SectionHeader'
 
 type Status = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'ERROR'
-
-function StatusPill({ status }: { status: Status }) {
-  const map: Record<Status, { bg: string; text: string; label: string; dot: string }> = {
-    CONNECTED: { bg: '#D1FAE5', text: '#065F46', dot: '#10B981', label: 'Conectado' },
-    CONNECTING: { bg: '#FEF3C7', text: '#92400E', dot: '#F59E0B', label: 'Conectando…' },
-    DISCONNECTED: { bg: '#F3F4F6', text: '#6B7280', dot: '#9CA3AF', label: 'Desconectado' },
-    ERROR: { bg: '#FEF2F2', text: '#991B1B', dot: '#EF4444', label: 'Erro' },
-  }
-  const s = map[status]
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium"
-      style={{ background: s.bg, color: s.text }}
-    >
-      <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: s.dot, animationPlayState: status === 'CONNECTING' ? 'running' : 'paused' }} />
-      {s.label}
-    </span>
-  )
-}
 
 export default function WhatsAppPage() {
   const { toast } = useToast()
@@ -105,19 +91,13 @@ export default function WhatsAppPage() {
 
   return (
     <div className="max-w-2xl mx-auto flex flex-col gap-6">
-      <div>
-        <h2 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>WhatsApp</h2>
-        <p className="text-sm" style={{ color: 'var(--muted)' }}>Conecte seu número para receber e enviar mensagens</p>
-      </div>
+      <SectionHeader title="WhatsApp" description="Conecte seu número para receber e enviar mensagens" />
 
       {/* Status card */}
-      <div
-        className="rounded-2xl p-6 flex flex-col gap-5"
-        style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-soft)' }}
-      >
+      <Card className="p-6 flex flex-col gap-5">
         {loading ? (
           <div className="flex items-center justify-center h-20">
-            <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--teal)', borderTopColor: 'transparent' }} />
+            <div className="ui-spinner" />
           </div>
         ) : (
           <>
@@ -128,7 +108,12 @@ export default function WhatsAppPage() {
                   <p className="text-sm" style={{ color: 'var(--muted)' }}>Número: {connection.phoneNumber}</p>
                 )}
               </div>
-              <StatusPill status={status} />
+              <Badge
+                dot
+                variant={status === 'CONNECTED' ? 'success' : status === 'CONNECTING' ? 'warning' : status === 'ERROR' ? 'danger' : 'neutral'}
+              >
+                {status === 'CONNECTED' ? 'Conectado' : status === 'CONNECTING' ? 'Conectando…' : status === 'ERROR' ? 'Erro' : 'Desconectado'}
+              </Badge>
             </div>
 
             {/* QR Code */}
@@ -162,9 +147,7 @@ export default function WhatsAppPage() {
                 className="flex items-center gap-3 p-4 rounded-xl"
                 style={{ background: '#D1FAE5', border: '1px solid #A7F3D0' }}
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#065F46" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
+                <Check size={20} aria-hidden="true" color="#065F46" />
                 <div>
                   <p className="text-sm font-medium" style={{ color: '#065F46' }}>WhatsApp conectado com sucesso!</p>
                   <p className="text-xs mt-0.5" style={{ color: '#047857' }}>
@@ -180,9 +163,7 @@ export default function WhatsAppPage() {
                 className="flex items-center gap-3 p-4 rounded-xl"
                 style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#991B1B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
+                <AlertCircle size={20} aria-hidden="true" color="#991B1B" />
                 <p className="text-sm" style={{ color: '#991B1B' }}>Erro na conexão. Tente reconectar.</p>
               </div>
             )}
@@ -191,64 +172,55 @@ export default function WhatsAppPage() {
             <div className="flex gap-3 flex-wrap">
               {/* DISCONNECTED / ERROR → botão Conectar */}
               {(status === 'DISCONNECTED' || status === 'ERROR') && (
-                <button
+                <Button
                   onClick={handleConnect}
-                  disabled={connecting}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-60 transition-opacity hover:opacity-90"
-                  style={{ background: 'linear-gradient(135deg,#0D9488,#0F766E)' }}
+                  loading={connecting}
+                  variant="primary"
                 >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12h14" /><path d="M12 5l7 7-7 7" />
-                  </svg>
-                  {connecting ? 'Iniciando…' : 'Conectar'}
-                </button>
+                  <ArrowRight size={16} aria-hidden="true" />
+                  Conectar
+                </Button>
               )}
 
               {/* CONNECTING → atualizar QR + forçar reconexão */}
               {status === 'CONNECTING' && (
                 <>
-                  <button
+                  <Button
                     onClick={fetchStatus}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90"
-                    style={{ background: 'linear-gradient(135deg,#0D9488,#0F766E)' }}
+                    variant="primary"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-                    </svg>
+                    <RefreshCw size={16} aria-hidden="true" />
                     Atualizar QR
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={handleConnect}
-                    disabled={connecting}
-                    className="px-4 py-2.5 rounded-xl text-sm font-medium disabled:opacity-60 transition-colors hover:bg-yellow-50"
-                    style={{ border: '1px solid #F59E0B', color: '#92400E' }}
+                    loading={connecting}
+                    variant="ghost"
+                    className="!text-[#92400E] !bg-transparent"
+                    style={{ border: '1px solid #F59E0B' }}
                   >
-                    {connecting ? 'Reconectando…' : 'Forçar reconexão'}
-                  </button>
+                    Forçar reconexão
+                  </Button>
                 </>
               )}
 
               {/* CONNECTED / CONNECTING → Desconectar */}
               {(status === 'CONNECTED' || status === 'CONNECTING') && (
-                <button
+                <Button
                   onClick={handleDisconnect}
-                  disabled={disconnecting}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium disabled:opacity-60 transition-colors hover:bg-red-50"
-                  style={{ border: '1px solid var(--danger)', color: 'var(--danger)' }}
+                  loading={disconnecting}
+                  variant="danger"
                 >
-                  {disconnecting ? 'Desconectando…' : 'Desconectar'}
-                </button>
+                  Desconectar
+                </Button>
               )}
             </div>
           </>
         )}
-      </div>
+      </Card>
 
       {/* Instructions card */}
-      <div
-        className="rounded-2xl p-5"
-        style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-soft)' }}
-      >
+      <Card className="p-5">
         <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Como conectar</p>
         <ol className="flex flex-col gap-2.5">
           {[
@@ -269,7 +241,7 @@ export default function WhatsAppPage() {
             </li>
           ))}
         </ol>
-      </div>
+      </Card>
     </div>
   )
 }

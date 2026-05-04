@@ -68,6 +68,7 @@ export default function MultiChatPage() {
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'OPEN' | 'CLOSED'>('ALL')
   const [togglingAi, setTogglingAi] = useState(false)
   const [togglingTakeover, setTogglingTakeover] = useState(false)
+  const [togglingStatus, setTogglingStatus] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const listPollRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -186,6 +187,21 @@ export default function MultiChatPage() {
     finally { setTogglingTakeover(false) }
   }
 
+  async function toggleStatus() {
+    if (!active || togglingStatus) return
+    setTogglingStatus(true)
+    try {
+      const nextStatus = active.status === 'OPEN' ? 'CLOSED' : 'OPEN'
+      const updated = await api.updateConversation(active.id, { status: nextStatus })
+      updateConversationLocal(active.id, {
+        status: updated.conversation.status as any,
+        aiEnabled: updated.conversation.aiEnabled,
+        ...(nextStatus === 'CLOSED' ? { humanTakeovers: [] } : {}),
+      })
+    } catch { /* noop */ }
+    finally { setTogglingStatus(false) }
+  }
+
   return (
     <div className="flex flex-col gap-4 h-[calc(100vh-112px)]">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -299,6 +315,10 @@ export default function MultiChatPage() {
                     </div>
                     <div className="text-xs" style={{ color: 'var(--muted)' }}>{active.contact.phone}</div>
                   </div>
+                  <div className="text-[11px] font-semibold px-2 py-1 rounded-full"
+                    style={{ background: active.status === 'OPEN' ? '#D1FAE5' : '#F3F4F6', color: active.status === 'OPEN' ? '#065F46' : '#6B7280' }}>
+                    {active.status === 'OPEN' ? 'Aberta' : 'Fechada'}
+                  </div>
                   {aiAvailable && (
                     <div className="flex items-center gap-2">
                       <button
@@ -327,6 +347,18 @@ export default function MultiChatPage() {
                       </button>
                     </div>
                   )}
+                  <button
+                    onClick={toggleStatus}
+                    disabled={togglingStatus}
+                    className="px-3 py-2 rounded-xl text-xs font-semibold disabled:opacity-60"
+                    style={{
+                      background: active.status === 'OPEN' ? 'rgba(239,68,68,.12)' : 'rgba(16,185,129,.12)',
+                      border: active.status === 'OPEN' ? '1px solid rgba(239,68,68,.22)' : '1px solid rgba(16,185,129,.22)',
+                      color: active.status === 'OPEN' ? '#B91C1C' : '#065F46',
+                    }}
+                  >
+                    {active.status === 'OPEN' ? 'Fechar' : 'Reabrir'}
+                  </button>
                   <button
                     onClick={() => router.push(`/conversas/${active.id}`)}
                     className="px-3 py-2 rounded-xl text-xs font-semibold"

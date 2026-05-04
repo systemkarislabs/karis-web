@@ -56,6 +56,7 @@ export interface HumanTakeover {
   reason: string | null
   endedAt: string | null
   createdAt: string
+  user?: { id: string; name: string; email: string }
 }
 
 export interface WhatsappConnection {

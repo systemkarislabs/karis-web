@@ -151,6 +151,10 @@ export default function MultiChatPage() {
 
   const active = conversations.find(c => c.id === activeId) ?? null
   const takeoverActive = Boolean(active?.humanTakeovers?.some(t => !t.endedAt)) || Boolean(active?.humanTakeovers?.length)
+  const takeoverUserName =
+    active?.humanTakeovers?.find(t => !t.endedAt)?.user?.name ??
+    active?.humanTakeovers?.[0]?.user?.name ??
+    ''
 
   function updateConversationLocal(id: string, patch: Partial<Conversation>) {
     setConversations(prev => prev.map(c => (c.id === id ? { ...c, ...patch } : c)))
@@ -228,7 +232,9 @@ export default function MultiChatPage() {
                 <ul className="divide-y" style={{ borderColor: 'var(--border-soft)' }}>
                   {filtered.map(c => {
                     const isActive = c.id === activeId
-                    const hasTakeover = Boolean(c.humanTakeovers?.some(t => !t.endedAt)) || Boolean(c.humanTakeovers?.length)
+                    const activeTakeover = c.humanTakeovers?.find(t => !t.endedAt) ?? c.humanTakeovers?.[0] ?? null
+                    const hasTakeover = Boolean(activeTakeover)
+                    const manualLabel = activeTakeover?.user?.name ? `Manual · ${activeTakeover.user.name.split(' ')[0]}` : 'Manual'
                     return (
                       <li key={c.id}>
                         <button
@@ -258,7 +264,7 @@ export default function MultiChatPage() {
                             {hasTakeover && (
                               <div className="text-[11px] font-semibold px-2 py-1 rounded-full"
                                 style={{ background: '#FEF3C7', color: '#92400E' }}>
-                                Manual
+                                {manualLabel}
                               </div>
                             )}
                           </div>
@@ -317,7 +323,7 @@ export default function MultiChatPage() {
                           border: '1px solid var(--border-soft)',
                         }}
                       >
-                        {takeoverActive ? 'Devolver IA' : 'Assumir'}
+                        {takeoverActive ? (takeoverUserName ? `Devolver IA (${takeoverUserName.split(' ')[0]})` : 'Devolver IA') : 'Assumir'}
                       </button>
                     </div>
                   )}

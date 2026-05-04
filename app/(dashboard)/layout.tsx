@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Bot, LayoutDashboard, LogOut, Menu, MessagesSquare, Phone, Users } from 'lucide-react'
+import { Bot, LayoutDashboard, LogOut, Menu, MessagesSquare, Phone, Search, Users } from 'lucide-react'
 import { api } from '@/lib/api'
 import type { Entitlements } from '@/lib/types'
 
@@ -67,42 +67,41 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
       style={{
         width: collapsed ? 64 : 220,
         background: 'var(--surface)',
-        borderRight: '1px solid var(--border-soft)',
+        borderRight: '1px solid var(--border)',
         flexShrink: 0,
       }}
     >
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-4 py-5" style={{ minHeight: 64 }}>
-        <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ background: 'linear-gradient(135deg, var(--primary), var(--primary-600))' }}
-        >
-          <MessagesSquare size={16} aria-hidden="true" color="white" />
-        </div>
+      <div className="flex items-center gap-2.5 px-4" style={{ height: 60, borderBottom: '1px solid var(--border)' }}>
+        <img src="/designer/logo.svg" alt="" className="w-8 h-8 object-contain flex-shrink-0" />
         {!collapsed && (
-          <span className="text-sm font-semibold whitespace-nowrap" style={{ color: 'var(--text)' }}>
+          <span className="text-[15px] font-bold tracking-tight whitespace-nowrap" style={{ color: 'var(--text)' }}>
             Karis Atende
           </span>
         )}
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-2 flex flex-col gap-0.5 overflow-y-auto">
+      <nav className="flex-1 px-2 py-3 flex flex-col gap-0.5 overflow-y-auto">
         {navItems.map(item => {
           const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
+          const activeBg = 'color-mix(in oklch, var(--primary) 8%, transparent)'
           return (
             <Link
               key={item.href}
               href={item.href}
               aria-label={item.label}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-gray-50"
+              className="flex items-center gap-2.5 w-full rounded-lg text-[13.5px] font-medium transition-colors"
               style={{
-                color: active ? 'var(--teal)' : 'var(--muted)',
-                background: active ? 'var(--teal-soft)' : 'transparent',
+                padding: collapsed ? '10px 0' : '9px 12px',
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                borderLeft: active ? '3px solid var(--primary)' : '3px solid transparent',
+                background: active ? activeBg : 'transparent',
+                color: active ? 'var(--primary)' : 'var(--muted)',
               }}
               title={collapsed ? item.label : undefined}
             >
-              <span className="flex-shrink-0" style={{ color: active ? 'var(--teal)' : 'var(--muted)' }}>
+              <span className="flex-shrink-0" style={{ color: active ? 'var(--primary)' : 'var(--muted)' }}>
                 {item.icon}
               </span>
               {!collapsed && <span>{item.label}</span>}
@@ -112,15 +111,32 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
       </nav>
 
       {/* Bottom */}
-      <div className="px-2 pb-4 flex flex-col gap-0.5">
+      <div className="px-2 py-3 flex flex-col gap-0.5" style={{ borderTop: '1px solid var(--border)' }}>
+        <button
+          onClick={onToggle}
+          aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
+          className="flex items-center gap-2.5 w-full rounded-lg text-[13.5px] font-medium transition-colors"
+          style={{
+            padding: collapsed ? '10px 0' : '9px 12px',
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            color: 'var(--muted)',
+          }}
+        >
+          <Menu size={17} aria-hidden="true" className="flex-shrink-0" />
+          {!collapsed && <span>Menu</span>}
+        </button>
         <button
           onClick={handleLogout}
           aria-label="Sair"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium w-full transition-colors hover:bg-red-50"
-          style={{ color: 'var(--danger)' }}
+          className="flex items-center gap-2.5 w-full rounded-lg text-[13.5px] font-medium transition-colors"
+          style={{
+            padding: collapsed ? '10px 0' : '9px 12px',
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            color: 'var(--danger)',
+          }}
           title={collapsed ? 'Sair' : undefined}
         >
-          <LogOut size={18} aria-hidden="true" className="flex-shrink-0" />
+          <LogOut size={17} aria-hidden="true" className="flex-shrink-0" />
           {!collapsed && <span>Sair</span>}
         </button>
       </div>
@@ -147,32 +163,51 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
     <header
       className="flex items-center gap-4 px-5"
       style={{
-        height: 64,
+        height: 60,
         background: 'var(--surface)',
-        borderBottom: '1px solid var(--border-soft)',
+        borderBottom: '1px solid var(--border)',
         flexShrink: 0,
       }}
     >
       <button
         onClick={onMenuClick}
         aria-label="Alternar menu"
-        className="h-10 w-10 inline-flex items-center justify-center rounded-lg transition-colors hover:bg-gray-100"
+        className="h-10 w-10 inline-flex items-center justify-center rounded-lg transition-colors"
         style={{ color: 'var(--muted)' }}
       >
         <Menu size={18} aria-hidden="true" />
       </button>
 
-      <h1 className="text-base font-semibold flex-1" style={{ color: 'var(--text)' }}>{title}</h1>
+      <div className="flex-1 min-w-0">
+        <div className="text-[15px] font-semibold tracking-tight truncate" style={{ color: 'var(--text)' }}>{title}</div>
+        <div className="text-[12px] mt-0.5" style={{ color: 'var(--muted)' }}>Operação</div>
+      </div>
+
+      <div
+        className="hidden md:flex items-center gap-2 rounded-lg px-3"
+        style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', height: 36, width: 220 }}
+      >
+        <Search size={15} aria-hidden="true" style={{ color: 'var(--subtle)' }} />
+        <input
+          placeholder="Buscar…"
+          aria-label="Buscar"
+          className="text-[13px] outline-none bg-transparent w-full"
+          style={{ color: 'var(--text)' }}
+        />
+      </div>
 
       {userName && (
         <div className="flex items-center gap-2">
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white"
-            style={{ background: 'linear-gradient(135deg,#0D9488,#0F766E)' }}
+            className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0"
+            style={{ border: '1px solid var(--border)', background: 'var(--surface-3)' }}
+            aria-hidden="true"
           >
-            {userName.charAt(0).toUpperCase()}
+            <div className="w-full h-full flex items-center justify-center text-xs font-bold" style={{ color: 'var(--primary)' }}>
+              {userName.charAt(0).toUpperCase()}
+            </div>
           </div>
-          <span className="text-sm font-medium hidden sm:block" style={{ color: 'var(--text)' }}>
+          <span className="text-[13px] font-semibold hidden sm:block" style={{ color: 'var(--text)' }}>
             {userName.split(' ')[0]}
           </span>
         </div>
@@ -216,14 +251,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:rounded-xl"
-        style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border-soft)', boxShadow: 'var(--shadow-card)' }}
+        style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)' }}
       >
         Pular para o conteúdo
       </a>
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} navItems={navItems} />
       <div className="flex flex-col flex-1 min-w-0">
         <Topbar onMenuClick={() => setCollapsed(c => !c)} navItems={navItems} />
-        <main id="main-content" tabIndex={-1} aria-label="Conteúdo principal" className="flex-1 overflow-y-auto p-6">
+        <main id="main-content" tabIndex={-1} aria-label="Conteúdo principal" className="flex-1 overflow-y-auto p-6 screen-enter">
           {children}
         </main>
       </div>

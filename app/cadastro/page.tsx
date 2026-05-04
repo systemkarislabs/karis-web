@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
-import { MessagesSquare } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -41,9 +40,7 @@ export default function CadastroPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex items-center gap-2 justify-center mb-8">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,var(--primary),var(--primary-600))' }}>
-            <MessagesSquare size={18} aria-hidden="true" color="white" />
-          </div>
+          <img src="/designer/logo.svg" alt="" className="w-9 h-9 object-contain" />
           <span className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Karis Atende</span>
         </div>
 

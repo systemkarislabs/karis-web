@@ -32,7 +32,7 @@ function MessageBubble({ msg }: { msg: Message }) {
         <div
           className="px-3.5 py-2.5 rounded-2xl text-sm"
           style={{
-            background: isOutbound ? 'linear-gradient(135deg,#0D9488,#0F766E)' : 'var(--surface)',
+            background: isOutbound ? 'var(--primary)' : 'var(--surface)',
             color: isOutbound ? 'white' : 'var(--text)',
             border: isOutbound ? 'none' : '1px solid var(--border-soft)',
             borderRadius: isOutbound ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
@@ -303,11 +303,11 @@ export default function MultiChatPage() {
                           aria-pressed={isActive}
                           aria-label={`Abrir conversa com ${c.contact.name ?? c.contact.phone}`}
                           className="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors"
-                          style={{ background: isActive ? 'var(--teal-soft)' : 'transparent' }}
+                          style={{ background: isActive ? 'color-mix(in oklch, var(--primary) 6%, transparent)' : 'transparent' }}
                         >
                           <div
                             className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold text-white flex-shrink-0"
-                            style={{ background: 'linear-gradient(135deg,#0D9488,#0F766E)' }}
+                            style={{ background: 'color-mix(in oklch, var(--primary) 14%, transparent)', color: 'var(--primary)' }}
                           >
                             {(c.contact.name ?? c.contact.phone).charAt(0).toUpperCase()}
                           </div>
@@ -364,7 +364,7 @@ export default function MultiChatPage() {
                   style={{ borderBottom: '1px solid var(--border-soft)' }}>
                   <div
                     className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold text-white flex-shrink-0"
-                    style={{ background: 'linear-gradient(135deg,#0D9488,#0F766E)' }}
+                    style={{ background: 'color-mix(in oklch, var(--primary) 14%, transparent)', color: 'var(--primary)' }}
                   >
                     {(active.contact.name ?? active.contact.phone).charAt(0).toUpperCase()}
                   </div>
@@ -434,8 +434,8 @@ export default function MultiChatPage() {
                         disabled={togglingTakeover}
                         className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold disabled:opacity-60"
                         style={{
-                          background: takeoverActive ? '#FEF3C7' : 'var(--teal-soft)',
-                          color: takeoverActive ? '#92400E' : 'var(--teal)',
+                          background: takeoverActive ? '#FEF3C7' : 'color-mix(in oklch, var(--primary) 10%, transparent)',
+                          color: takeoverActive ? '#92400E' : 'var(--primary)',
                           border: '1px solid var(--border-soft)',
                         }}
                       >
@@ -458,7 +458,7 @@ export default function MultiChatPage() {
                   <button
                     onClick={() => router.push(`/conversas/${active.id}`)}
                     className="px-3 py-2 rounded-xl text-xs font-semibold"
-                    style={{ background: 'var(--teal-soft)', color: 'var(--teal)', border: '1px solid #99F6E4' }}
+                    style={{ background: 'color-mix(in oklch, var(--primary) 10%, transparent)', color: 'var(--primary)', border: '1px solid var(--border)' }}
                   >
                     Abrir detalhe
                   </button>
@@ -490,7 +490,7 @@ export default function MultiChatPage() {
                     disabled={!text.trim() || sending || active.status === 'CLOSED'}
                     aria-label="Enviar mensagem"
                     className="w-9 h-9 rounded-xl flex items-center justify-center text-white flex-shrink-0 disabled:opacity-50 transition-opacity"
-                    style={{ background: 'linear-gradient(135deg,#0D9488,#0F766E)' }}
+                    style={{ background: 'var(--primary)' }}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />

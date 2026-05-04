@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { DM_Mono, DM_Sans } from 'next/font/google'
 import './globals.css'
 import { ToastProvider } from '@/components/Toast'
 
-const inter = Inter({ subsets: ['latin'], display: 'swap' })
+const dmSans = DM_Sans({ subsets: ['latin'], display: 'swap', variable: '--font-sans' })
+const dmMono = DM_Mono({ subsets: ['latin'], weight: ['400', '500'], display: 'swap', variable: '--font-mono' })
 
 export const metadata: Metadata = {
   title: 'Karis Atende',
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" className="h-full">
-      <body className={`${inter.className} h-full`}>
+      <body className={`${dmSans.variable} ${dmMono.variable} h-full`}>
         <ToastProvider>
           {children}
         </ToastProvider>

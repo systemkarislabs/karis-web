@@ -243,9 +243,9 @@ function DashboardContent() {
                 contentStyle={{ background: '#fff', border: '1px solid #F1F5F9', borderRadius: 10, fontSize: 12 }}
                 labelStyle={{ color: '#0F172A', fontWeight: 600 }}
               />
-              <Line type="monotone" dataKey="conversas" stroke="#0D9488" strokeWidth={2.5}
-                dot={{ fill: '#0D9488', r: 3 }} activeDot={{ r: 5 }} name="Total" />
-              <Line type="monotone" dataKey="abertas" stroke="#0F766E" strokeWidth={1.5}
+              <Line type="monotone" dataKey="conversas" stroke="var(--primary)" strokeWidth={2.5}
+                dot={{ fill: 'var(--primary)', r: 3 }} activeDot={{ r: 5 }} name="Total" />
+              <Line type="monotone" dataKey="abertas" stroke="var(--primary-600)" strokeWidth={1.5}
                 strokeDasharray="4 2" dot={false} name="Abertas" />
             </LineChart>
           </ResponsiveContainer>

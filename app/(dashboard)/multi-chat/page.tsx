@@ -95,10 +95,6 @@ export default function MultiChatPage() {
     api.getMyCompany()
       .then(({ company }) => {
         if (!alive) return
-        if (!company.entitlements?.modules?.multichat) {
-          router.replace('/')
-          return
-        }
         setAiAvailable(Boolean(company.entitlements.ai))
 
         const refreshList = () =>

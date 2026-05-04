@@ -1,52 +1,98 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, type ReactNode } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Bot, LayoutDashboard, LogOut, Menu, MessagesSquare, Phone, Search, Users } from 'lucide-react'
 import { api } from '@/lib/api'
 import type { Entitlements } from '@/lib/types'
+import { DesignerIcon } from '@/components/ui/DesignerIcon'
 
 type NavRequirement = 'ai' | 'whatsapp' | 'karisLink'
 
 const navItemsBase: Array<{
   href: string
   label: string
-  icon: React.ReactNode
+  icon: ReactNode
   requires?: NavRequirement
   requiresModule?: string
 }> = [
   {
     href: '/',
     label: 'Dashboard',
-    icon: <LayoutDashboard size={18} aria-hidden="true" />,
+    icon: <DesignerIcon name="dashboard" size={18} />,
   },
   {
     href: '/conversas',
     label: 'Conversas',
-    icon: <MessagesSquare size={18} aria-hidden="true" />,
-  },
-  {
-    href: '/multi-chat',
-    label: 'Multi-chat',
-    icon: <MessagesSquare size={18} aria-hidden="true" />,
-  },
-  {
-    href: '/assistente',
-    label: 'Assistente',
-    requires: 'ai',
-    icon: <Bot size={18} aria-hidden="true" />,
+    icon: <DesignerIcon name="chat" size={18} />,
   },
   {
     href: '/contatos',
     label: 'Contatos',
-    icon: <Users size={18} aria-hidden="true" />,
+    icon: <DesignerIcon name="users" size={18} />,
   },
   {
     href: '/whatsapp',
     label: 'WhatsApp',
+    icon: <DesignerIcon name="chat" size={18} />,
     requires: 'whatsapp',
-    icon: <Phone size={18} aria-hidden="true" />,
+  },
+  {
+    href: '/conhecimento',
+    label: 'Base de Conhecimento',
+    icon: <DesignerIcon name="book" size={18} />,
+    requires: 'ai',
+  },
+  {
+    href: '/multi-chat',
+    label: 'Multi Chat',
+    icon: <DesignerIcon name="chat" size={18} />,
+  },
+  {
+    href: '/assistente',
+    label: 'Agente IA',
+    icon: <DesignerIcon name="bot" size={18} />,
+    requires: 'ai',
+  },
+  {
+    href: '/treinamento',
+    label: 'Treinamento',
+    icon: <DesignerIcon name="users" size={18} />,
+  },
+  {
+    href: '/crm',
+    label: 'CRM',
+    icon: <DesignerIcon name="crm" size={18} />,
+  },
+  {
+    href: '/campanhas',
+    label: 'Campanhas',
+    icon: <DesignerIcon name="campaign" size={18} />,
+  },
+  {
+    href: '/marketing',
+    label: 'Marketing',
+    icon: <DesignerIcon name="marketing" size={18} />,
+  },
+  {
+    href: '/calendario',
+    label: 'Calendário',
+    icon: <DesignerIcon name="calendar" size={18} />,
+  },
+  {
+    href: '/cupons',
+    label: 'Cupons',
+    icon: <DesignerIcon name="coupon" size={18} />,
+  },
+  {
+    href: '/afiliados',
+    label: 'Afiliados',
+    icon: <DesignerIcon name="affiliates" size={18} />,
+  },
+  {
+    href: '/remuneracao',
+    label: 'Remuneração',
+    icon: <DesignerIcon name="payment" size={18} />,
   },
 ]
 
@@ -122,9 +168,23 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
             color: 'var(--muted)',
           }}
         >
-          <Menu size={17} aria-hidden="true" className="flex-shrink-0" />
+          <DesignerIcon name="menu" size={17} className="flex-shrink-0" />
           {!collapsed && <span>Menu</span>}
         </button>
+        <Link
+          href="/configuracoes"
+          aria-label="Configurações"
+          className="flex items-center gap-2.5 w-full rounded-lg text-[13.5px] font-medium transition-colors"
+          style={{
+            padding: collapsed ? '10px 0' : '9px 12px',
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            color: 'var(--muted)',
+          }}
+          title={collapsed ? 'Configurações' : undefined}
+        >
+          <DesignerIcon name="settings" size={17} className="flex-shrink-0" />
+          {!collapsed && <span>Configurações</span>}
+        </Link>
         <button
           onClick={handleLogout}
           aria-label="Sair"
@@ -136,7 +196,7 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
           }}
           title={collapsed ? 'Sair' : undefined}
         >
-          <LogOut size={17} aria-hidden="true" className="flex-shrink-0" />
+          <DesignerIcon name="logout" size={17} className="flex-shrink-0" />
           {!collapsed && <span>Sair</span>}
         </button>
       </div>
@@ -147,11 +207,16 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
 function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: typeof navItemsBase }) {
   const pathname = usePathname()
   const [userName, setUserName] = useState('')
+  const [userRole, setUserRole] = useState<string>('')
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem('karisCurrentUser')
-      if (raw) setUserName(JSON.parse(raw).name ?? '')
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        setUserName(parsed.name ?? '')
+        setUserRole(parsed.role ?? '')
+      }
     } catch { /* noop */ }
   }, [])
 
@@ -175,7 +240,7 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
         className="h-10 w-10 inline-flex items-center justify-center rounded-lg transition-colors"
         style={{ color: 'var(--muted)' }}
       >
-        <Menu size={18} aria-hidden="true" />
+        <DesignerIcon name="menu" size={18} />
       </button>
 
       <div className="flex-1 min-w-0">
@@ -187,7 +252,9 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
         className="hidden md:flex items-center gap-2 rounded-lg px-3"
         style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', height: 36, width: 220 }}
       >
-        <Search size={15} aria-hidden="true" style={{ color: 'var(--subtle)' }} />
+        <span style={{ color: 'var(--subtle)' }}>
+          <DesignerIcon name="search" size={15} className="flex-shrink-0" />
+        </span>
         <input
           placeholder="Buscar…"
           aria-label="Buscar"
@@ -196,8 +263,22 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
         />
       </div>
 
+      <button
+        type="button"
+        aria-label="Notificações"
+        className="h-10 w-10 inline-flex items-center justify-center rounded-lg transition-colors"
+        style={{ color: 'var(--muted)' }}
+      >
+        <DesignerIcon name="bell" size={18} />
+      </button>
+
       {userName && (
-        <div className="flex items-center gap-2">
+        <button
+          type="button"
+          aria-label="Conta"
+          className="h-10 inline-flex items-center gap-2 rounded-full pl-1 pr-2 transition-colors"
+          style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--muted)' }}
+        >
           <div
             className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0"
             style={{ border: '1px solid var(--border)', background: 'var(--surface-3)' }}
@@ -207,16 +288,24 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
               {userName.charAt(0).toUpperCase()}
             </div>
           </div>
-          <span className="text-[13px] font-semibold hidden sm:block" style={{ color: 'var(--text)' }}>
-            {userName.split(' ')[0]}
-          </span>
-        </div>
+          <div className="hidden sm:flex flex-col items-start leading-tight">
+            <span className="text-[13px] font-semibold" style={{ color: 'var(--text)' }}>
+              {userName.split(' ')[0]}
+            </span>
+            {userRole ? (
+              <span className="text-[11px]" style={{ color: 'var(--muted)' }}>
+                {userRole === 'ADMIN' ? 'Admin' : userRole === 'AGENT' ? 'Agente' : userRole}
+              </span>
+            ) : null}
+          </div>
+          <DesignerIcon name="chevronDown" size={16} />
+        </button>
       )}
     </header>
   )
 }
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false)
   const [entitlements, setEntitlements] = useState<Entitlements | null>(null)
 

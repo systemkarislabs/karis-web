@@ -120,6 +120,9 @@ export const api = {
   updateConversation: (id: string, data: { aiEnabled?: boolean; status?: string }) =>
     request<{ conversation: import('./types').Conversation }>('PATCH', `/api/conversations/${id}`, data),
 
+  markConversationRead: (id: string) =>
+    request<{ readState: any }>('POST', `/api/conversations/${id}/read`, {}),
+
   startTakeover: (id: string, reason?: string) =>
     request<{ takeover: import('./types').HumanTakeover }>('POST', `/api/conversations/${id}/human-takeover`, { reason }),
 

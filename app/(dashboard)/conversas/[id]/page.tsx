@@ -71,6 +71,7 @@ export default function ConversaPage() {
         const data = await api.getConversation(id)
         setConversation(data.conversation)
         setMessages(data.conversation.messages)
+        api.markConversationRead(id).catch(() => {})
         const active = data.conversation.humanTakeovers?.some(t => !t.endedAt) ?? false
         setTakeover(active)
       } catch { router.push('/conversas') }

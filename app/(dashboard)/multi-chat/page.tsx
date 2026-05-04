@@ -55,6 +55,12 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(h / 24)}d atrás`
 }
 
+function snippet(text: string, max = 60) {
+  const t = (text || '').replace(/\s+/g, ' ').trim()
+  if (t.length <= max) return t
+  return t.slice(0, max - 1) + '…'
+}
+
 export default function MultiChatPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -129,6 +135,7 @@ export default function MultiChatPage() {
   useEffect(() => {
     if (!activeId) return
     loadMessages(activeId)
+    api.markConversationRead(activeId).catch(() => {})
 
     pollRef.current = setInterval(() => loadMessages(activeId), 5000)
     return () => { if (pollRef.current) clearInterval(pollRef.current) }
@@ -251,6 +258,7 @@ export default function MultiChatPage() {
                     const activeTakeover = c.humanTakeovers?.find(t => !t.endedAt) ?? c.humanTakeovers?.[0] ?? null
                     const hasTakeover = Boolean(activeTakeover)
                     const manualLabel = activeTakeover?.user?.name ? `Manual · ${activeTakeover.user.name.split(' ')[0]}` : 'Manual'
+                    const preview = c.lastMessage?.content ? snippet(c.lastMessage.content, 52) : ''
                     return (
                       <li key={c.id}>
                         <button
@@ -269,7 +277,8 @@ export default function MultiChatPage() {
                               {c.contact.name ?? c.contact.phone}
                             </div>
                             <div className="text-xs truncate" style={{ color: 'var(--muted)' }}>
-                              {c.contact.phone} · {timeAgo(c.updatedAt)}
+                              {c.contact.phone}
+                              {preview ? ` · ${preview}` : ''}
                             </div>
                           </div>
                           <div className="flex flex-col items-end gap-1 flex-shrink-0">
@@ -277,6 +286,12 @@ export default function MultiChatPage() {
                               style={{ background: c.status === 'OPEN' ? '#D1FAE5' : '#F3F4F6', color: c.status === 'OPEN' ? '#065F46' : '#6B7280' }}>
                               {c.status === 'OPEN' ? 'Aberta' : 'Fechada'}
                             </div>
+                            {typeof c.unreadCount === 'number' && c.unreadCount > 0 && (
+                              <div className="text-[11px] font-semibold px-2 py-1 rounded-full"
+                                style={{ background: 'rgba(13,148,136,.14)', color: 'var(--teal)' }}>
+                                {c.unreadCount}
+                              </div>
+                            )}
                             {hasTakeover && (
                               <div className="text-[11px] font-semibold px-2 py-1 rounded-full"
                                 style={{ background: '#FEF3C7', color: '#92400E' }}>

@@ -38,6 +38,8 @@ export interface Conversation {
   contact: Contact
   humanTakeovers?: HumanTakeover[]
   _count?: { messages: number }
+  lastMessage?: ConversationLastMessage | null
+  unreadCount?: number
 }
 
 export interface Message {
@@ -46,6 +48,14 @@ export interface Message {
   direction: 'INBOUND' | 'OUTBOUND'
   senderType: 'CONTACT' | 'HUMAN' | 'AI' | 'SYSTEM'
   content: string
+  createdAt: string
+}
+
+export interface ConversationLastMessage {
+  id: string
+  content: string
+  direction: 'INBOUND' | 'OUTBOUND'
+  senderType: 'CONTACT' | 'HUMAN' | 'AI' | 'SYSTEM'
   createdAt: string
 }
 

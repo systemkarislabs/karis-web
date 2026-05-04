@@ -123,6 +123,9 @@ export const api = {
   markConversationRead: (id: string) =>
     request<{ readState: any }>('POST', `/api/conversations/${id}/read`, {}),
 
+  markAllConversationsRead: () =>
+    request<{ updated: number; created: number }>('POST', '/api/conversations/read-all', {}),
+
   startTakeover: (id: string, reason?: string) =>
     request<{ takeover: import('./types').HumanTakeover }>('POST', `/api/conversations/${id}/human-takeover`, { reason }),
 

@@ -61,6 +61,12 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(h / 24)}d atrás`
 }
 
+function snippet(text: string, max = 60) {
+  const t = (text || '').replace(/\s+/g, ' ').trim()
+  if (t.length <= max) return t
+  return t.slice(0, max - 1) + '…'
+}
+
 function exportCSV(conversations: Conversation[]) {
   const header = ['Contato', 'Telefone', 'Status', 'IA', 'Fonte', 'Mensagens', 'Atualizado']
   const rows = conversations.map(c => [
@@ -91,12 +97,22 @@ export default function ConversasPage() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<Filter>('ALL')
   const [stageFilter, setStageFilter] = useState<StageFilter>('ALL')
+  const [markingAll, setMarkingAll] = useState(false)
+
+  async function load() {
+    setLoading(true)
+    try {
+      const d = await api.getConversations()
+      setConversations(d?.conversations ?? [])
+    } catch {
+      toast('Erro ao carregar conversas', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    api.getConversations()
-      .then(d => setConversations(d?.conversations ?? []))
-      .catch(() => toast('Erro ao carregar conversas', 'error'))
-      .finally(() => setLoading(false))
+    load()
   }, [toast])
 
   const filtered = conversations.filter(c => {
@@ -104,6 +120,22 @@ export default function ConversasPage() {
     if (stageFilter !== 'ALL' && getStage(c) !== stageFilter) return false
     return true
   })
+
+  const totalUnread = conversations.reduce((acc, c) => acc + (c.unreadCount ?? 0), 0)
+
+  async function markAllRead() {
+    if (markingAll) return
+    setMarkingAll(true)
+    try {
+      await api.markAllConversationsRead()
+      toast('Tudo marcado como lido', 'success')
+      await load()
+    } catch (e: any) {
+      toast(e?.message || 'Erro ao marcar como lido', 'error')
+    } finally {
+      setMarkingAll(false)
+    }
+  }
 
   return (
     <div className="max-w-3xl mx-auto flex flex-col gap-4">
@@ -114,6 +146,15 @@ export default function ConversasPage() {
           <p className="text-sm" style={{ color: 'var(--muted)' }}>{conversations.length} no total</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={markAllRead}
+            disabled={markingAll || totalUnread === 0}
+            className="px-3.5 py-2 rounded-xl text-sm font-medium disabled:opacity-60"
+            style={{ background: 'var(--surface)', color: 'var(--muted)', border: '1px solid var(--border-soft)' }}
+          >
+            Marcar tudo como lido{totalUnread > 0 ? ` (${totalUnread})` : ''}
+          </button>
+
           {/* Status filter */}
           <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border-soft)' }}>
             {(['ALL', 'OPEN', 'CLOSED'] as const).map(f => (
@@ -178,6 +219,7 @@ export default function ConversasPage() {
           <ul className="divide-y" style={{ borderColor: 'var(--border-soft)' }}>
             {filtered.map(conv => {
               const stage = getStage(conv)
+              const preview = conv.lastMessage?.content ? snippet(conv.lastMessage.content, 64) : ''
               return (
                 <li key={conv.id}>
                   <Link href={`/conversas/${conv.id}`}
@@ -193,6 +235,12 @@ export default function ConversasPage() {
                         <span className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>
                           {conv.contact.name ?? conv.contact.phone}
                         </span>
+                        {typeof conv.unreadCount === 'number' && conv.unreadCount > 0 && (
+                          <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                            style={{ background: 'rgba(13,148,136,.14)', color: 'var(--teal)' }}>
+                            {conv.unreadCount}
+                          </span>
+                        )}
                         {conv.source && (
                           <span className="text-xs px-1.5 py-0.5 rounded-md font-medium"
                             style={{ background: '#FEF3C7', color: '#92400E' }}>
@@ -201,7 +249,8 @@ export default function ConversasPage() {
                         )}
                       </div>
                       <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
-                        {conv.contact.phone} · {conv._count?.messages ?? 0} msgs
+                        {conv.contact.phone}
+                        {preview ? ` · ${preview}` : ''}
                       </p>
                     </div>
 

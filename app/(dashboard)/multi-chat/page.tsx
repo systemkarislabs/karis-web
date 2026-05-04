@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
-import type { Conversation, Message } from '@/lib/types'
+import type { Conversation, HumanTakeover, Message } from '@/lib/types'
 
 function MessageBubble({ msg }: { msg: Message }) {
   const isOutbound = msg.direction === 'OUTBOUND'
@@ -58,14 +58,19 @@ function timeAgo(dateStr: string): string {
 export default function MultiChatPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
+  const [aiAvailable, setAiAvailable] = useState(false)
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const [query, setQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'OPEN' | 'CLOSED'>('ALL')
+  const [togglingAi, setTogglingAi] = useState(false)
+  const [togglingTakeover, setTogglingTakeover] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const listPollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     let alive = true
@@ -76,31 +81,41 @@ export default function MultiChatPage() {
           router.replace('/')
           return
         }
+        setAiAvailable(Boolean(company.entitlements.ai))
 
-        api.getConversations()
+        const refreshList = () =>
+          api.getConversations()
           .then(d => {
             if (!alive) return
-            const list = d?.conversations ?? []
+            const list = (d?.conversations ?? []).slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
             setConversations(list)
             if (!activeId && list.length) setActiveId(list[0].id)
           })
           .catch(() => {})
           .finally(() => { if (alive) setLoading(false) })
+
+        refreshList()
+
+        listPollRef.current = setInterval(refreshList, 10000)
       })
       .catch(() => { if (alive) setLoading(false) })
 
-    return () => { alive = false }
+    return () => {
+      alive = false
+      if (listPollRef.current) clearInterval(listPollRef.current)
+    }
   }, [])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    if (!q) return conversations
     return conversations.filter(c => {
+      if (statusFilter !== 'ALL' && c.status !== statusFilter) return false
+      if (!q) return true
       const name = (c.contact.name ?? '').toLowerCase()
       const phone = (c.contact.phone ?? '').toLowerCase()
       return name.includes(q) || phone.includes(q)
     })
-  }, [conversations, query])
+  }, [conversations, query, statusFilter])
 
   const loadMessages = useCallback(async (conversationId: string) => {
     try {
@@ -135,6 +150,37 @@ export default function MultiChatPage() {
   }
 
   const active = conversations.find(c => c.id === activeId) ?? null
+  const takeoverActive = Boolean(active?.humanTakeovers?.some(t => !t.endedAt)) || Boolean(active?.humanTakeovers?.length)
+
+  function updateConversationLocal(id: string, patch: Partial<Conversation>) {
+    setConversations(prev => prev.map(c => (c.id === id ? { ...c, ...patch } : c)))
+  }
+
+  async function toggleAi() {
+    if (!active || togglingAi) return
+    setTogglingAi(true)
+    try {
+      const updated = await api.updateConversation(active.id, { aiEnabled: !active.aiEnabled })
+      updateConversationLocal(active.id, { aiEnabled: updated.conversation.aiEnabled })
+    } catch { /* noop */ }
+    finally { setTogglingAi(false) }
+  }
+
+  async function toggleTakeover() {
+    if (!active || togglingTakeover) return
+    setTogglingTakeover(true)
+    try {
+      if (takeoverActive) {
+        await api.endTakeover(active.id, true)
+        updateConversationLocal(active.id, { aiEnabled: true, humanTakeovers: [] })
+      } else {
+        const data = await api.startTakeover(active.id, 'Atendimento manual')
+        const takeover: HumanTakeover = data.takeover as any
+        updateConversationLocal(active.id, { aiEnabled: false, humanTakeovers: [takeover] })
+      }
+    } catch { /* noop */ }
+    finally { setTogglingTakeover(false) }
+  }
 
   return (
     <div className="flex flex-col gap-4 h-[calc(100vh-112px)]">
@@ -153,7 +199,19 @@ export default function MultiChatPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 min-h-0">
           <div className="lg:col-span-1 rounded-2xl overflow-hidden flex flex-col min-h-0"
             style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-soft)' }}>
-            <div className="p-3" style={{ borderBottom: '1px solid var(--border-soft)' }}>
+            <div className="p-3 flex flex-col gap-2" style={{ borderBottom: '1px solid var(--border-soft)' }}>
+              <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
+                {(['ALL', 'OPEN', 'CLOSED'] as const).map(f => (
+                  <button
+                    key={f}
+                    onClick={() => setStatusFilter(f)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                    style={{ background: statusFilter === f ? 'var(--teal)' : 'transparent', color: statusFilter === f ? 'white' : 'var(--muted)' }}
+                  >
+                    {f === 'ALL' ? 'Todas' : f === 'OPEN' ? 'Abertas' : 'Fechadas'}
+                  </button>
+                ))}
+              </div>
               <input
                 value={query}
                 onChange={e => setQuery(e.target.value)}
@@ -170,6 +228,7 @@ export default function MultiChatPage() {
                 <ul className="divide-y" style={{ borderColor: 'var(--border-soft)' }}>
                   {filtered.map(c => {
                     const isActive = c.id === activeId
+                    const hasTakeover = Boolean(c.humanTakeovers?.some(t => !t.endedAt)) || Boolean(c.humanTakeovers?.length)
                     return (
                       <li key={c.id}>
                         <button
@@ -191,9 +250,17 @@ export default function MultiChatPage() {
                               {c.contact.phone} · {timeAgo(c.updatedAt)}
                             </div>
                           </div>
-                          <div className="text-[11px] font-semibold px-2 py-1 rounded-full"
-                            style={{ background: c.status === 'OPEN' ? '#D1FAE5' : '#F3F4F6', color: c.status === 'OPEN' ? '#065F46' : '#6B7280' }}>
-                            {c.status === 'OPEN' ? 'Aberta' : 'Fechada'}
+                          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                            <div className="text-[11px] font-semibold px-2 py-1 rounded-full"
+                              style={{ background: c.status === 'OPEN' ? '#D1FAE5' : '#F3F4F6', color: c.status === 'OPEN' ? '#065F46' : '#6B7280' }}>
+                              {c.status === 'OPEN' ? 'Aberta' : 'Fechada'}
+                            </div>
+                            {hasTakeover && (
+                              <div className="text-[11px] font-semibold px-2 py-1 rounded-full"
+                                style={{ background: '#FEF3C7', color: '#92400E' }}>
+                                Manual
+                              </div>
+                            )}
                           </div>
                         </button>
                       </li>
@@ -226,6 +293,34 @@ export default function MultiChatPage() {
                     </div>
                     <div className="text-xs" style={{ color: 'var(--muted)' }}>{active.contact.phone}</div>
                   </div>
+                  {aiAvailable && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={toggleAi}
+                        disabled={togglingAi}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold disabled:opacity-60"
+                        style={{
+                          background: active.aiEnabled ? '#EFF6FF' : '#F3F4F6',
+                          color: active.aiEnabled ? '#1D4ED8' : '#9CA3AF',
+                          border: '1px solid var(--border-soft)',
+                        }}
+                      >
+                        IA {active.aiEnabled ? 'ativa' : 'pausada'}
+                      </button>
+                      <button
+                        onClick={toggleTakeover}
+                        disabled={togglingTakeover}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold disabled:opacity-60"
+                        style={{
+                          background: takeoverActive ? '#FEF3C7' : 'var(--teal-soft)',
+                          color: takeoverActive ? '#92400E' : 'var(--teal)',
+                          border: '1px solid var(--border-soft)',
+                        }}
+                      >
+                        {takeoverActive ? 'Devolver IA' : 'Assumir'}
+                      </button>
+                    </div>
+                  )}
                   <button
                     onClick={() => router.push(`/conversas/${active.id}`)}
                     className="px-3 py-2 rounded-xl text-xs font-semibold"
@@ -257,7 +352,7 @@ export default function MultiChatPage() {
                   />
                   <button
                     type="submit"
-                    disabled={!text.trim() || sending}
+                    disabled={!text.trim() || sending || active.status === 'CLOSED'}
                     className="w-9 h-9 rounded-xl flex items-center justify-center text-white flex-shrink-0 disabled:opacity-50 transition-opacity"
                     style={{ background: 'linear-gradient(135deg,#0D9488,#0F766E)' }}
                   >
@@ -274,4 +369,3 @@ export default function MultiChatPage() {
     </div>
   )
 }
-

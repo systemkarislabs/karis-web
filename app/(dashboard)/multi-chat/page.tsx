@@ -13,7 +13,7 @@ function MessageBubble({ msg }: { msg: Message }) {
   if (isSystem) {
     return (
       <div className="flex justify-center my-2">
-        <span className="text-xs px-3 py-1 rounded-full" style={{ background: '#F3F4F6', color: '#9CA3AF' }}>
+        <span className="text-xs px-3 py-1 rounded-full" style={{ background: 'var(--bg)', color: 'var(--subtle)', border: '1px solid var(--border-soft)' }}>
           {msg.content}
         </span>
       </div>
@@ -255,6 +255,7 @@ export default function MultiChatPage() {
                   <button
                     key={f}
                     onClick={() => setStatusFilter(f)}
+                    type="button"
                     className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
                     style={{ background: statusFilter === f ? 'var(--teal)' : 'transparent', color: statusFilter === f ? 'white' : 'var(--muted)' }}
                   >
@@ -268,6 +269,7 @@ export default function MultiChatPage() {
                   <button
                     key={f}
                     onClick={() => setAssigneeFilter(f)}
+                    type="button"
                     className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
                     style={{ background: assigneeFilter === f ? 'var(--teal)' : 'transparent', color: assigneeFilter === f ? 'white' : 'var(--muted)' }}
                   >
@@ -279,6 +281,7 @@ export default function MultiChatPage() {
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder="Buscar por nome ou telefone…"
+                aria-label="Buscar conversas"
                 className="w-full px-3 py-2 rounded-xl text-sm outline-none"
                 style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)' }}
               />
@@ -300,6 +303,9 @@ export default function MultiChatPage() {
                       <li key={c.id}>
                         <button
                           onClick={() => setActiveId(c.id)}
+                          type="button"
+                          aria-pressed={isActive}
+                          aria-label={`Abrir conversa com ${c.contact.name ?? c.contact.phone}`}
                           className="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors"
                           style={{ background: isActive ? 'var(--teal-soft)' : 'transparent' }}
                         >
@@ -480,12 +486,14 @@ export default function MultiChatPage() {
                     value={text}
                     onChange={e => setText(e.target.value)}
                     placeholder="Digite uma mensagem…"
+                    aria-label="Digite uma mensagem"
                     className="flex-1 text-sm outline-none bg-transparent"
                     style={{ color: 'var(--text)' }}
                   />
                   <button
                     type="submit"
                     disabled={!text.trim() || sending || active.status === 'CLOSED'}
+                    aria-label="Enviar mensagem"
                     className="w-9 h-9 rounded-xl flex items-center justify-center text-white flex-shrink-0 disabled:opacity-50 transition-opacity"
                     style={{ background: 'linear-gradient(135deg,#0D9488,#0F766E)' }}
                   >

@@ -85,6 +85,7 @@ function Sidebar({ collapsed }: { collapsed: boolean }) {
             <Link
               key={item.href}
               href={item.href}
+              aria-label={item.label}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors"
               style={{
                 color: active ? 'var(--accent)' : 'var(--muted)',
@@ -104,6 +105,7 @@ function Sidebar({ collapsed }: { collapsed: boolean }) {
       <div className="px-3 pb-5">
         <button
           onClick={logout}
+          aria-label="Sair"
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold w-full transition-colors"
           style={{
             color: 'rgba(255,255,255,.85)',
@@ -151,10 +153,11 @@ function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
     >
       <button
         onClick={onMenuClick}
-        className="p-2 rounded-lg transition-colors"
+        aria-label="Alternar menu"
+        className="h-10 w-10 inline-flex items-center justify-center rounded-lg transition-colors"
         style={{ color: 'var(--muted)', background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.06)' }}
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
         </svg>
       </button>
@@ -211,12 +214,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         } as React.CSSProperties
       }
     >
+      <a
+        href="#admin-main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:rounded-xl"
+        style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border-soft)', boxShadow: '0 12px 30px rgba(0,0,0,.35)' }}
+      >
+        Pular para o conteúdo
+      </a>
       <Sidebar collapsed={collapsed} />
       <div className="flex flex-col flex-1 min-w-0">
         <Topbar onMenuClick={() => setCollapsed(c => !c)} />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main id="admin-main-content" tabIndex={-1} aria-label="Conteúdo principal" className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>
   )
 }
-

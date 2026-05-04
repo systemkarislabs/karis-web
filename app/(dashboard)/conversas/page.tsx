@@ -200,12 +200,10 @@ export default function ConversasPage() {
       </div>
 
       {/* List */}
-      <div className="rounded-2xl overflow-hidden"
-        style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-soft)' }}>
+      <div className="ui-card rounded-2xl overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-40">
-            <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin"
-              style={{ borderColor: 'var(--teal)', borderTopColor: 'transparent' }} />
+            <div className="ui-spinner" />
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-40 gap-2">

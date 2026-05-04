@@ -10,6 +10,8 @@ import DashboardLayout from './(dashboard)/layout'
 import { api } from '@/lib/api'
 import type { DashboardStats, Conversation } from '@/lib/types'
 
+type WhatsappStatus = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'ERROR'
+
 // ── Gauge SVG ──────────────────────────────────────────────────────────────
 function Gauge({ value, max, label }: { value: number; max: number; label: string }) {
   const pct = Math.min(value / max, 1)
@@ -121,8 +123,19 @@ function buildPieData(conversations: Conversation[]) {
 function DashboardContent() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [conversations, setConversations] = useState<Conversation[]>([])
-  const [waConnected, setWaConnected] = useState(false)
+  const [waStatus, setWaStatus] = useState<WhatsappStatus>('DISCONNECTED')
+  const [waBusy, setWaBusy] = useState<'connect' | 'disconnect' | null>(null)
   const [loading, setLoading] = useState(true)
+
+  const waConnected = waStatus === 'CONNECTED'
+
+  async function refreshWhatsappStatus() {
+    try {
+      const waData = await api.getWhatsappStatus()
+      const next = waData.status as WhatsappStatus
+      setWaStatus(next)
+    } catch { /* noop */ }
+  }
 
   useEffect(() => {
     async function load() {
@@ -134,13 +147,41 @@ function DashboardContent() {
           statsData.company.entitlements.whatsapp ? api.getWhatsappStatus() : Promise.resolve({ status: 'DISCONNECTED' as const, connection: null }),
           api.getConversations(),
         ])
-        setWaConnected(waData.status === 'CONNECTED')
+        setWaStatus(waData.status as WhatsappStatus)
         setConversations(convData.conversations)
       } catch { /* noop */ }
       finally { setLoading(false) }
     }
     load()
   }, [])
+
+  async function handleConnectWhatsapp() {
+    if (waBusy) return
+    setWaBusy('connect')
+    try {
+      setWaStatus('CONNECTING')
+      await api.connectWhatsapp()
+      await refreshWhatsappStatus()
+    } catch {
+      setWaStatus('ERROR')
+    } finally {
+      setWaBusy(null)
+    }
+  }
+
+  async function handleDisconnectWhatsapp() {
+    if (waBusy) return
+    if (!confirm('Desconectar o WhatsApp?')) return
+    setWaBusy('disconnect')
+    try {
+      await api.disconnectWhatsapp()
+      setWaStatus('DISCONNECTED')
+    } catch {
+      setWaStatus('ERROR')
+    } finally {
+      setWaBusy(null)
+    }
+  }
 
   if (loading) {
     return (
@@ -264,17 +305,43 @@ function DashboardContent() {
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>WhatsApp</span>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-                style={{ background: waConnected ? '#D1FAE5' : '#FEF3C7', color: waConnected ? '#065F46' : '#92400E' }}>
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: waConnected ? '#10B981' : '#F59E0B' }} />
-                {waConnected ? 'Conectado' : 'Desconectado'}
+                style={{
+                  background: waStatus === 'CONNECTED' ? '#D1FAE5' : waStatus === 'CONNECTING' ? '#FEF3C7' : waStatus === 'ERROR' ? '#FEF2F2' : '#F3F4F6',
+                  color: waStatus === 'CONNECTED' ? '#065F46' : waStatus === 'CONNECTING' ? '#92400E' : waStatus === 'ERROR' ? '#991B1B' : '#6B7280',
+                }}>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: waStatus === 'CONNECTED' ? '#10B981' : waStatus === 'CONNECTING' ? '#F59E0B' : waStatus === 'ERROR' ? '#EF4444' : '#9CA3AF' }} />
+                {waStatus === 'CONNECTED' ? 'Conectado' : waStatus === 'CONNECTING' ? 'Conectando…' : waStatus === 'ERROR' ? 'Erro' : 'Desconectado'}
               </span>
             </div>
             <p className="text-sm" style={{ color: 'var(--muted)' }}>
               {waConnected ? 'Seu número está ativo e recebendo mensagens.' : 'Conecte seu número para receber mensagens.'}
             </p>
-            <Link href="/whatsapp" className="text-sm font-medium hover:underline" style={{ color: 'var(--teal)' }}>
-              {waConnected ? 'Gerenciar conexão →' : 'Conectar agora →'}
-            </Link>
+            <div className="flex items-center gap-2 flex-wrap">
+              {waConnected ? (
+                <button
+                  type="button"
+                  onClick={handleDisconnectWhatsapp}
+                  disabled={waBusy !== null}
+                  className="px-3.5 py-2 rounded-xl text-sm font-medium disabled:opacity-60"
+                  style={{ border: '1px solid var(--danger)', color: 'var(--danger)' }}
+                >
+                  {waBusy === 'disconnect' ? 'Desconectando…' : 'Desconectar'}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleConnectWhatsapp}
+                  disabled={waBusy !== null || waStatus === 'CONNECTING'}
+                  className="px-3.5 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-60"
+                  style={{ background: 'linear-gradient(135deg,#0D9488,#0F766E)' }}
+                >
+                  {waBusy === 'connect' || waStatus === 'CONNECTING' ? 'Conectando…' : 'Conectar'}
+                </button>
+              )}
+              <Link href="/whatsapp" className="text-sm font-medium hover:underline" style={{ color: 'var(--teal)' }}>
+                Gerenciar conexão →
+              </Link>
+            </div>
           </div>
         )}
 

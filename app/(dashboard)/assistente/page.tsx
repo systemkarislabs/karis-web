@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import type { Assistant } from '@/lib/types'
@@ -54,9 +55,6 @@ export default function AssistentePage() {
     finally { setSaving(false) }
   }
 
-  const inputClass = 'w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-all'
-  const inputStyle = { border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }
-
   return (
     <div className="max-w-2xl mx-auto flex flex-col gap-6">
       <div>
@@ -64,13 +62,10 @@ export default function AssistentePage() {
         <p className="text-sm" style={{ color: 'var(--muted)' }}>Configure o comportamento do seu assistente</p>
       </div>
 
-      <div
-        className="rounded-2xl p-6"
-        style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-soft)' }}
-      >
+      <div className="rounded-2xl p-6 ui-card">
         {loading ? (
           <div className="flex items-center justify-center h-40">
-            <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--teal)', borderTopColor: 'transparent' }} />
+            <div className="ui-spinner" />
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -105,10 +100,7 @@ export default function AssistentePage() {
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                 placeholder="Ex: Karis, Atendente, Sofia…"
                 required
-                className={inputClass}
-                style={inputStyle}
-                onFocus={e => (e.target.style.borderColor = 'var(--teal)')}
-                onBlur={e => (e.target.style.borderColor = 'var(--border)')}
+                className="ui-input w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-all"
               />
             </div>
 
@@ -123,10 +115,8 @@ export default function AssistentePage() {
                 onChange={e => setForm(f => ({ ...f, instructions: e.target.value }))}
                 placeholder="Você é um assistente de atendimento da [Empresa]. Seja sempre cordial, objetivo e responda em português. Não forneça informações sobre preços sem consultar um humano."
                 rows={8}
-                className={inputClass}
-                style={{ ...inputStyle, resize: 'vertical', lineHeight: '1.6' }}
-                onFocus={e => (e.target.style.borderColor = 'var(--teal)')}
-                onBlur={e => (e.target.style.borderColor = 'var(--border)')}
+                className="ui-input w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-all"
+                style={{ resize: 'vertical', lineHeight: '1.6' }}
               />
             </div>
 
@@ -134,8 +124,7 @@ export default function AssistentePage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="px-5 py-2.5 rounded-xl text-sm font-medium text-white disabled:opacity-60 transition-opacity"
-                style={{ background: 'linear-gradient(135deg,#0D9488,#0F766E)' }}
+                className="ui-btn-primary px-5 py-2.5 rounded-xl text-sm font-medium disabled:opacity-60 transition-opacity"
               >
                 {saving ? 'Salvando…' : 'Salvar alterações'}
               </button>
@@ -150,6 +139,24 @@ export default function AssistentePage() {
             </div>
           </form>
         )}
+      </div>
+
+      <div className="rounded-2xl p-5 ui-card flex flex-col gap-3">
+        <div>
+          <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Base de Conhecimento</p>
+          <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
+            Gerencie os conteúdos que o agente usa para responder com contexto.
+          </p>
+        </div>
+        <div>
+          <Link
+            href="/conhecimento"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-opacity"
+            style={{ background: 'var(--teal-soft)', color: 'var(--teal)', border: '1px solid #99F6E4' }}
+          >
+            Abrir base de conhecimento
+          </Link>
+        </div>
       </div>
 
       {/* Info card */}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import type { KnowledgeBase } from '@/lib/types'
 
@@ -64,6 +65,7 @@ function KnowledgeCard({ kb, onDelete }: { kb: KnowledgeBase; onDelete: (id: str
 }
 
 export default function ConhecimentoPage() {
+  const router = useRouter()
   const [items, setItems] = useState<KnowledgeBase[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -71,10 +73,23 @@ export default function ConhecimentoPage() {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    api.getKnowledge()
-      .then(d => setItems(d?.knowledgeBases ?? []))
-      .catch(() => {})
-      .finally(() => setLoading(false))
+    let alive = true
+    api.getMyCompany()
+      .then(({ company }) => {
+        if (!alive) return
+        if (!company.entitlements.ai) {
+          router.replace('/')
+          return
+        }
+
+        api.getKnowledge()
+          .then(d => { if (alive) setItems(d?.knowledgeBases ?? []) })
+          .catch(() => {})
+          .finally(() => { if (alive) setLoading(false) })
+      })
+      .catch(() => { if (alive) setLoading(false) })
+
+    return () => { alive = false }
   }, [])
 
   async function handleCreate(e: React.FormEvent) {

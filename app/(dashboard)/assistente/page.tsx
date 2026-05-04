@@ -1,10 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import type { Assistant } from '@/lib/types'
 
 export default function AssistentePage() {
+  const router = useRouter()
   const [assistant, setAssistant] = useState<Assistant | null>(null)
   const [form, setForm] = useState({ name: '', instructions: '', isActive: true })
   const [loading, setLoading] = useState(true)
@@ -12,17 +14,31 @@ export default function AssistentePage() {
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
-    api.getAssistant()
-      .then(d => {
-        setAssistant(d.assistant)
-        setForm({
-          name: d.assistant.name ?? '',
-          instructions: d.assistant.instructions ?? '',
-          isActive: d.assistant.isActive,
-        })
+    let alive = true
+    api.getMyCompany()
+      .then(({ company }) => {
+        if (!alive) return
+        if (!company.entitlements.ai) {
+          router.replace('/')
+          return
+        }
+
+        api.getAssistant()
+          .then(d => {
+            if (!alive) return
+            setAssistant(d.assistant)
+            setForm({
+              name: d.assistant.name ?? '',
+              instructions: d.assistant.instructions ?? '',
+              isActive: d.assistant.isActive,
+            })
+          })
+          .catch(() => {})
+          .finally(() => { if (alive) setLoading(false) })
       })
-      .catch(() => {})
-      .finally(() => setLoading(false))
+      .catch(() => { if (alive) setLoading(false) })
+
+    return () => { alive = false }
   }, [])
 
   async function handleSubmit(e: React.FormEvent) {

@@ -1,10 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { api } from '@/lib/api'
+import type { Entitlements } from '@/lib/types'
 
-const navItems = [
+type NavRequirement = 'ai' | 'whatsapp' | 'karisLink'
+
+const navItemsBase: Array<{
+  href: string
+  label: string
+  icon: React.ReactNode
+  requires?: NavRequirement
+}> = [
   {
     href: '/',
     label: 'Dashboard',
@@ -27,6 +36,7 @@ const navItems = [
   {
     href: '/assistente',
     label: 'Assistente',
+    requires: 'ai',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10" />
@@ -49,6 +59,7 @@ const navItems = [
   {
     href: '/conhecimento',
     label: 'Conhecimento',
+    requires: 'ai',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
@@ -59,6 +70,7 @@ const navItems = [
   {
     href: '/whatsapp',
     label: 'WhatsApp',
+    requires: 'whatsapp',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
@@ -67,7 +79,7 @@ const navItems = [
   },
 ]
 
-function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
+function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onToggle: () => void; navItems: typeof navItemsBase }) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -149,7 +161,7 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
   )
 }
 
-function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
+function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: typeof navItemsBase }) {
   const pathname = usePathname()
   const [userName, setUserName] = useState('')
 
@@ -205,12 +217,36 @@ function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false)
+  const [entitlements, setEntitlements] = useState<Entitlements | null>(null)
+
+  useEffect(() => {
+    let alive = true
+    api.getMyCompany()
+      .then(res => {
+        if (!alive) return
+        setEntitlements(res.company.entitlements)
+      })
+      .catch(() => { /* noop */ })
+
+    return () => { alive = false }
+  }, [])
+
+  const navItems = useMemo(() => {
+    if (!entitlements) return navItemsBase
+    return navItemsBase.filter(item => {
+      if (!item.requires) return true
+      if (item.requires === 'ai') return entitlements.ai
+      if (item.requires === 'whatsapp') return entitlements.whatsapp
+      if (item.requires === 'karisLink') return entitlements.karisLink
+      return true
+    })
+  }, [entitlements])
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg)' }}>
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} />
+      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} navItems={navItems} />
       <div className="flex flex-col flex-1 min-w-0">
-        <Topbar onMenuClick={() => setCollapsed(c => !c)} />
+        <Topbar onMenuClick={() => setCollapsed(c => !c)} navItems={navItems} />
         <main className="flex-1 overflow-y-auto p-6">
           {children}
         </main>

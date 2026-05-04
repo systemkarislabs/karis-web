@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import { useToast } from '@/components/Toast'
 import type { WhatsappConnection } from '@/lib/types'
@@ -28,6 +29,7 @@ function StatusPill({ status }: { status: Status }) {
 
 export default function WhatsAppPage() {
   const { toast } = useToast()
+  const router = useRouter()
   const [status, setStatus] = useState<Status>('DISCONNECTED')
   const [connection, setConnection] = useState<WhatsappConnection | null>(null)
   const [qrCode, setQrCode] = useState<string | null>(null)
@@ -47,7 +49,19 @@ export default function WhatsAppPage() {
   }, [])
 
   useEffect(() => {
-    fetchStatus().finally(() => setLoading(false))
+    let alive = true
+    api.getMyCompany()
+      .then(({ company }) => {
+        if (!alive) return
+        if (!company.entitlements.whatsapp) {
+          router.replace('/')
+          return
+        }
+        fetchStatus().finally(() => { if (alive) setLoading(false) })
+      })
+      .catch(() => { if (alive) setLoading(false) })
+
+    return () => { alive = false }
   }, [fetchStatus])
 
   // Poll while connecting

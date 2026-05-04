@@ -127,12 +127,13 @@ function DashboardContent() {
   useEffect(() => {
     async function load() {
       try {
-        const [statsData, waData, convData] = await Promise.all([
-          api.getStats(),
-          api.getWhatsappStatus(),
+        const statsData = await api.getStats()
+        setStats(statsData)
+
+        const [waData, convData] = await Promise.all([
+          statsData.company.entitlements.whatsapp ? api.getWhatsappStatus() : Promise.resolve({ status: 'DISCONNECTED' as const, connection: null }),
           api.getConversations(),
         ])
-        setStats(statsData)
         setWaConnected(waData.status === 'CONNECTED')
         setConversations(convData.conversations)
       } catch { /* noop */ }
@@ -185,11 +186,13 @@ function DashboardContent() {
             <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
           </svg>
         } />
-        <StatCard label="Taxa de IA" value={`${aiRate}%`} icon={
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2a10 10 0 1 0 10 10" /><path d="M12 6v6l4 2" />
-          </svg>
-        } />
+        {stats?.company.entitlements.ai && (
+          <StatCard label="Taxa de IA" value={`${aiRate}%`} icon={
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2a10 10 0 1 0 10 10" /><path d="M12 6v6l4 2" />
+            </svg>
+          } />
+        )}
       </div>
 
       {/* Charts row */}
@@ -217,7 +220,8 @@ function DashboardContent() {
         </div>
 
         {/* Pie + Gauge - 1/3 */}
-        <div className="flex flex-col gap-4">
+        {stats?.company.entitlements.ai && (
+          <div className="flex flex-col gap-4">
           {/* Pie */}
           <div className="rounded-2xl p-5 flex-1"
             style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-soft)' }}>
@@ -248,47 +252,52 @@ function DashboardContent() {
             </div>
           </div>
         </div>
+        )}
       </div>
 
       {/* Status row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* WhatsApp */}
-        <div className="rounded-2xl p-5 flex flex-col gap-3"
-          style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-soft)' }}>
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>WhatsApp</span>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-              style={{ background: waConnected ? '#D1FAE5' : '#FEF3C7', color: waConnected ? '#065F46' : '#92400E' }}>
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: waConnected ? '#10B981' : '#F59E0B' }} />
-              {waConnected ? 'Conectado' : 'Desconectado'}
-            </span>
+        {stats?.company.entitlements.whatsapp && (
+          <div className="rounded-2xl p-5 flex flex-col gap-3"
+            style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-soft)' }}>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>WhatsApp</span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                style={{ background: waConnected ? '#D1FAE5' : '#FEF3C7', color: waConnected ? '#065F46' : '#92400E' }}>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: waConnected ? '#10B981' : '#F59E0B' }} />
+                {waConnected ? 'Conectado' : 'Desconectado'}
+              </span>
+            </div>
+            <p className="text-sm" style={{ color: 'var(--muted)' }}>
+              {waConnected ? 'Seu número está ativo e recebendo mensagens.' : 'Conecte seu número para receber mensagens.'}
+            </p>
+            <Link href="/whatsapp" className="text-sm font-medium hover:underline" style={{ color: 'var(--teal)' }}>
+              {waConnected ? 'Gerenciar conexão →' : 'Conectar agora →'}
+            </Link>
           </div>
-          <p className="text-sm" style={{ color: 'var(--muted)' }}>
-            {waConnected ? 'Seu número está ativo e recebendo mensagens.' : 'Conecte seu número para receber mensagens.'}
-          </p>
-          <Link href="/whatsapp" className="text-sm font-medium hover:underline" style={{ color: 'var(--teal)' }}>
-            {waConnected ? 'Gerenciar conexão →' : 'Conectar agora →'}
-          </Link>
-        </div>
+        )}
 
         {/* Assistente */}
-        <div className="rounded-2xl p-5 flex flex-col gap-3"
-          style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-soft)' }}>
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Assistente IA</span>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-              style={{ background: stats?.assistant?.isActive ? '#D1FAE5' : '#F3F4F6', color: stats?.assistant?.isActive ? '#065F46' : '#6B7280' }}>
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: stats?.assistant?.isActive ? '#10B981' : '#9CA3AF' }} />
-              {stats?.assistant?.isActive ? 'Ativo' : 'Inativo'}
-            </span>
+        {stats?.company.entitlements.ai && (
+          <div className="rounded-2xl p-5 flex flex-col gap-3"
+            style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-soft)' }}>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Assistente IA</span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                style={{ background: stats?.assistant?.isActive ? '#D1FAE5' : '#F3F4F6', color: stats?.assistant?.isActive ? '#065F46' : '#6B7280' }}>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: stats?.assistant?.isActive ? '#10B981' : '#9CA3AF' }} />
+                {stats?.assistant?.isActive ? 'Ativo' : 'Inativo'}
+              </span>
+            </div>
+            <p className="text-sm" style={{ color: 'var(--muted)' }}>
+              {stats?.assistant ? `${stats.assistant.name}` : 'Nenhum assistente configurado.'}
+            </p>
+            <Link href="/assistente" className="text-sm font-medium hover:underline" style={{ color: 'var(--teal)' }}>
+              Configurar assistente →
+            </Link>
           </div>
-          <p className="text-sm" style={{ color: 'var(--muted)' }}>
-            {stats?.assistant ? `${stats.assistant.name}` : 'Nenhum assistente configurado.'}
-          </p>
-          <Link href="/assistente" className="text-sm font-medium hover:underline" style={{ color: 'var(--teal)' }}>
-            Configurar assistente →
-          </Link>
-        </div>
+        )}
       </div>
 
       {/* Quick links */}
@@ -299,7 +308,7 @@ function DashboardContent() {
           {[
             { href: '/conversas', label: 'Ver conversas' },
             { href: '/contatos', label: 'Ver contatos' },
-            { href: '/conhecimento', label: 'Base de conhecimento' },
+            ...(stats?.company.entitlements.ai ? [{ href: '/conhecimento', label: 'Base de conhecimento' }] : []),
           ].map(l => (
             <Link key={l.href} href={l.href}
               className="px-3.5 py-1.5 rounded-xl text-sm font-medium transition-colors hover:opacity-80"

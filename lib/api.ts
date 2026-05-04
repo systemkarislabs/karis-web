@@ -126,6 +126,14 @@ export const api = {
   markAllConversationsRead: () =>
     request<{ updated: number; created: number }>('POST', '/api/conversations/read-all', {}),
 
+  setConversationAssignee: (id: string, userId: string | null) =>
+    request<{ conversation: import('./types').Conversation }>('PUT', `/api/conversations/${id}/assignee`, { userId }),
+
+  getUsers: (role?: 'ADMIN' | 'AGENT') => {
+    const qs = role ? `?role=${encodeURIComponent(role)}` : ''
+    return request<{ users: import('./types').User[] }>('GET', `/api/users${qs}`)
+  },
+
   startTakeover: (id: string, reason?: string) =>
     request<{ takeover: import('./types').HumanTakeover }>('POST', `/api/conversations/${id}/human-takeover`, { reason }),
 

@@ -220,6 +220,7 @@ export default function ConversasPage() {
             {filtered.map(conv => {
               const stage = getStage(conv)
               const preview = conv.lastMessage?.content ? snippet(conv.lastMessage.content, 64) : ''
+              const assigneeLabel = conv.assignedUser?.name ? `Atendente · ${conv.assignedUser.name.split(' ')[0]}` : ''
               return (
                 <li key={conv.id}>
                   <Link href={`/conversas/${conv.id}`}
@@ -239,6 +240,12 @@ export default function ConversasPage() {
                           <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
                             style={{ background: 'rgba(13,148,136,.14)', color: 'var(--teal)' }}>
                             {conv.unreadCount}
+                          </span>
+                        )}
+                        {!!assigneeLabel && (
+                          <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                            style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
+                            {assigneeLabel}
                           </span>
                         )}
                         {conv.source && (

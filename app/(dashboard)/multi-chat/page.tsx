@@ -72,15 +72,26 @@ export default function MultiChatPage() {
   const [sending, setSending] = useState(false)
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'OPEN' | 'CLOSED'>('ALL')
+  const [assigneeFilter, setAssigneeFilter] = useState<'ALL' | 'MINE' | 'UNASSIGNED'>('ALL')
   const [togglingAi, setTogglingAi] = useState(false)
   const [togglingTakeover, setTogglingTakeover] = useState(false)
   const [togglingStatus, setTogglingStatus] = useState(false)
+  const [togglingAssignee, setTogglingAssignee] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const listPollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const currentUserRef = useRef<{ id: string; role: 'ADMIN' | 'AGENT' } | null>(null)
 
   useEffect(() => {
     let alive = true
+    try {
+      const raw = localStorage.getItem('karisCurrentUser')
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (parsed?.id && parsed?.role) currentUserRef.current = { id: parsed.id, role: parsed.role }
+      }
+    } catch { /* noop */ }
+
     api.getMyCompany()
       .then(({ company }) => {
         if (!alive) return
@@ -117,12 +128,15 @@ export default function MultiChatPage() {
     const q = query.trim().toLowerCase()
     return conversations.filter(c => {
       if (statusFilter !== 'ALL' && c.status !== statusFilter) return false
+      const meId = currentUserRef.current?.id
+      if (assigneeFilter === 'MINE' && (!meId || c.assignedUser?.id !== meId)) return false
+      if (assigneeFilter === 'UNASSIGNED' && c.assignedUser) return false
       if (!q) return true
       const name = (c.contact.name ?? '').toLowerCase()
       const phone = (c.contact.phone ?? '').toLowerCase()
       return name.includes(q) || phone.includes(q)
     })
-  }, [conversations, query, statusFilter])
+  }, [conversations, query, statusFilter, assigneeFilter])
 
   const loadMessages = useCallback(async (conversationId: string) => {
     try {
@@ -163,6 +177,9 @@ export default function MultiChatPage() {
     active?.humanTakeovers?.find(t => !t.endedAt)?.user?.name ??
     active?.humanTakeovers?.[0]?.user?.name ??
     ''
+  const assigneeName = active?.assignedUser?.name ?? ''
+  const isAssignedToMe = Boolean(active?.assignedUser?.id && active?.assignedUser?.id === currentUserRef.current?.id)
+  const canOverrideAssignee = currentUserRef.current?.role === 'ADMIN'
 
   function updateConversationLocal(id: string, patch: Partial<Conversation>) {
     setConversations(prev => prev.map(c => (c.id === id ? { ...c, ...patch } : c)))
@@ -209,6 +226,16 @@ export default function MultiChatPage() {
     finally { setTogglingStatus(false) }
   }
 
+  async function setAssignee(userId: string | null) {
+    if (!active || togglingAssignee) return
+    setTogglingAssignee(true)
+    try {
+      const updated = await api.setConversationAssignee(active.id, userId)
+      updateConversationLocal(active.id, { assignedUser: updated.conversation.assignedUser ?? null })
+    } catch { /* noop */ }
+    finally { setTogglingAssignee(false) }
+  }
+
   return (
     <div className="flex flex-col gap-4 h-[calc(100vh-112px)]">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -239,6 +266,19 @@ export default function MultiChatPage() {
                   </button>
                 ))}
               </div>
+
+              <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
+                {(['ALL', 'MINE', 'UNASSIGNED'] as const).map(f => (
+                  <button
+                    key={f}
+                    onClick={() => setAssigneeFilter(f)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                    style={{ background: assigneeFilter === f ? 'var(--teal)' : 'transparent', color: assigneeFilter === f ? 'white' : 'var(--muted)' }}
+                  >
+                    {f === 'ALL' ? 'Todas' : f === 'MINE' ? 'Minhas' : 'Sem atendente'}
+                  </button>
+                ))}
+              </div>
               <input
                 value={query}
                 onChange={e => setQuery(e.target.value)}
@@ -259,6 +299,7 @@ export default function MultiChatPage() {
                     const hasTakeover = Boolean(activeTakeover)
                     const manualLabel = activeTakeover?.user?.name ? `Manual · ${activeTakeover.user.name.split(' ')[0]}` : 'Manual'
                     const preview = c.lastMessage?.content ? snippet(c.lastMessage.content, 52) : ''
+                    const assigneeLabel = c.assignedUser?.name ? `Atendente · ${c.assignedUser.name.split(' ')[0]}` : ''
                     return (
                       <li key={c.id}>
                         <button
@@ -290,6 +331,12 @@ export default function MultiChatPage() {
                               <div className="text-[11px] font-semibold px-2 py-1 rounded-full"
                                 style={{ background: 'rgba(13,148,136,.14)', color: 'var(--teal)' }}>
                                 {c.unreadCount}
+                              </div>
+                            )}
+                            {!!assigneeLabel && (
+                              <div className="text-[11px] font-semibold px-2 py-1 rounded-full"
+                                style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
+                                {assigneeLabel}
                               </div>
                             )}
                             {hasTakeover && (
@@ -333,6 +380,43 @@ export default function MultiChatPage() {
                   <div className="text-[11px] font-semibold px-2 py-1 rounded-full"
                     style={{ background: active.status === 'OPEN' ? '#D1FAE5' : '#F3F4F6', color: active.status === 'OPEN' ? '#065F46' : '#6B7280' }}>
                     {active.status === 'OPEN' ? 'Aberta' : 'Fechada'}
+                  </div>
+                  {active.assignedUser?.id ? (
+                    <div className="text-[11px] font-semibold px-2 py-1 rounded-full"
+                      style={{ background: '#EFF6FF', color: '#1D4ED8' }}>
+                      {assigneeName ? `Atendente · ${assigneeName.split(' ')[0]}` : 'Atendente'}
+                    </div>
+                  ) : (
+                    <div className="text-[11px] font-semibold px-2 py-1 rounded-full"
+                      style={{ background: '#F3F4F6', color: '#6B7280' }}>
+                      Sem atendente
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        const myId = currentUserRef.current?.id
+                        if (!myId) return
+                        if (active.assignedUser?.id && !isAssignedToMe && !canOverrideAssignee) return
+                        setAssignee(myId)
+                      }}
+                      disabled={togglingAssignee || !currentUserRef.current?.id || (Boolean(active.assignedUser?.id) && !isAssignedToMe && !canOverrideAssignee)}
+                      className="px-3 py-2 rounded-xl text-xs font-semibold disabled:opacity-60"
+                      style={{ background: 'rgba(59,130,246,.10)', border: '1px solid rgba(59,130,246,.18)', color: '#1D4ED8' }}
+                    >
+                      {active.assignedUser?.id ? (isAssignedToMe ? 'Atribuída a mim' : 'Tomar') : 'Atribuir a mim'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (active.assignedUser?.id && !isAssignedToMe && !canOverrideAssignee) return
+                        setAssignee(null)
+                      }}
+                      disabled={togglingAssignee || !active.assignedUser?.id || (!isAssignedToMe && !canOverrideAssignee)}
+                      className="px-3 py-2 rounded-xl text-xs font-semibold disabled:opacity-60"
+                      style={{ background: '#F3F4F6', border: '1px solid var(--border-soft)', color: '#6B7280' }}
+                    >
+                      Liberar
+                    </button>
                   </div>
                   {aiAvailable && (
                     <div className="flex items-center gap-2">

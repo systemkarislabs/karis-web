@@ -29,6 +29,7 @@ export interface Contact {
 export interface Conversation {
   id: string
   contactId: string
+  assignedUser?: { id: string; name: string; email: string } | null
   status: 'OPEN' | 'CLOSED'
   aiEnabled: boolean
   source: string | null

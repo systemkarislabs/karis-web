@@ -79,6 +79,26 @@ export interface WhatsappConnection {
   updatedAt: string
 }
 
+export interface WhatsappDiagnostics {
+  enabled: boolean
+  hasEvolutionConfig: boolean
+  apiBaseUrl: string
+  connection: {
+    id: string
+    status: 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'ERROR'
+    phoneNumber: string | null
+    evolutionInstanceName: string | null
+    evolutionApiUrl: string | null
+    qrCode: boolean
+    lastError: string | null
+    lastQrAt: string | null
+    lastConnectAttemptAt: string | null
+    updatedAt: string
+  } | null
+  evolutionReachable: boolean
+  evolutionState: any
+}
+
 export interface Entitlements {
   ai: boolean
   whatsapp: boolean

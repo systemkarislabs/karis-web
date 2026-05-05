@@ -40,15 +40,10 @@ const navItemsBase: Array<{
     requires: 'whatsapp',
   },
   {
-    href: '/conhecimento',
-    label: 'Base de Conhecimento',
-    icon: <DesignerIcon name="book" size={18} />,
-    requires: 'ai',
-  },
-  {
-    href: '/assistente',
-    label: 'Agente IA',
+    href: '/ia',
+    label: 'IA',
     icon: <DesignerIcon name="bot" size={18} />,
+    activePaths: ['/ia', '/assistente', '/conhecimento'],
     requires: 'ai',
   },
   {

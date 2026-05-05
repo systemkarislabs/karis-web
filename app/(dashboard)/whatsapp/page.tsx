@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { AlertCircle, ArrowRight, Check, RefreshCw } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useToast } from '@/components/Toast'
-import type { WhatsappConnection } from '@/lib/types'
+import type { WhatsappConnection, WhatsappDiagnostics } from '@/lib/types'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -19,10 +19,19 @@ export default function WhatsAppPage() {
   const [status, setStatus] = useState<Status>('DISCONNECTED')
   const [connection, setConnection] = useState<WhatsappConnection | null>(null)
   const [qrCode, setQrCode] = useState<string | null>(null)
+  const [diagnostics, setDiagnostics] = useState<WhatsappDiagnostics | null>(null)
+  const [statusError, setStatusError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [connecting, setConnecting] = useState(false)
   const [disconnecting, setDisconnecting] = useState(false)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const fetchDiagnostics = useCallback(async () => {
+    try {
+      const d = await api.getWhatsappDiagnostics()
+      setDiagnostics(d)
+    } catch { /* noop */ }
+  }, [])
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -31,8 +40,14 @@ export default function WhatsAppPage() {
       setConnection(data.connection)
       if (data.connection?.qrCode) setQrCode(data.connection.qrCode)
       if (data.status === 'CONNECTED') setQrCode(null)
-    } catch { /* noop */ }
-  }, [])
+      setStatusError(null)
+    } catch (e: any) {
+      const msg = e?.message || 'Erro ao consultar status do WhatsApp'
+      setStatus('ERROR')
+      setStatusError(msg)
+      fetchDiagnostics().catch(() => {})
+    }
+  }, [fetchDiagnostics])
 
   useEffect(() => {
     let alive = true
@@ -43,7 +58,7 @@ export default function WhatsAppPage() {
           router.replace('/')
           return
         }
-        fetchStatus().finally(() => { if (alive) setLoading(false) })
+        Promise.all([fetchStatus(), fetchDiagnostics()]).finally(() => { if (alive) setLoading(false) })
       })
       .catch(() => { if (alive) setLoading(false) })
 
@@ -70,8 +85,12 @@ export default function WhatsAppPage() {
       } else {
         toast('Conectando… o QR Code aparecerá em instantes. Clique em "Atualizar QR" se demorar.', 'info')
       }
+      fetchDiagnostics().catch(() => {})
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Erro ao conectar WhatsApp', 'error')
+      setStatus('ERROR')
+      setStatusError(err instanceof Error ? err.message : 'Erro ao conectar WhatsApp')
+      fetchDiagnostics().catch(() => {})
     } finally {
       setConnecting(false)
     }
@@ -85,6 +104,8 @@ export default function WhatsAppPage() {
       setStatus('DISCONNECTED')
       setConnection(null)
       setQrCode(null)
+      setStatusError(null)
+      fetchDiagnostics().catch(() => {})
     } catch { /* noop */ }
     finally { setDisconnecting(false) }
   }
@@ -164,7 +185,12 @@ export default function WhatsAppPage() {
                 style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}
               >
                 <AlertCircle size={20} aria-hidden="true" color="#991B1B" />
-                <p className="text-sm" style={{ color: '#991B1B' }}>Erro na conexão. Tente reconectar.</p>
+                <div className="min-w-0">
+                  <p className="text-sm" style={{ color: '#991B1B' }}>Erro na conexão. Tente reconectar.</p>
+                  {statusError ? (
+                    <p className="text-xs mt-0.5 truncate" style={{ color: '#B91C1C' }}>{statusError}</p>
+                  ) : null}
+                </div>
               </div>
             )}
 
@@ -186,7 +212,7 @@ export default function WhatsAppPage() {
               {status === 'CONNECTING' && (
                 <>
                   <Button
-                    onClick={fetchStatus}
+                    onClick={() => { fetchStatus(); fetchDiagnostics() }}
                     variant="primary"
                   >
                     <RefreshCw size={16} aria-hidden="true" />
@@ -218,6 +244,37 @@ export default function WhatsAppPage() {
           </>
         )}
       </Card>
+
+      {diagnostics && (
+        <Card className="p-5">
+          <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Diagnóstico</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            <div className="p-3 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
+              <div className="text-xs" style={{ color: 'var(--muted)' }}>Habilitado</div>
+              <div className="font-semibold" style={{ color: 'var(--text)' }}>{diagnostics.enabled ? 'Sim' : 'Não'}</div>
+            </div>
+            <div className="p-3 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
+              <div className="text-xs" style={{ color: 'var(--muted)' }}>Config Evolution</div>
+              <div className="font-semibold" style={{ color: 'var(--text)' }}>{diagnostics.hasEvolutionConfig ? 'OK' : 'Faltando'}</div>
+            </div>
+            <div className="p-3 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
+              <div className="text-xs" style={{ color: 'var(--muted)' }}>Evolution alcançável</div>
+              <div className="font-semibold" style={{ color: 'var(--text)' }}>{diagnostics.evolutionReachable ? 'Sim' : 'Não'}</div>
+            </div>
+            <div className="p-3 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
+              <div className="text-xs" style={{ color: 'var(--muted)' }}>API Base URL</div>
+              <div className="font-semibold truncate" title={diagnostics.apiBaseUrl} style={{ color: 'var(--text)' }}>{diagnostics.apiBaseUrl}</div>
+            </div>
+          </div>
+
+          {diagnostics.connection?.lastError ? (
+            <div className="mt-4 p-3 rounded-xl" style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}>
+              <div className="text-xs font-semibold" style={{ color: '#991B1B' }}>Último erro</div>
+              <div className="text-sm mt-1" style={{ color: '#B91C1C', wordBreak: 'break-word' }}>{diagnostics.connection.lastError}</div>
+            </div>
+          ) : null}
+        </Card>
+      )}
 
       {/* Instructions card */}
       <Card className="p-5">

@@ -188,7 +188,7 @@ export default function WhatsAppPage() {
                 <div className="min-w-0">
                   <p className="text-sm" style={{ color: '#991B1B' }}>Erro na conexão. Tente reconectar.</p>
                   {statusError ? (
-                    <p className="text-xs mt-0.5 truncate" style={{ color: '#B91C1C' }}>{statusError}</p>
+                    <p className="text-xs mt-0.5 max-h-20 overflow-auto whitespace-pre-wrap break-words" style={{ color: '#B91C1C' }}>{statusError}</p>
                   ) : null}
                 </div>
               </div>

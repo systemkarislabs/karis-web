@@ -97,6 +97,8 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
   const pathname = usePathname()
   const router = useRouter()
 
+  const isMobile = typeof window !== 'undefined' ? window.matchMedia('(max-width: 1023px)').matches : false
+
   function isActiveItem(item: (typeof navItemsBase)[number]) {
     const paths = item.activePaths?.length ? item.activePaths : [item.href]
     return paths.some(p => (p === '/' ? pathname === '/' : pathname.startsWith(p)))
@@ -113,20 +115,40 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
     <aside
       className="flex flex-col h-full transition-all duration-200"
       style={{
-        width: collapsed ? 64 : 220,
+        width: isMobile ? 280 : (collapsed ? 64 : 220),
         background: 'var(--surface)',
         borderRight: '1px solid var(--border)',
         flexShrink: 0,
       }}
     >
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-4" style={{ height: 60, borderBottom: '1px solid var(--border)' }}>
+      <div
+        className="flex items-center justify-between gap-2.5 px-4"
+        style={{
+          height: 'calc(60px + env(safe-area-inset-top))',
+          paddingTop: 'env(safe-area-inset-top)',
+          borderBottom: '1px solid var(--border)',
+        }}
+      >
+        <div className="flex items-center gap-2.5 min-w-0">
         <img src="/designer/logo.svg" alt="" className="w-8 h-8 object-contain flex-shrink-0" />
-        {!collapsed && (
+        {(!collapsed || isMobile) && (
           <span className="text-[15px] font-bold tracking-tight whitespace-nowrap" style={{ color: 'var(--text)' }}>
             Karis Atende
           </span>
         )}
+        </div>
+        {isMobile ? (
+          <button
+            type="button"
+            aria-label="Fechar menu"
+            className="h-10 w-10 inline-flex items-center justify-center rounded-lg transition-colors"
+            style={{ color: 'var(--muted)' }}
+            onClick={onToggle}
+          >
+            <DesignerIcon name="menu" size={18} />
+          </button>
+        ) : null}
       </div>
 
       {/* Nav */}
@@ -141,18 +163,19 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
               aria-label={item.label}
               className="flex items-center gap-2.5 w-full rounded-lg text-[13.5px] font-medium transition-colors"
               style={{
-                padding: collapsed ? '10px 0' : '9px 12px',
-                justifyContent: collapsed ? 'center' : 'flex-start',
+                padding: collapsed && !isMobile ? '10px 0' : '9px 12px',
+                justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
                 borderLeft: active ? '3px solid var(--primary)' : '3px solid transparent',
                 background: active ? activeBg : 'transparent',
                 color: active ? 'var(--primary)' : 'var(--muted)',
               }}
               title={collapsed ? item.label : undefined}
+              onClick={() => { if (isMobile) onToggle() }}
             >
               <span className="flex-shrink-0" style={{ color: active ? 'var(--primary)' : 'var(--muted)' }}>
                 {item.icon}
               </span>
-              {!collapsed && <span>{item.label}</span>}
+              {(!collapsed || isMobile) && <span>{item.label}</span>}
             </Link>
           )
         })}
@@ -165,41 +188,42 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
           aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
           className="flex items-center gap-2.5 w-full rounded-lg text-[13.5px] font-medium transition-colors"
           style={{
-            padding: collapsed ? '10px 0' : '9px 12px',
-            justifyContent: collapsed ? 'center' : 'flex-start',
+            padding: collapsed && !isMobile ? '10px 0' : '9px 12px',
+            justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
             color: 'var(--muted)',
           }}
         >
           <DesignerIcon name="menu" size={17} className="flex-shrink-0" />
-          {!collapsed && <span>Menu</span>}
+          {(!collapsed || isMobile) && <span>Menu</span>}
         </button>
         <Link
           href="/configuracoes"
           aria-label="Configurações"
           className="flex items-center gap-2.5 w-full rounded-lg text-[13.5px] font-medium transition-colors"
           style={{
-            padding: collapsed ? '10px 0' : '9px 12px',
-            justifyContent: collapsed ? 'center' : 'flex-start',
+            padding: collapsed && !isMobile ? '10px 0' : '9px 12px',
+            justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
             color: 'var(--muted)',
           }}
           title={collapsed ? 'Configurações' : undefined}
+          onClick={() => { if (isMobile) onToggle() }}
         >
           <DesignerIcon name="settings" size={17} className="flex-shrink-0" />
-          {!collapsed && <span>Configurações</span>}
+          {(!collapsed || isMobile) && <span>Configurações</span>}
         </Link>
         <button
           onClick={handleLogout}
           aria-label="Sair"
           className="flex items-center gap-2.5 w-full rounded-lg text-[13.5px] font-medium transition-colors"
           style={{
-            padding: collapsed ? '10px 0' : '9px 12px',
-            justifyContent: collapsed ? 'center' : 'flex-start',
+            padding: collapsed && !isMobile ? '10px 0' : '9px 12px',
+            justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
             color: 'var(--danger)',
           }}
           title={collapsed ? 'Sair' : undefined}
         >
           <DesignerIcon name="logout" size={17} className="flex-shrink-0" />
-          {!collapsed && <span>Sair</span>}
+          {(!collapsed || isMobile) && <span>Sair</span>}
         </button>
       </div>
     </aside>
@@ -233,7 +257,8 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
     <header
       className="flex items-center gap-4 px-5"
       style={{
-        height: 60,
+        height: 'calc(60px + env(safe-area-inset-top))',
+        paddingTop: 'env(safe-area-inset-top)',
         background: 'var(--surface)',
         borderBottom: '1px solid var(--border)',
         flexShrink: 0,
@@ -312,6 +337,8 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const [entitlements, setEntitlements] = useState<Entitlements | null>(null)
 
   useEffect(() => {
@@ -325,6 +352,26 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
     return () => { alive = false }
   }, [])
+
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 1023px)')
+    const update = () => setIsMobile(mql.matches)
+    update()
+    if ('addEventListener' in mql) mql.addEventListener('change', update)
+    else (mql as any).addListener(update)
+    return () => {
+      if ('removeEventListener' in mql) mql.removeEventListener('change', update)
+      else (mql as any).removeListener(update)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isMobile) return
+    if (!mobileOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prev }
+  }, [isMobile, mobileOpen])
 
   const navItems = useMemo(() => {
     if (!entitlements) return navItemsBase
@@ -341,7 +388,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   }, [entitlements])
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg)' }}>
+    <div className="flex h-[100dvh] overflow-hidden" style={{ background: 'var(--bg)' }}>
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:rounded-xl"
@@ -349,10 +396,34 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       >
         Pular para o conteúdo
       </a>
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} navItems={navItems} />
+      {isMobile ? (
+        <>
+          {mobileOpen ? (
+            <button
+              type="button"
+              aria-label="Fechar menu"
+              className="fixed inset-0"
+              style={{ background: 'rgba(0,0,0,.42)', zIndex: 40 }}
+              onClick={() => setMobileOpen(false)}
+            />
+          ) : null}
+          <div
+            className="fixed left-0 top-0 h-[100dvh] transition-transform duration-200"
+            style={{
+              zIndex: 50,
+              transform: mobileOpen ? 'translateX(0)' : 'translateX(-105%)',
+              boxShadow: mobileOpen ? '0 18px 60px rgba(0,0,0,.28)' : 'none',
+            }}
+          >
+            <Sidebar collapsed={false} onToggle={() => setMobileOpen(o => !o)} navItems={navItems} />
+          </div>
+        </>
+      ) : (
+        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} navItems={navItems} />
+      )}
       <div className="flex flex-col flex-1 min-w-0">
-        <Topbar onMenuClick={() => setCollapsed(c => !c)} navItems={navItems} />
-        <main id="main-content" tabIndex={-1} aria-label="Conteúdo principal" className="flex-1 overflow-y-auto p-6 screen-enter">
+        <Topbar onMenuClick={() => (isMobile ? setMobileOpen(o => !o) : setCollapsed(c => !c))} navItems={navItems} />
+        <main id="main-content" tabIndex={-1} aria-label="Conteúdo principal" className="flex-1 overflow-y-auto p-4 md:p-6 screen-enter">
           {children}
         </main>
       </div>

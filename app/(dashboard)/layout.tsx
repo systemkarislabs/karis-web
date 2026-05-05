@@ -13,6 +13,7 @@ const navItemsBase: Array<{
   href: string
   label: string
   icon: ReactNode
+  activePaths?: string[]
   requires?: NavRequirement
   requiresModule?: string
 }> = [
@@ -25,6 +26,7 @@ const navItemsBase: Array<{
     href: '/conversas',
     label: 'Conversas',
     icon: <DesignerIcon name="chat" size={18} />,
+    activePaths: ['/conversas', '/multi-chat'],
   },
   {
     href: '/contatos',
@@ -34,7 +36,7 @@ const navItemsBase: Array<{
   {
     href: '/whatsapp',
     label: 'WhatsApp',
-    icon: <DesignerIcon name="chat" size={18} />,
+    icon: <DesignerIcon name="whatsapp" size={18} />,
     requires: 'whatsapp',
   },
   {
@@ -42,11 +44,6 @@ const navItemsBase: Array<{
     label: 'Base de Conhecimento',
     icon: <DesignerIcon name="book" size={18} />,
     requires: 'ai',
-  },
-  {
-    href: '/multi-chat',
-    label: 'Multi Chat',
-    icon: <DesignerIcon name="chat" size={18} />,
   },
   {
     href: '/assistente',
@@ -100,6 +97,11 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
   const pathname = usePathname()
   const router = useRouter()
 
+  function isActiveItem(item: (typeof navItemsBase)[number]) {
+    const paths = item.activePaths?.length ? item.activePaths : [item.href]
+    return paths.some(p => (p === '/' ? pathname === '/' : pathname.startsWith(p)))
+  }
+
   async function handleLogout() {
     localStorage.removeItem('karisAuthToken')
     localStorage.removeItem('karisCurrentUser')
@@ -130,7 +132,7 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
       {/* Nav */}
       <nav className="flex-1 px-2 py-3 flex flex-col gap-0.5 overflow-y-auto">
         {navItems.map(item => {
-          const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
+          const active = isActiveItem(item)
           const activeBg = 'color-mix(in oklch, var(--primary) 8%, transparent)'
           return (
             <Link
@@ -220,9 +222,12 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
     } catch { /* noop */ }
   }, [])
 
-  const title = navItems.find(item =>
-    item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
-  )?.label ?? 'Karis Atende'
+  function isActiveItem(item: (typeof navItemsBase)[number]) {
+    const paths = item.activePaths?.length ? item.activePaths : [item.href]
+    return paths.some(p => (p === '/' ? pathname === '/' : pathname.startsWith(p)))
+  }
+
+  const title = navItems.find(isActiveItem)?.label ?? 'Karis Atende'
 
   return (
     <header

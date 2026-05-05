@@ -26,6 +26,7 @@ export default function WhatsAppPage() {
   const [statusError, setStatusError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [connecting, setConnecting] = useState(false)
+  const [resetting, setResetting] = useState(false)
   const [disconnecting, setDisconnecting] = useState(false)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -116,6 +117,30 @@ export default function WhatsAppPage() {
       fetchDiagnostics().catch(() => {})
     } catch { /* noop */ }
     finally { setDisconnecting(false) }
+  }
+
+  async function handleReset() {
+    if (!confirm('Resetar a instância? Isso apaga a sessão na Evolution e recria do zero.')) return
+    setResetting(true)
+    try {
+      const data = await api.resetWhatsapp(pairingNumber.trim() ? { number: pairingNumber.trim() } : {})
+      setStatus('CONNECTING')
+      if (data.qrCode) {
+        setQrCode(data.qrCode)
+        setPairingCode(null)
+      } else if (data.pairingCode) {
+        setQrCode(null)
+        setPairingCode(data.pairingCode)
+      } else {
+        toast('Reset efetuado. Aguarde e clique em "Atualizar QR".', 'info')
+      }
+      fetchDiagnostics().catch(() => {})
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Erro ao resetar instância', 'error')
+      fetchDiagnostics().catch(() => {})
+    } finally {
+      setResetting(false)
+    }
   }
 
   return (
@@ -234,6 +259,15 @@ export default function WhatsAppPage() {
                     style={{ border: '1px solid #F59E0B' }}
                   >
                     Forçar reconexão
+                  </Button>
+                  <Button
+                    onClick={handleReset}
+                    loading={resetting}
+                    variant="ghost"
+                    className="!text-[#7C2D12] !bg-transparent"
+                    style={{ border: '1px solid #FB923C' }}
+                  >
+                    Resetar instância
                   </Button>
                 </>
               )}

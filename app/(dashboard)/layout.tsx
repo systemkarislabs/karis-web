@@ -62,24 +62,9 @@ const navItemsBase: Array<{
     icon: <DesignerIcon name="campaign" size={18} />,
   },
   {
-    href: '/marketing',
-    label: 'Marketing',
-    icon: <DesignerIcon name="marketing" size={18} />,
-  },
-  {
     href: '/calendario',
     label: 'Calendário',
     icon: <DesignerIcon name="calendar" size={18} />,
-  },
-  {
-    href: '/cupons',
-    label: 'Cupons',
-    icon: <DesignerIcon name="coupon" size={18} />,
-  },
-  {
-    href: '/afiliados',
-    label: 'Afiliados',
-    icon: <DesignerIcon name="affiliates" size={18} />,
   },
   {
     href: '/remuneracao',

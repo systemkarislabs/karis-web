@@ -192,6 +192,9 @@ export const api = {
   connectWhatsapp: (data?: { number?: string | null }) =>
     request<{ instanceName: string; qrCode: string | null; pairingCode?: string | null; status: string; message?: string }>('POST', '/api/whatsapp/connect', data || {}),
 
+  resetWhatsapp: (data?: { number?: string | null }) =>
+    request<{ instanceName: string; qrCode: string | null; pairingCode?: string | null; status: string; message?: string }>('POST', '/api/whatsapp/reset', data || {}),
+
   disconnectWhatsapp: () =>
     request<{ message: string }>('DELETE', '/api/whatsapp/disconnect'),
 

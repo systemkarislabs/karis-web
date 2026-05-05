@@ -9,6 +9,7 @@ import type { WhatsappConnection, WhatsappDiagnostics } from '@/lib/types'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { Input } from '@/components/ui/Input'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 
 type Status = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'ERROR'
@@ -19,6 +20,8 @@ export default function WhatsAppPage() {
   const [status, setStatus] = useState<Status>('DISCONNECTED')
   const [connection, setConnection] = useState<WhatsappConnection | null>(null)
   const [qrCode, setQrCode] = useState<string | null>(null)
+  const [pairingCode, setPairingCode] = useState<string | null>(null)
+  const [pairingNumber, setPairingNumber] = useState('')
   const [diagnostics, setDiagnostics] = useState<WhatsappDiagnostics | null>(null)
   const [statusError, setStatusError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -40,6 +43,7 @@ export default function WhatsAppPage() {
       setConnection(data.connection)
       if (data.connection?.qrCode) setQrCode(data.connection.qrCode)
       if (data.status === 'CONNECTED') setQrCode(null)
+      if (data.status === 'CONNECTED') setPairingCode(null)
       setStatusError(null)
     } catch (e: any) {
       const msg = e?.message || 'Erro ao consultar status do WhatsApp'
@@ -75,13 +79,17 @@ export default function WhatsAppPage() {
     return () => { if (pollRef.current) clearInterval(pollRef.current) }
   }, [status, fetchStatus])
 
-  async function handleConnect() {
+  async function handleConnect(number?: string) {
     setConnecting(true)
     try {
-      const data = await api.connectWhatsapp()
+      const data = await api.connectWhatsapp(number ? { number } : {})
       setStatus('CONNECTING')
       if (data.qrCode) {
         setQrCode(data.qrCode)
+        setPairingCode(null)
+      } else if (data.pairingCode) {
+        setQrCode(null)
+        setPairingCode(data.pairingCode)
       } else {
         toast('Conectando… o QR Code aparecerá em instantes. Clique em "Atualizar QR" se demorar.', 'info')
       }
@@ -199,7 +207,7 @@ export default function WhatsAppPage() {
               {/* DISCONNECTED / ERROR → botão Conectar */}
               {(status === 'DISCONNECTED' || status === 'ERROR') && (
                 <Button
-                  onClick={handleConnect}
+                  onClick={() => handleConnect()}
                   loading={connecting}
                   variant="primary"
                 >
@@ -219,7 +227,7 @@ export default function WhatsAppPage() {
                     Atualizar QR
                   </Button>
                   <Button
-                    onClick={handleConnect}
+                    onClick={() => handleConnect()}
                     loading={connecting}
                     variant="ghost"
                     className="!text-[#92400E] !bg-transparent"
@@ -245,6 +253,40 @@ export default function WhatsAppPage() {
         )}
       </Card>
 
+      {status === 'CONNECTING' && !qrCode && (
+        <Card className="p-5">
+          <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Alternativa: Código de pareamento</p>
+          <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
+            Se o QR não aparecer, tente gerar um código usando seu número (DDI + DDD + número).
+          </p>
+          <div className="mt-4 flex flex-col sm:flex-row gap-3">
+            <Input
+              value={pairingNumber}
+              onChange={(e) => setPairingNumber(e.target.value)}
+              placeholder="Ex: 5511999999999"
+              inputMode="numeric"
+            />
+            <Button
+              onClick={() => handleConnect(pairingNumber.trim())}
+              loading={connecting}
+              variant="primary"
+              className="sm:w-auto"
+            >
+              Gerar código
+            </Button>
+          </div>
+          {pairingCode ? (
+            <div className="mt-4 p-3 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
+              <div className="text-xs font-semibold" style={{ color: 'var(--muted)' }}>Código</div>
+              <div className="text-2xl font-semibold tracking-widest" style={{ color: 'var(--text)' }}>{pairingCode}</div>
+              <div className="text-xs mt-2" style={{ color: 'var(--muted)' }}>
+                No WhatsApp: Dispositivos conectados → Conectar dispositivo → Conectar com número/código.
+              </div>
+            </div>
+          ) : null}
+        </Card>
+      )}
+
       {diagnostics && (
         <Card className="p-5">
           <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Diagnóstico</p>
@@ -265,6 +307,12 @@ export default function WhatsAppPage() {
               <div className="text-xs" style={{ color: 'var(--muted)' }}>API Base URL</div>
               <div className="font-semibold truncate" title={diagnostics.apiBaseUrl} style={{ color: 'var(--text)' }}>{diagnostics.apiBaseUrl}</div>
             </div>
+            {diagnostics.evolutionInfo?.version ? (
+              <div className="p-3 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
+                <div className="text-xs" style={{ color: 'var(--muted)' }}>Evolution versão</div>
+                <div className="font-semibold" style={{ color: 'var(--text)' }}>{diagnostics.evolutionInfo.version}</div>
+              </div>
+            ) : null}
           </div>
 
           {diagnostics.connection?.lastError ? (

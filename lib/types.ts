@@ -97,6 +97,15 @@ export interface WhatsappDiagnostics {
   } | null
   evolutionReachable: boolean
   evolutionState: any
+  evolutionInfo?: {
+    status?: number
+    message?: string
+    version?: string
+    swagger?: string
+    manager?: string
+    documentation?: string
+    [key: string]: any
+  } | null
 }
 
 export interface CrmPipeline {

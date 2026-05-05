@@ -189,8 +189,8 @@ export const api = {
   getWhatsappStatus: () =>
     request<{ status: string; connection: import('./types').WhatsappConnection | null }>('GET', '/api/whatsapp/status'),
 
-  connectWhatsapp: () =>
-    request<{ instanceName: string; qrCode: string | null; status: string }>('POST', '/api/whatsapp/connect'),
+  connectWhatsapp: (data?: { number?: string | null }) =>
+    request<{ instanceName: string; qrCode: string | null; pairingCode?: string | null; status: string; message?: string }>('POST', '/api/whatsapp/connect', data || {}),
 
   disconnectWhatsapp: () =>
     request<{ message: string }>('DELETE', '/api/whatsapp/disconnect'),

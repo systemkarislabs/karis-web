@@ -157,6 +157,9 @@ export const api = {
   disconnectWhatsapp: () =>
     request<{ message: string }>('DELETE', '/api/whatsapp/disconnect'),
 
+  getWhatsappDiagnostics: () =>
+    request<import('./types').WhatsappDiagnostics>('GET', '/api/whatsapp/diagnostics'),
+
   adminBootstrap: (email: string, password: string, bootstrapSecret: string) =>
     adminRequest<{ token: string; platformUser: import('./types').PlatformUser }>(
       'POST',

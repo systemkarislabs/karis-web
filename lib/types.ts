@@ -99,6 +99,79 @@ export interface WhatsappDiagnostics {
   evolutionState: any
 }
 
+export interface CrmPipeline {
+  id: string
+  name: string
+  stages: CrmStage[]
+}
+
+export interface CrmStage {
+  id: string
+  pipelineId: string
+  name: string
+  order: number
+  color: string | null
+}
+
+export interface CrmDeal {
+  id: string
+  title: string
+  valueCents: number | null
+  currency: string
+  status: 'OPEN' | 'WON' | 'LOST'
+  aiScore: number | null
+  aiNextAction: string | null
+  stage: CrmStage
+  contact: Contact
+  assignedUser: { id: string; name: string; email: string } | null
+  updatedAt: string
+  createdAt: string
+  conversation?: { id: string } | null
+  notes?: { id: string; content: string; createdAt: string; authorUserId: string | null }[]
+  tasks?: CrmTask[]
+  activities?: { id: string; source: 'AI' | 'HUMAN' | 'SYSTEM'; type: string; payload: any; createdAt: string }[]
+}
+
+export interface CrmTask {
+  id: string
+  title: string
+  dueAt: string | null
+  status: 'OPEN' | 'DONE' | 'CANCELED'
+  assignedUser: { id: string; name: string; email: string } | null
+  deal?: { id: string; title: string } | null
+  contact?: { id: string; name: string | null; phone: string } | null
+  createdAt: string
+}
+
+export interface Campaign {
+  id: string
+  name: string
+  message: string
+  status: 'DRAFT' | 'SCHEDULED' | 'RUNNING' | 'PAUSED' | 'COMPLETED' | 'FAILED'
+  stageId: string | null
+  createdAt: string
+  updatedAt: string
+  _count?: { recipients: number; jobs: number }
+}
+
+export interface GoogleIntegrationStatus {
+  connected: boolean
+  googleCalendarId: string | null
+  updatedAt: string | null
+  hasGoogleConfig: boolean
+}
+
+export interface Appointment {
+  id: string
+  title: string
+  startAt: string
+  endAt: string
+  status: 'SCHEDULED' | 'CANCELED'
+  googleEventId: string | null
+  contact?: { id: string; name: string | null; phone: string } | null
+  deal?: { id: string; title: string } | null
+}
+
 export interface Entitlements {
   ai: boolean
   whatsapp: boolean

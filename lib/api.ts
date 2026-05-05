@@ -134,6 +134,44 @@ export const api = {
     return request<{ users: import('./types').User[] }>('GET', `/api/users${qs}`)
   },
 
+  // CRM
+  getCrmPipelines: () =>
+    request<{ pipelines: import('./types').CrmPipeline[] }>('GET', '/api/crm/pipelines'),
+
+  getCrmDeals: (params?: { pipelineId?: string; stageId?: string; status?: string; assignedUserId?: string; q?: string }) => {
+    const qs = new URLSearchParams()
+    if (params?.pipelineId) qs.set('pipelineId', params.pipelineId)
+    if (params?.stageId) qs.set('stageId', params.stageId)
+    if (params?.status) qs.set('status', params.status)
+    if (params?.assignedUserId) qs.set('assignedUserId', params.assignedUserId)
+    if (params?.q) qs.set('q', params.q)
+    const suffix = qs.toString() ? `?${qs.toString()}` : ''
+    return request<{ deals: import('./types').CrmDeal[] }>('GET', `/api/crm/deals${suffix}`)
+  },
+
+  createCrmDeal: (data: { title: string; valueCents?: number | null; currency?: string; contactId?: string; conversationId?: string; pipelineId?: string; stageId?: string; assignedUserId?: string | null }) =>
+    request<{ deal: import('./types').CrmDeal }>('POST', '/api/crm/deals', data),
+
+  getCrmDeal: (id: string) =>
+    request<{ deal: import('./types').CrmDeal }>('GET', `/api/crm/deals/${id}`),
+
+  updateCrmDeal: (id: string, data: Partial<{ title: string; valueCents: number | null; currency: string; stageId: string; assignedUserId: string | null; status: string }>) =>
+    request<{ deal: import('./types').CrmDeal }>('PATCH', `/api/crm/deals/${id}`, data),
+
+  addCrmDealNote: (id: string, content: string) =>
+    request<{ note: { id: string; content: string; createdAt: string } }>('POST', `/api/crm/deals/${id}/notes`, { content }),
+
+  addCrmDealTask: (id: string, data: { title: string; dueAt?: string | null; assignedUserId?: string | null }) =>
+    request<{ task: import('./types').CrmTask }>('POST', `/api/crm/deals/${id}/tasks`, data),
+
+  getCrmTasks: (params?: { mine?: boolean; status?: string }) => {
+    const qs = new URLSearchParams()
+    if (params?.mine) qs.set('mine', '1')
+    if (params?.status) qs.set('status', params.status)
+    const suffix = qs.toString() ? `?${qs.toString()}` : ''
+    return request<{ tasks: import('./types').CrmTask[] }>('GET', `/api/crm/tasks${suffix}`)
+  },
+
   startTakeover: (id: string, reason?: string) =>
     request<{ takeover: import('./types').HumanTakeover }>('POST', `/api/conversations/${id}/human-takeover`, { reason }),
 
@@ -159,6 +197,50 @@ export const api = {
 
   getWhatsappDiagnostics: () =>
     request<import('./types').WhatsappDiagnostics>('GET', '/api/whatsapp/diagnostics'),
+
+  // Campaigns
+  getCampaigns: () =>
+    request<{ campaigns: import('./types').Campaign[] }>('GET', '/api/campaigns'),
+
+  createCampaign: (data: { name: string; message: string; stageId?: string | null }) =>
+    request<{ campaign: import('./types').Campaign }>('POST', '/api/campaigns', data),
+
+  getCampaign: (id: string) =>
+    request<{ campaign: any }>('GET', `/api/campaigns/${id}`),
+
+  sendCampaign: (id: string) =>
+    request<{ job: any }>('POST', `/api/campaigns/${id}/send`, {}),
+
+  // Google Calendar integration
+  getGoogleAuthUrl: () =>
+    request<{ url: string }>('GET', '/api/integrations/google/auth-url'),
+
+  getGoogleStatus: () =>
+    request<import('./types').GoogleIntegrationStatus>('GET', '/api/integrations/google/status'),
+
+  disconnectGoogle: () =>
+    request<{ message: string }>('POST', '/api/integrations/google/disconnect', {}),
+
+  // Calendar
+  getGoogleEvents: (params?: { timeMin?: string; timeMax?: string; maxResults?: number }) => {
+    const qs = new URLSearchParams()
+    if (params?.timeMin) qs.set('timeMin', params.timeMin)
+    if (params?.timeMax) qs.set('timeMax', params.timeMax)
+    if (typeof params?.maxResults === 'number') qs.set('maxResults', String(params.maxResults))
+    const suffix = qs.toString() ? `?${qs.toString()}` : ''
+    return request<{ connected: boolean; events: any[] }>('GET', `/api/calendar/google-events${suffix}`)
+  },
+
+  getAppointments: (params?: { from?: string; to?: string }) => {
+    const qs = new URLSearchParams()
+    if (params?.from) qs.set('from', params.from)
+    if (params?.to) qs.set('to', params.to)
+    const suffix = qs.toString() ? `?${qs.toString()}` : ''
+    return request<{ appointments: import('./types').Appointment[] }>('GET', `/api/calendar/appointments${suffix}`)
+  },
+
+  createAppointment: (data: { title: string; startAt: string; endAt: string; contactId?: string | null; dealId?: string | null }) =>
+    request<{ appointment: import('./types').Appointment }>('POST', '/api/calendar/appointments', data),
 
   adminBootstrap: (email: string, password: string, bootstrapSecret: string) =>
     adminRequest<{ token: string; platformUser: import('./types').PlatformUser }>(

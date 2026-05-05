@@ -6,6 +6,7 @@ import { api } from '@/lib/api'
 import type { Conversation, HumanTakeover, Message } from '@/lib/types'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
+import { ConversationTabs } from '@/components/ui/ConversationTabs'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 
 function MessageBubble({ msg }: { msg: Message }) {
@@ -237,7 +238,8 @@ export default function MultiChatPage() {
 
   return (
     <div className="flex flex-col gap-4 h-[calc(100vh-112px)]">
-      <SectionHeader title="Multi-chat" description="Atenda múltiplas conversas em uma única tela" />
+      <SectionHeader title="Conversas" description="Atenda e acompanhe as conversas em tempo real" />
+      <ConversationTabs />
 
       {loading ? (
         <div className="flex items-center justify-center h-64">

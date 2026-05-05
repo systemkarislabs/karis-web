@@ -8,6 +8,7 @@ import { useToast } from '@/components/Toast'
 import type { Conversation } from '@/lib/types'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { ConversationTabs } from '@/components/ui/ConversationTabs'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 
 // ── Lead stage (stored in conv.campaign field as prefix "stage:xxx") ────────
@@ -175,6 +176,8 @@ export default function ConversasPage() {
           </div>
         }
       />
+
+      <ConversationTabs />
 
       {/* Stage filter pills */}
       <div className="flex gap-2 flex-wrap">

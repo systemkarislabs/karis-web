@@ -38,8 +38,9 @@ async function request<T>(
     throw new Error('Sessão expirada')
   }
 
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.message || 'Erro na requisição')
+  const text = await res.text()
+  const data = text ? JSON.parse(text) : null
+  if (!res.ok) throw new Error(data?.message || 'Erro na requisição')
   return data as T
 }
 
@@ -70,8 +71,9 @@ async function adminRequest<T>(
     throw new Error('Sessão expirada')
   }
 
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.message || 'Erro na requisição')
+  const text = await res.text()
+  const data = text ? JSON.parse(text) : null
+  if (!res.ok) throw new Error(data?.message || 'Erro na requisição')
   return data as T
 }
 
@@ -104,13 +106,13 @@ export const api = {
 
   // Knowledge
   getKnowledge: () =>
-    request<{ knowledgeBases: import('./types').KnowledgeBase[] }>('GET', '/api/knowledge'),
+    request<{ knowledge: import('./types').KnowledgeBase[] }>('GET', '/api/knowledge'),
 
   createKnowledge: (data: { title: string; content: string }) =>
-    request<{ knowledgeBase: import('./types').KnowledgeBase }>('POST', '/api/knowledge', data),
+    request<{ knowledge: import('./types').KnowledgeBase }>('POST', '/api/knowledge', data),
 
   deleteKnowledge: (id: string) =>
-    request<{ message: string }>('DELETE', `/api/knowledge/${id}`),
+    request<void>('DELETE', `/api/knowledge/${id}`),
 
   // Contacts
   getContacts: () =>

@@ -204,9 +204,10 @@ export interface DashboardStats {
 
 export interface KnowledgeBase {
   id: string
+  assistantId?: string
   title: string
-  content: string | null
-  fileUrl: string | null
+  content: string
+  fileUrl?: string | null
   createdAt: string
 }
 

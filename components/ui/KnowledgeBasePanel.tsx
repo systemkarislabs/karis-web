@@ -76,7 +76,7 @@ export function KnowledgeBasePanel() {
   useEffect(() => {
     let alive = true
     api.getKnowledge()
-      .then(d => { if (alive) setItems(d?.knowledgeBases ?? []) })
+      .then(d => { if (alive) setItems(d?.knowledge ?? []) })
       .catch(() => {})
       .finally(() => { if (alive) setLoading(false) })
     return () => { alive = false }
@@ -87,7 +87,7 @@ export function KnowledgeBasePanel() {
     setSaving(true)
     try {
       const data = await api.createKnowledge(form)
-      setItems(prev => [data.knowledgeBase, ...prev])
+      setItems(prev => [data.knowledge, ...prev])
       setForm({ title: '', content: '' })
       setShowForm(false)
     } catch { /* noop */ }

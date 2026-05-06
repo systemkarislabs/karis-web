@@ -83,6 +83,12 @@ export const api = {
   register: (data: { name: string; email: string; password: string; companyName: string }) =>
     request<{ token: string; user: import('./types').User }>('POST', '/api/auth/register', data, false),
 
+  forgotPassword: (email: string) =>
+    request<{ ok: true; message: string }>('POST', '/api/auth/forgot-password', { email }, false),
+
+  resetPassword: (token: string, password: string) =>
+    request<{ ok: true; message: string }>('POST', '/api/auth/reset-password', { token, password }, false),
+
   // Dashboard
   getStats: () =>
     request<import('./types').DashboardStats>('GET', '/api/companies/me/stats'),

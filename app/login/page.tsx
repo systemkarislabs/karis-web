@@ -107,9 +107,9 @@ export default function LoginPage() {
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between gap-3">
                   <label htmlFor="login-password" className="text-sm font-medium" style={{ color: 'var(--text)' }}>Senha</label>
-                  <button type="button" className="text-sm font-medium" style={{ color: 'var(--primary)' }}>
+                  <Link href="/recuperar-senha" className="text-sm font-medium" style={{ color: 'var(--primary)' }}>
                     Esqueci a senha
-                  </button>
+                  </Link>
                 </div>
                 <Input
                   id="login-password"

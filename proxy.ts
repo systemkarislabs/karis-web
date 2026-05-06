@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const PUBLIC_PATHS = ['/login', '/cadastro']
+const PUBLIC_PATHS = ['/login', '/cadastro', '/recuperar-senha', '/redefinir-senha']
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl

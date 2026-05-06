@@ -14,6 +14,21 @@ import { SectionHeader } from '@/components/ui/SectionHeader'
 
 type Status = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'ERROR'
 
+function parseVersion(v: string) {
+  const parts = v.split('.').map((p) => Number(p))
+  return {
+    major: Number.isFinite(parts[0]) ? parts[0] : 0,
+    minor: Number.isFinite(parts[1]) ? parts[1] : 0,
+    patch: Number.isFinite(parts[2]) ? parts[2] : 0,
+  }
+}
+
+function isLt(a: { major: number; minor: number; patch: number }, b: { major: number; minor: number; patch: number }) {
+  if (a.major !== b.major) return a.major < b.major
+  if (a.minor !== b.minor) return a.minor < b.minor
+  return a.patch < b.patch
+}
+
 export default function WhatsAppPage() {
   const { toast } = useToast()
   const router = useRouter()
@@ -341,6 +356,22 @@ export default function WhatsAppPage() {
               <div className="text-xs" style={{ color: 'var(--muted)' }}>API Base URL</div>
               <div className="font-semibold truncate" title={diagnostics.apiBaseUrl} style={{ color: 'var(--text)' }}>{diagnostics.apiBaseUrl}</div>
             </div>
+            {diagnostics.connection?.evolutionInstanceName ? (
+              <div className="p-3 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
+                <div className="text-xs" style={{ color: 'var(--muted)' }}>Instância</div>
+                <div className="font-semibold truncate" title={diagnostics.connection.evolutionInstanceName} style={{ color: 'var(--text)' }}>
+                  {diagnostics.connection.evolutionInstanceName}
+                </div>
+              </div>
+            ) : null}
+            {diagnostics.connection?.evolutionApiUrl ? (
+              <div className="p-3 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
+                <div className="text-xs" style={{ color: 'var(--muted)' }}>Evolution URL</div>
+                <div className="font-semibold truncate" title={diagnostics.connection.evolutionApiUrl} style={{ color: 'var(--text)' }}>
+                  {diagnostics.connection.evolutionApiUrl}
+                </div>
+              </div>
+            ) : null}
             {diagnostics.evolutionInfo?.version ? (
               <div className="p-3 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
                 <div className="text-xs" style={{ color: 'var(--muted)' }}>Evolution versão</div>
@@ -348,6 +379,29 @@ export default function WhatsAppPage() {
               </div>
             ) : null}
           </div>
+
+          {diagnostics.evolutionInfo?.version && isLt(parseVersion(diagnostics.evolutionInfo.version), parseVersion('2.3.7')) ? (
+            <div className="mt-4 p-3 rounded-xl" style={{ background: '#FFFBEB', border: '1px solid #FDE68A' }}>
+              <div className="text-xs font-semibold" style={{ color: '#92400E' }}>Atenção</div>
+              <div className="text-sm mt-1" style={{ color: '#92400E' }}>
+                Essa versão da Evolution pode falhar na geração de QR/pairing e retornar apenas {'{count:0}'}. Recomendado atualizar para 2.3.7+.
+              </div>
+            </div>
+          ) : null}
+
+          {diagnostics.evolutionInfo?.manager || diagnostics.connection?.evolutionApiUrl ? (
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  const url = diagnostics.evolutionInfo?.manager || `${diagnostics.connection?.evolutionApiUrl?.replace(/\/$/, '')}/manager`
+                  if (url) window.open(url, '_blank', 'noopener,noreferrer')
+                }}
+              >
+                Abrir Manager
+              </Button>
+            </div>
+          ) : null}
 
           {diagnostics.connection?.lastError ? (
             <div className="mt-4 p-3 rounded-xl" style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}>

@@ -345,63 +345,14 @@ export default function WhatsAppPage() {
               <div className="font-semibold" style={{ color: 'var(--text)' }}>{diagnostics.enabled ? 'Sim' : 'Não'}</div>
             </div>
             <div className="p-3 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
-              <div className="text-xs" style={{ color: 'var(--muted)' }}>Config Evolution</div>
+              <div className="text-xs" style={{ color: 'var(--muted)' }}>Configuração</div>
               <div className="font-semibold" style={{ color: 'var(--text)' }}>{diagnostics.hasEvolutionConfig ? 'OK' : 'Faltando'}</div>
             </div>
             <div className="p-3 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
-              <div className="text-xs" style={{ color: 'var(--muted)' }}>Evolution alcançável</div>
+              <div className="text-xs" style={{ color: 'var(--muted)' }}>Servidor alcançável</div>
               <div className="font-semibold" style={{ color: 'var(--text)' }}>{diagnostics.evolutionReachable ? 'Sim' : 'Não'}</div>
             </div>
-            <div className="p-3 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
-              <div className="text-xs" style={{ color: 'var(--muted)' }}>API Base URL</div>
-              <div className="font-semibold truncate" title={diagnostics.apiBaseUrl} style={{ color: 'var(--text)' }}>{diagnostics.apiBaseUrl}</div>
-            </div>
-            {diagnostics.connection?.evolutionInstanceName ? (
-              <div className="p-3 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
-                <div className="text-xs" style={{ color: 'var(--muted)' }}>Instância</div>
-                <div className="font-semibold truncate" title={diagnostics.connection.evolutionInstanceName} style={{ color: 'var(--text)' }}>
-                  {diagnostics.connection.evolutionInstanceName}
-                </div>
-              </div>
-            ) : null}
-            {diagnostics.connection?.evolutionApiUrl ? (
-              <div className="p-3 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
-                <div className="text-xs" style={{ color: 'var(--muted)' }}>Evolution URL</div>
-                <div className="font-semibold truncate" title={diagnostics.connection.evolutionApiUrl} style={{ color: 'var(--text)' }}>
-                  {diagnostics.connection.evolutionApiUrl}
-                </div>
-              </div>
-            ) : null}
-            {diagnostics.evolutionInfo?.version ? (
-              <div className="p-3 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
-                <div className="text-xs" style={{ color: 'var(--muted)' }}>Evolution versão</div>
-                <div className="font-semibold" style={{ color: 'var(--text)' }}>{diagnostics.evolutionInfo.version}</div>
-              </div>
-            ) : null}
           </div>
-
-          {diagnostics.evolutionInfo?.version && isLt(parseVersion(diagnostics.evolutionInfo.version), parseVersion('2.3.7')) ? (
-            <div className="mt-4 p-3 rounded-xl" style={{ background: '#FFFBEB', border: '1px solid #FDE68A' }}>
-              <div className="text-xs font-semibold" style={{ color: '#92400E' }}>Atenção</div>
-              <div className="text-sm mt-1" style={{ color: '#92400E' }}>
-                Essa versão da Evolution pode falhar na geração de QR/pairing e retornar apenas {'{count:0}'}. Recomendado atualizar para 2.3.7+.
-              </div>
-            </div>
-          ) : null}
-
-          {diagnostics.evolutionInfo?.manager || diagnostics.connection?.evolutionApiUrl ? (
-            <div className="mt-4 flex flex-wrap gap-3">
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  const url = diagnostics.evolutionInfo?.manager || `${diagnostics.connection?.evolutionApiUrl?.replace(/\/$/, '')}/manager`
-                  if (url) window.open(url, '_blank', 'noopener,noreferrer')
-                }}
-              >
-                Abrir Manager
-              </Button>
-            </div>
-          ) : null}
 
           {diagnostics.connection?.lastError ? (
             <div className="mt-4 p-3 rounded-xl" style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}>

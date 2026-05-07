@@ -7,17 +7,21 @@ import { SectionHeader } from '@/components/ui/SectionHeader'
 import { IaTabs } from '@/components/ui/IaTabs'
 import { AssistantSettingsPanel } from '@/components/ui/AssistantSettingsPanel'
 import { KnowledgeBasePanel } from '@/components/ui/KnowledgeBasePanel'
+import { TrainingPanel } from '@/components/ui/TrainingPanel'
 
-type IaTab = 'agente' | 'conhecimento'
+type IaTab = 'agente' | 'conhecimento' | 'treinamento'
 
 export default function IaClient() {
   const router = useRouter()
   const sp = useSearchParams()
   const [allowed, setAllowed] = useState<boolean | null>(null)
+  const [agentName, setAgentName] = useState<string>('')
 
   const tab = useMemo<IaTab>(() => {
     const raw = (sp.get('tab') ?? '').toLowerCase()
-    return raw === 'conhecimento' ? 'conhecimento' : 'agente'
+    if (raw === 'conhecimento') return 'conhecimento'
+    if (raw === 'treinamento') return 'treinamento'
+    return 'agente'
   }, [sp])
 
   useEffect(() => {
@@ -36,6 +40,14 @@ export default function IaClient() {
     return () => { alive = false }
   }, [router])
 
+  useEffect(() => {
+    let alive = true
+    api.getAssistant()
+      .then(d => { if (alive && d?.assistant?.name) setAgentName(d.assistant.name) })
+      .catch(() => {})
+    return () => { alive = false }
+  }, [])
+
   if (allowed === null) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -46,12 +58,19 @@ export default function IaClient() {
 
   if (!allowed) return null
 
+  const descriptions: Record<IaTab, string> = {
+    agente: agentName ? `Configure o comportamento de ${agentName}` : 'Configure o comportamento do agente',
+    conhecimento: agentName ? `Gerencie o conhecimento usado por ${agentName}` : 'Gerencie o conhecimento usado pelo agente',
+    treinamento: agentName ? `Materiais de aprendizado para ${agentName}` : 'PDFs e vídeos curtos para treinar o agente',
+  }
+
   return (
     <div className="max-w-3xl mx-auto flex flex-col gap-4">
-      <SectionHeader title="IA" description={tab === 'agente' ? 'Configure o comportamento do agente' : 'Gerencie o conhecimento usado pelo agente'} />
+      <SectionHeader title="IA" description={descriptions[tab]} />
       <IaTabs />
-      {tab === 'agente' ? <AssistantSettingsPanel /> : <KnowledgeBasePanel />}
+      {tab === 'agente' && <AssistantSettingsPanel />}
+      {tab === 'conhecimento' && <KnowledgeBasePanel />}
+      {tab === 'treinamento' && <TrainingPanel />}
     </div>
   )
 }
-

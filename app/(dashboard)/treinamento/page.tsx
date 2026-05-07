@@ -1,8 +1,12 @@
 'use client'
 
-import { ComingSoon } from '@/components/ui/ComingSoon'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function TreinamentoPage() {
-  return <ComingSoon title="Treinamento" />
+  const router = useRouter()
+  useEffect(() => {
+    router.replace('/ia?tab=treinamento')
+  }, [router])
+  return null
 }
-

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, type ReactNode } from 'react'
+import { useState, useEffect, useRef, useMemo, type ReactNode } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
@@ -43,13 +43,8 @@ const navItemsBase: Array<{
     href: '/ia',
     label: 'IA',
     icon: <DesignerIcon name="bot" size={18} />,
-    activePaths: ['/ia', '/assistente', '/conhecimento'],
+    activePaths: ['/ia', '/assistente', '/conhecimento', '/treinamento'],
     requires: 'ai',
-  },
-  {
-    href: '/treinamento',
-    label: 'Treinamento',
-    icon: <DesignerIcon name="users" size={18} />,
   },
   {
     href: '/crm',
@@ -72,6 +67,53 @@ const navItemsBase: Array<{
     icon: <DesignerIcon name="payment" size={18} />,
   },
 ]
+
+function KarisLogo({ collapsed, isMobile }: { collapsed: boolean; isMobile: boolean }) {
+  const showFull = !collapsed || isMobile
+  return (
+    <div className="flex items-center gap-2.5 min-w-0">
+      <svg
+        viewBox="0 0 32 32"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-label="Karis"
+        className="flex-shrink-0"
+        style={{ width: 32, height: 32 }}
+      >
+        <rect width="32" height="32" rx="10" fill="#679894" />
+        <path
+          d="M7 9.75C7 7.68 8.68 6 10.75 6H21.25C23.32 6 25 7.68 25 9.75V16.75C25 18.82 23.32 20.5 21.25 20.5H15.5L10.5 24V20.5H10.75C8.68 20.5 7 18.82 7 16.75V9.75Z"
+          fill="white"
+        />
+        <circle cx="13" cy="13" r="1.5" fill="#679894" />
+        <circle cx="16" cy="13" r="1.5" fill="#679894" />
+        <circle cx="19" cy="13" r="1.5" fill="#679894" />
+      </svg>
+
+      {showFull && (
+        <svg
+          viewBox="0 0 56 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+          style={{ height: 18, width: 'auto', overflow: 'visible' }}
+        >
+          <text
+            x="0"
+            y="15"
+            fontFamily="-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif"
+            fontSize="17"
+            fontWeight="700"
+            letterSpacing="-0.5"
+            fill="currentColor"
+          >
+            Karis
+          </text>
+        </svg>
+      )}
+    </div>
+  )
+}
 
 function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onToggle: () => void; navItems: typeof navItemsBase }) {
   const pathname = usePathname()
@@ -110,14 +152,8 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
           borderBottom: '1px solid var(--border)',
         }}
       >
-        <div className="flex items-center gap-2.5 min-w-0">
-        <img src="/designer/logo.svg" alt="" className="w-8 h-8 object-contain flex-shrink-0" />
-        {(!collapsed || isMobile) && (
-          <span className="text-[15px] font-bold tracking-tight whitespace-nowrap" style={{ color: 'var(--text)' }}>
-            Karis Atende
-          </span>
-        )}
-        </div>
+        <KarisLogo collapsed={collapsed} isMobile={isMobile} />
+
         {isMobile ? (
           <button
             type="button"
@@ -210,6 +246,109 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
   )
 }
 
+function UserMenu({ userName, userRole }: { userName: string; userRole: string }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!open) return
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [open])
+
+  async function handleLogout() {
+    setOpen(false)
+    localStorage.removeItem('karisAuthToken')
+    localStorage.removeItem('karisCurrentUser')
+    await fetch('/api/auth', { method: 'DELETE' })
+    router.push('/login')
+  }
+
+  const initial = userName.charAt(0).toUpperCase()
+  const displayName = userName.split(' ')[0]
+  const roleLabel = userRole === 'ADMIN' ? 'Admin' : userRole === 'AGENT' ? 'Agente' : userRole
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        aria-label="Menu do usuário"
+        aria-expanded={open}
+        onClick={() => setOpen(o => !o)}
+        className="h-10 inline-flex items-center gap-2 rounded-full pl-1 pr-2 transition-colors"
+        style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--muted)' }}
+      >
+        <div
+          className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0"
+          style={{ border: '1px solid var(--border)', background: 'var(--surface-3)' }}
+          aria-hidden="true"
+        >
+          <div className="w-full h-full flex items-center justify-center text-xs font-bold" style={{ color: 'var(--primary)' }}>
+            {initial}
+          </div>
+        </div>
+        <div className="hidden sm:flex flex-col items-start leading-tight">
+          <span className="text-[13px] font-semibold" style={{ color: 'var(--text)' }}>{displayName}</span>
+          {roleLabel ? (
+            <span className="text-[11px]" style={{ color: 'var(--muted)' }}>{roleLabel}</span>
+          ) : null}
+        </div>
+        <DesignerIcon name="chevronDown" size={16} />
+      </button>
+
+      {open && (
+        <div
+          className="absolute right-0 top-full mt-2 rounded-xl overflow-hidden"
+          style={{
+            width: 200,
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            boxShadow: '0 8px 24px rgba(0,0,0,.12)',
+            zIndex: 100,
+          }}
+        >
+          {/* User info header */}
+          <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
+            <p className="text-[13px] font-semibold truncate" style={{ color: 'var(--text)' }}>{userName}</p>
+            {roleLabel ? (
+              <p className="text-[11px] mt-0.5" style={{ color: 'var(--muted)' }}>{roleLabel}</p>
+            ) : null}
+          </div>
+
+          {/* Menu items */}
+          <div className="py-1">
+            <Link
+              href="/configuracoes"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium transition-colors hover:bg-[var(--bg)]"
+              style={{ color: 'var(--text)' }}
+            >
+              <DesignerIcon name="settings" size={15} />
+              Configurações
+            </Link>
+          </div>
+
+          <div className="py-1" style={{ borderTop: '1px solid var(--border)' }}>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium w-full transition-colors hover:bg-[var(--bg)]"
+              style={{ color: 'var(--danger)' }}
+            >
+              <DesignerIcon name="logout" size={15} />
+              Sair
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: typeof navItemsBase }) {
   const pathname = usePathname()
   const [userName, setUserName] = useState('')
@@ -231,7 +370,7 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
     return paths.some(p => (p === '/' ? pathname === '/' : pathname.startsWith(p)))
   }
 
-  const title = navItems.find(isActiveItem)?.label ?? 'Karis Atende'
+  const title = navItems.find(isActiveItem)?.label ?? ''
 
   return (
     <header
@@ -254,8 +393,23 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
       </button>
 
       <div className="flex-1 min-w-0">
-        <div className="text-[15px] font-semibold tracking-tight truncate" style={{ color: 'var(--text)' }}>{title}</div>
-        <div className="text-[12px] mt-0.5" style={{ color: 'var(--muted)' }}>Operação</div>
+        {title ? (
+          <>
+            <div className="text-[15px] font-semibold tracking-tight truncate" style={{ color: 'var(--text)' }}>{title}</div>
+            <div className="text-[12px] mt-0.5" style={{ color: 'var(--muted)' }}>Operação</div>
+          </>
+        ) : (
+          <div className="flex items-center gap-2">
+            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: 24, height: 24 }}>
+              <rect width="32" height="32" rx="10" fill="#679894" />
+              <path d="M7 9.75C7 7.68 8.68 6 10.75 6H21.25C23.32 6 25 7.68 25 9.75V16.75C25 18.82 23.32 20.5 21.25 20.5H15.5L10.5 24V20.5H10.75C8.68 20.5 7 18.82 7 16.75V9.75Z" fill="white" />
+              <circle cx="13" cy="13" r="1.5" fill="#679894" />
+              <circle cx="16" cy="13" r="1.5" fill="#679894" />
+              <circle cx="19" cy="13" r="1.5" fill="#679894" />
+            </svg>
+            <span className="text-[15px] font-semibold" style={{ color: 'var(--text)' }}>Karis</span>
+          </div>
+        )}
       </div>
 
       <div
@@ -283,33 +437,7 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
       </button>
 
       {userName && (
-        <button
-          type="button"
-          aria-label="Conta"
-          className="h-10 inline-flex items-center gap-2 rounded-full pl-1 pr-2 transition-colors"
-          style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--muted)' }}
-        >
-          <div
-            className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0"
-            style={{ border: '1px solid var(--border)', background: 'var(--surface-3)' }}
-            aria-hidden="true"
-          >
-            <div className="w-full h-full flex items-center justify-center text-xs font-bold" style={{ color: 'var(--primary)' }}>
-              {userName.charAt(0).toUpperCase()}
-            </div>
-          </div>
-          <div className="hidden sm:flex flex-col items-start leading-tight">
-            <span className="text-[13px] font-semibold" style={{ color: 'var(--text)' }}>
-              {userName.split(' ')[0]}
-            </span>
-            {userRole ? (
-              <span className="text-[11px]" style={{ color: 'var(--muted)' }}>
-                {userRole === 'ADMIN' ? 'Admin' : userRole === 'AGENT' ? 'Agente' : userRole}
-              </span>
-            ) : null}
-          </div>
-          <DesignerIcon name="chevronDown" size={16} />
-        </button>
+        <UserMenu userName={userName} userRole={userRole} />
       )}
     </header>
   )

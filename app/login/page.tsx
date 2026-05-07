@@ -216,34 +216,20 @@ export default function LoginPage() {
       >
         <div style={{ width: '100%', maxWidth: 380 }}>
 
-          {/* Mobile logo */}
-          <div className="lg:hidden" style={{ marginBottom: 36, textAlign: 'center' }}>
-            <img
-              src="/designer/karis-atende-logo-clean.png"
-              alt="Karis Atende"
-              style={{ height: 44, width: 'auto', margin: '0 auto', objectFit: 'contain' }}
-            />
-          </div>
-
           {/* Heading */}
           <div style={{ marginBottom: 32, textAlign: 'center' }}>
-            <div
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 12,
-                background: 'linear-gradient(135deg, #0F2040, #1a3a60)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 20px',
-              }}
-              aria-hidden="true"
-            >
+            {/* Logo completo em azul natural, proporcional, sem distorção */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 24 }}>
               <img
                 src="/designer/karis-k-mark.png"
                 alt=""
-                style={{ width: 28, height: 28, objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+                aria-hidden="true"
+                style={{ height: 36, width: 'auto', objectFit: 'contain', flexShrink: 0 }}
+              />
+              <img
+                src="/designer/karis-atende-logo-clean.png"
+                alt="Karis Atende"
+                style={{ height: 36, width: 'auto', objectFit: 'contain', flexShrink: 0 }}
               />
             </div>
             <h1

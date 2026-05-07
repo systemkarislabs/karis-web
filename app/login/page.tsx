@@ -86,13 +86,14 @@ export default function LoginPage() {
       style={{
         display: 'grid',
         minHeight: '100dvh',
-        gridTemplateColumns: 'clamp(0px, 48%, 540px) 1fr',
+        gridTemplateColumns: '1fr clamp(0px, 48%, 540px)',
       }}
     >
-      {/* ─── Left brand panel ──────────────────────────────────── */}
+      {/* ─── Brand panel (right on desktop) ───────────────────── */}
       <aside
         className="hidden lg:flex flex-col justify-between"
         style={{
+          order: 2,
           padding: '52px 52px 44px',
           background: `
             radial-gradient(ellipse 700px 500px at 10% 0%, rgba(103,152,148,.22) 0%, transparent 55%),
@@ -208,10 +209,10 @@ export default function LoginPage() {
         </div>
       </aside>
 
-      {/* ─── Right form panel ──────────────────────────────────── */}
+      {/* ─── Form panel (left on desktop) ─────────────────────── */}
       <main
         className="flex flex-col items-center justify-center"
-        style={{ background: '#FFFFFF', padding: '40px 24px' }}
+        style={{ order: 1, background: '#FFFFFF', padding: '40px 24px' }}
       >
         <div style={{ width: '100%', maxWidth: 380 }}>
 

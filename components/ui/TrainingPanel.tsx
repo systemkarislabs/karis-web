@@ -12,7 +12,7 @@ import { Input, Textarea } from '@/components/ui/Input'
 type TrainingType = 'pdf' | 'video' | 'text'
 
 interface TrainingItem extends KnowledgeBase {
-  fileUrl?: string
+  fileUrl?: string | null
   trainingType?: TrainingType
 }
 

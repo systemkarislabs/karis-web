@@ -71,11 +71,20 @@ const navItemsBase: Array<{
 function KarisLogo({ collapsed, isMobile }: { collapsed: boolean; isMobile: boolean }) {
   const showFull = !collapsed || isMobile
   return (
-    <div className="flex items-center gap-3 min-w-0">
-      <span className="brand-k-mark flex-shrink-0" aria-hidden="true">
-        <img src="/designer/karis-k-mark.png" alt="" />
-      </span>
-      {showFull && <span className="brand-wordmark truncate">Karis Atende</span>}
+    <div className="flex items-center min-w-0">
+      {showFull ? (
+        <img
+          src="/designer/karis-atende-logo-clean.png"
+          alt="Karis Atende"
+          style={{ height: 44, width: 'auto', objectFit: 'contain', flexShrink: 0 }}
+        />
+      ) : (
+        <img
+          src="/designer/karis-k-mark.png"
+          alt="Karis"
+          style={{ height: 36, width: 36, objectFit: 'contain', flexShrink: 0 }}
+        />
+      )}
     </div>
   )
 }
@@ -354,23 +363,18 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
         <DesignerIcon name="menu" size={18} />
       </button>
 
-      <div className="hidden sm:flex items-center gap-2 pr-2" style={{ borderRight: '1px solid var(--border-soft)' }}>
-        <span className="brand-k-mark !w-8 !h-8" aria-hidden="true">
-          <img src="/designer/karis-k-mark.png" alt="" />
-        </span>
-        <span className="brand-wordmark whitespace-nowrap">Karis Atende</span>
-      </div>
-
-      <div className="flex-1 min-w-0 pl-0 sm:pl-2">
+      <div className="flex-1 min-w-0">
         {title ? (
           <>
             <div className="text-[15px] font-semibold tracking-tight truncate" style={{ color: 'var(--text)' }}>{title}</div>
             <div className="text-[12px] mt-0.5" style={{ color: 'var(--muted)' }}>Operação</div>
           </>
         ) : (
-          <div className="flex items-center gap-2">
-            <span className="brand-wordmark">Karis Atende</span>
-          </div>
+          <img
+            src="/designer/karis-atende-logo-clean.png"
+            alt="Karis Atende"
+            style={{ height: 36, width: 'auto', objectFit: 'contain' }}
+          />
         )}
       </div>
 

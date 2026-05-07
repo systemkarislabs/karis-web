@@ -8,7 +8,7 @@ export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElem
     <input
       {...props}
       className={cn(
-        'ui-input h-11 w-full rounded-[var(--radius-lg)] px-4 text-sm outline-none focus:ring-0',
+        'ui-input h-11 w-full rounded-[var(--radius-lg)] px-4 text-sm outline-none focus:ring-0 placeholder:text-[var(--subtle)]',
         className,
       )}
     />
@@ -20,7 +20,7 @@ export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTex
     <textarea
       {...props}
       className={cn(
-        'ui-input w-full rounded-[var(--radius-lg)] px-4 py-3 text-sm outline-none focus:ring-0 min-h-[112px] resize-y',
+        'ui-input w-full rounded-[var(--radius-lg)] px-4 py-3 text-sm outline-none focus:ring-0 min-h-[112px] resize-y placeholder:text-[var(--subtle)]',
         className,
       )}
     />

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 export default function TreinamentoPage() {
   const router = useRouter()
   useEffect(() => {
-    router.replace('/ia?tab=treinamento')
+    router.replace('/ia?tab=agente')
   }, [router])
   return null
 }

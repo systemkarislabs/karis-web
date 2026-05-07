@@ -24,12 +24,17 @@ async function request<T>(
     if (token) headers['Authorization'] = `Bearer ${token}`
   }
 
-  const res = await fetch(`${BASE}${path}`, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-    cache: 'no-store',
-  })
+  let res: Response
+  try {
+    res = await fetch(`${BASE}${path}`, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+      cache: 'no-store',
+    })
+  } catch {
+    throw new Error('Nao foi possivel conectar a API. Verifique se o backend esta online.')
+  }
 
   if (res.status === 401) {
     localStorage.removeItem('karisAuthToken')
@@ -57,12 +62,17 @@ async function adminRequest<T>(
     if (token) headers['Authorization'] = `Bearer ${token}`
   }
 
-  const res = await fetch(`${BASE}${path}`, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-    cache: 'no-store',
-  })
+  let res: Response
+  try {
+    res = await fetch(`${BASE}${path}`, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+      cache: 'no-store',
+    })
+  } catch {
+    throw new Error('Nao foi possivel conectar a API. Verifique se o backend esta online.')
+  }
 
   if (res.status === 401) {
     localStorage.removeItem('karisAdminToken')

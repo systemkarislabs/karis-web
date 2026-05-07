@@ -1,15 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Check, Info } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { api } from '@/lib/api'
-import type { Assistant } from '@/lib/types'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input, Textarea } from '@/components/ui/Input'
 
 export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean }) {
-  const [assistant, setAssistant] = useState<Assistant | null>(null)
   const [form, setForm] = useState({ name: '', instructions: '', isActive: true })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -20,7 +18,6 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
     api.getAssistant()
       .then(d => {
         if (!alive) return
-        setAssistant(d.assistant)
         setForm({
           name: d.assistant.name ?? '',
           instructions: d.assistant.instructions ?? '',
@@ -38,8 +35,7 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
     setSaving(true)
     setSaved(false)
     try {
-      const data = await api.upsertAssistant(form)
-      setAssistant(data.assistant)
+      await api.upsertAssistant(form)
       setSaved(true)
       setTimeout(() => setSaved(false), 2500)
     } catch { /* noop */ }
@@ -47,7 +43,7 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       <Card className="p-6">
         {loading ? (
           <div className="flex items-center justify-center h-40">
@@ -55,11 +51,11 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            <div className="flex items-center justify-between p-4 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
+            <div className="flex items-center justify-between gap-4 p-4 rounded-lg" style={{ background: 'var(--surface-3)', border: '1px solid var(--border-soft)' }}>
               <div>
-                <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>Assistente ativo</p>
-                <p className="text-xs" style={{ color: 'var(--muted)' }}>
-                  {form.isActive ? 'Responde automaticamente às mensagens' : 'Aguardando ativação'}
+                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Agente ativa</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
+                  {form.isActive ? 'Responde automaticamente as mensagens' : 'Aguardando ativacao'}
                 </p>
               </div>
               <button
@@ -67,7 +63,7 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
                 onClick={() => setForm(f => ({ ...f, isActive: !f.isActive }))}
                 className="relative w-11 h-6 rounded-full transition-colors flex-shrink-0"
                 style={{ background: form.isActive ? 'var(--teal)' : '#D1D5DB' }}
-                aria-label={form.isActive ? 'Desativar assistente' : 'Ativar assistente'}
+                aria-label={form.isActive ? 'Desativar agente' : 'Ativar agente'}
               >
                 <span
                   className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
@@ -77,39 +73,39 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="assistant-name" className="text-sm font-medium" style={{ color: 'var(--text)' }}>Nome do assistente</label>
+              <label htmlFor="assistant-name" className="text-sm font-medium" style={{ color: 'var(--text)' }}>Nome da agente da empresa</label>
               <Input
                 id="assistant-name"
                 type="text"
                 value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                placeholder="Ex: Karis, Atendente, Sofia…"
+                placeholder="Ex: Sofia, Clara, Karis"
                 required
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="assistant-instructions" className="text-sm font-medium" style={{ color: 'var(--text)' }}>Instruções do sistema</label>
+              <label htmlFor="assistant-instructions" className="text-sm font-medium" style={{ color: 'var(--text)' }}>Comportamento da agente</label>
               <p className="text-xs" style={{ color: 'var(--muted)' }}>
-                Descreva como o assistente deve se comportar, o tom, limitações e informações da empresa.
+                Defina tom de voz, limites, regras de atendimento e informacoes da empresa.
               </p>
               <Textarea
                 id="assistant-instructions"
                 value={form.instructions}
                 onChange={e => setForm(f => ({ ...f, instructions: e.target.value }))}
-                placeholder="Você é um assistente de atendimento da [Empresa]. Seja sempre cordial, objetivo e responda em português."
+                placeholder="Voce e a agente de atendimento da empresa. Seja cordial, objetiva e responda em portugues."
                 style={{ lineHeight: '1.6' }}
               />
             </div>
 
             <div className="flex items-center gap-3">
               <Button type="submit" variant="primary" loading={saving}>
-                Salvar alterações
+                Salvar alteracoes
               </Button>
               {saved && (
                 <span className="text-sm flex items-center gap-1.5" style={{ color: 'var(--teal)' }}>
                   <Check size={16} aria-hidden="true" />
-                  Salvo!
+                  Salvo
                 </span>
               )}
             </div>
@@ -118,20 +114,10 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
       </Card>
 
       {showHint && (
-        <div
-          className="rounded-2xl p-5 flex gap-3"
-          style={{ background: '#EFF6FF', border: '1px solid #BFDBFE' }}
-        >
-          <Info size={18} aria-hidden="true" color="#3B82F6" className="flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-medium" style={{ color: '#1D4ED8' }}>Dica</p>
-            <p className="text-sm mt-0.5" style={{ color: '#1E40AF' }}>
-              Combine as instruções com a base de conhecimento para respostas mais precisas. O assistente usará ambos para responder seus clientes.
-            </p>
-          </div>
+        <div className="rounded-lg p-4 text-sm" style={{ background: 'var(--surface-3)', border: '1px solid var(--border-soft)', color: 'var(--muted)' }}>
+          Combine o comportamento com a base de conhecimento para respostas mais precisas.
         </div>
       )}
     </div>
   )
 }
-

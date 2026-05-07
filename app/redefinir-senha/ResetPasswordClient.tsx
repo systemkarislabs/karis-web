@@ -49,9 +49,10 @@ export default function ResetPasswordClient() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--bg)' }}>
       <div className="w-full max-w-md">
-        <div className="flex items-center gap-2 justify-center mb-8">
-          <img src="/designer/logo.svg" alt="" className="w-9 h-9 object-contain" />
-          <span className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Karis Atende</span>
+        <div className="mb-6 text-center">
+          <div className="brand-logo-auth">
+            <img src="/designer/karis-atende-logo-clean.png" alt="Karis Atende" />
+          </div>
         </div>
 
         <div className="mb-6">
@@ -113,4 +114,3 @@ export default function ResetPasswordClient() {
     </div>
   )
 }
-

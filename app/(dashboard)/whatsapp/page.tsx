@@ -336,28 +336,28 @@ export default function WhatsAppPage() {
         </Card>
       )}
 
-      {diagnostics && (
+      {false && diagnostics && (
         <Card className="p-5">
           <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Diagnóstico</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div className="p-3 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
               <div className="text-xs" style={{ color: 'var(--muted)' }}>Habilitado</div>
-              <div className="font-semibold" style={{ color: 'var(--text)' }}>{diagnostics.enabled ? 'Sim' : 'Não'}</div>
+              <div className="font-semibold" style={{ color: 'var(--text)' }}>{diagnostics!.enabled ? 'Sim' : 'Não'}</div>
             </div>
             <div className="p-3 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
               <div className="text-xs" style={{ color: 'var(--muted)' }}>Configuração</div>
-              <div className="font-semibold" style={{ color: 'var(--text)' }}>{diagnostics.hasEvolutionConfig ? 'OK' : 'Faltando'}</div>
+              <div className="font-semibold" style={{ color: 'var(--text)' }}>{diagnostics!.hasEvolutionConfig ? 'OK' : 'Faltando'}</div>
             </div>
             <div className="p-3 rounded-xl" style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)' }}>
               <div className="text-xs" style={{ color: 'var(--muted)' }}>Servidor alcançável</div>
-              <div className="font-semibold" style={{ color: 'var(--text)' }}>{diagnostics.evolutionReachable ? 'Sim' : 'Não'}</div>
+              <div className="font-semibold" style={{ color: 'var(--text)' }}>{diagnostics!.evolutionReachable ? 'Sim' : 'Não'}</div>
             </div>
           </div>
 
-          {diagnostics.connection?.lastError ? (
+          {diagnostics!.connection?.lastError ? (
             <div className="mt-4 p-3 rounded-xl" style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}>
               <div className="text-xs font-semibold" style={{ color: '#991B1B' }}>Último erro</div>
-              <div className="text-sm mt-1" style={{ color: '#B91C1C', wordBreak: 'break-word' }}>{diagnostics.connection.lastError}</div>
+              <div className="text-sm mt-1" style={{ color: '#B91C1C', wordBreak: 'break-word' }}>{diagnostics!.connection!.lastError}</div>
             </div>
           ) : null}
         </Card>

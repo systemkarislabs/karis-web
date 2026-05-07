@@ -67,11 +67,8 @@ function KPI({
 }) {
   return (
     <div
-      className="screen-enter"
+      className="screen-enter dashboard-card"
       style={{
-        background: 'var(--surface)',
-        border: '1px solid var(--border)',
-        borderRadius: 12,
         padding: '20px 22px',
         display: 'flex',
         flexDirection: 'column',
@@ -169,12 +166,12 @@ function DashboardContent() {
     .slice(0, 6)
 
   return (
-    <div className="flex flex-col gap-6" style={{ padding: 28 }}>
-      <div>
-        <div style={{ fontSize: 15, fontWeight: 650, color: 'var(--text)', letterSpacing: '-0.3px' }}>
+    <div className="flex flex-col gap-6 dashboard-shell">
+      <div className="dashboard-hero">
+        <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)', letterSpacing: '0' }}>
           {stats?.company.name ?? 'Karis Atende'}
         </div>
-        <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>Visão geral do dia</div>
+        <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>Visão geral do dia</div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[14px]">
@@ -220,11 +217,8 @@ function DashboardContent() {
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-[14px]">
         <div
-          className="screen-enter"
+          className="screen-enter premium-panel"
           style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 12,
             padding: '20px 24px',
           }}
         >
@@ -284,11 +278,8 @@ function DashboardContent() {
         </div>
 
         <div
-          className="screen-enter"
+          className="screen-enter premium-panel"
           style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 12,
             padding: '20px 22px',
           }}
         >

@@ -3,15 +3,13 @@
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 
-type IaTab = 'agente' | 'conhecimento' | 'treinamento'
+type IaTab = 'agente' | 'conhecimento'
 
 function getTab(pathname: string, searchParams: URLSearchParams): IaTab {
   const raw = (searchParams.get('tab') ?? '').toLowerCase()
   if (raw === 'conhecimento') return 'conhecimento'
-  if (raw === 'treinamento') return 'treinamento'
   if (raw === 'agente') return 'agente'
   if (pathname.startsWith('/conhecimento')) return 'conhecimento'
-  if (pathname.startsWith('/treinamento')) return 'treinamento'
   return 'agente'
 }
 
@@ -21,9 +19,8 @@ export function IaTabs() {
   const tab = getTab(pathname, sp)
 
   const tabs: Array<{ id: IaTab; label: string; href: string; ariaLabel: string }> = [
-    { id: 'agente', label: 'Agente IA', href: '/ia?tab=agente', ariaLabel: 'Configurar Agente IA' },
+    { id: 'agente', label: 'Agente e treinamento', href: '/ia?tab=agente', ariaLabel: 'Configurar agente e treinamento' },
     { id: 'conhecimento', label: 'Conhecimento', href: '/ia?tab=conhecimento', ariaLabel: 'Gerenciar Base de Conhecimento' },
-    { id: 'treinamento', label: 'Treinamento', href: '/ia?tab=treinamento', ariaLabel: 'Materiais de Treinamento' },
   ]
 
   return (

@@ -46,14 +46,11 @@ export default function CadastroPage() {
         }}
       >
         <div>
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.10)' }}>
-              <img src="/designer/logo.svg" alt="" className="w-9 h-9 object-contain" />
+          <div>
+            <div className="brand-logo-side rounded-xl bg-white">
+              <img src="/designer/karis-atende-logo-clean.png" alt="Karis Atende" />
             </div>
-            <div className="min-w-0">
-              <div className="text-2xl font-semibold tracking-tight">Karis Atende</div>
-              <div className="text-sm mt-1" style={{ color: 'rgba(203,213,225,.9)' }}>Plataforma de atendimento inteligente com IA</div>
-            </div>
+            <div className="text-sm mt-3" style={{ color: 'rgba(203,213,225,.9)' }}>Plataforma de atendimento inteligente com IA</div>
           </div>
 
           <div className="mt-10 flex flex-col gap-6">
@@ -82,12 +79,13 @@ export default function CadastroPage() {
 
       <main className="flex items-center justify-center p-6">
         <div className="w-full max-w-md">
-          <div className="lg:hidden flex items-center gap-2 justify-center mb-8">
-            <img src="/designer/logo.svg" alt="" className="w-9 h-9 object-contain" />
-            <span className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Karis Atende</span>
+          <div className="lg:hidden mb-6">
+            <div className="brand-logo-auth">
+              <img src="/designer/karis-atende-logo-clean.png" alt="Karis Atende" />
+            </div>
           </div>
 
-          <div className="mb-8">
+          <div className="mb-8 text-center">
             <h1 className="text-2xl font-semibold tracking-tight" style={{ color: 'var(--text)' }}>Criar conta</h1>
             <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Comece agora e configure seu atendimento</p>
           </div>

@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { api } from '@/lib/api'
 import Link from 'next/link'
 import { BarChart3, Bot, MessageSquareText } from 'lucide-react'
+import { api } from '@/lib/api'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
@@ -24,7 +24,6 @@ export default function LoginPage() {
       const { token, user } = await api.login(email, password)
       localStorage.setItem('karisAuthToken', token)
       localStorage.setItem('karisCurrentUser', JSON.stringify(user))
-      // salva cookie para o middleware
       await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) })
       router.push('/')
     } catch (err: unknown) {
@@ -35,59 +34,59 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2" style={{ background: 'var(--bg)' }}>
+    <div className="min-h-screen grid lg:grid-cols-[minmax(420px,0.92fr)_1.08fr]" style={{ background: 'var(--bg)' }}>
       <aside
         className="hidden lg:flex flex-col justify-between px-14 py-12"
         style={{
-          background: 'radial-gradient(1200px 800px at 20% 10%, rgba(103,152,148,.20), transparent 55%), linear-gradient(135deg, #0A0C10, #111827)',
+          background: 'radial-gradient(900px 620px at 18% 8%, rgba(90,146,142,.28), transparent 58%), radial-gradient(720px 540px at 90% 84%, rgba(184,135,84,.18), transparent 55%), linear-gradient(145deg, #061E44, #09131E 58%, #121816)',
           color: 'rgba(255,255,255,.92)',
         }}
       >
         <div>
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.10)' }}>
-              <img src="/designer/logo.svg" alt="" className="w-9 h-9 object-contain" />
+          <div>
+            <div className="brand-logo-side rounded-[14px] bg-white/95 p-3">
+              <img src="/designer/karis-atende-logo-clean.png" alt="Karis Atende" />
             </div>
-            <div className="min-w-0">
-              <div className="text-2xl font-semibold tracking-tight">Karis Atende</div>
-              <div className="text-sm mt-1" style={{ color: 'rgba(203,213,225,.9)' }}>Plataforma de atendimento inteligente com IA</div>
+            <div className="text-sm mt-4" style={{ color: 'rgba(225,232,229,.82)' }}>
+              Atendimento inteligente, operação clara e IA treinada para vender melhor.
             </div>
           </div>
 
-          <div className="mt-10 flex flex-col gap-6">
+          <div className="mt-12 flex flex-col gap-6">
             {[
               { icon: <Bot size={18} aria-hidden="true" />, text: 'Agentes de IA treinados para o seu negócio' },
-              { icon: <MessageSquareText size={18} aria-hidden="true" />, text: 'Multi-canal: WhatsApp, Instagram, Telegram' },
-              { icon: <BarChart3 size={18} aria-hidden="true" />, text: 'Dashboard com métricas em tempo real' },
+              { icon: <MessageSquareText size={18} aria-hidden="true" />, text: 'WhatsApp, Instagram e Telegram em uma rotina só' },
+              { icon: <BarChart3 size={18} aria-hidden="true" />, text: 'Métricas limpas para decidir rápido' },
             ].map((item, idx) => (
               <div key={idx} className="flex items-center gap-4">
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.10)' }}
+                  className="w-10 h-10 rounded-[12px] flex items-center justify-center flex-shrink-0"
+                  style={{ background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)', color: 'var(--champagne)' }}
                 >
                   {item.icon}
                 </div>
-                <div className="text-sm" style={{ color: 'rgba(226,232,240,.92)' }}>{item.text}</div>
+                <div className="text-sm" style={{ color: 'rgba(235,239,237,.90)' }}>{item.text}</div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="text-xs" style={{ color: 'rgba(148,163,184,.75)' }}>
-          © Karis Atende · Todos os direitos reservados a Karis Negócios
+        <div className="text-xs" style={{ color: 'rgba(225,232,229,.58)' }}>
+          © Karis Atende · Karis Negócios
         </div>
       </aside>
 
       <main className="flex items-center justify-center p-6">
         <div className="w-full max-w-md">
-          <div className="lg:hidden flex items-center gap-2 justify-center mb-8">
-            <img src="/designer/logo.svg" alt="" className="w-9 h-9 object-contain" />
-            <span className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Karis Atende</span>
+          <div className="lg:hidden mb-7">
+            <div className="brand-logo-auth">
+              <img src="/designer/karis-atende-logo-clean.png" alt="Karis Atende" />
+            </div>
           </div>
 
-          <div className="mb-8">
+          <div className="mb-8 text-center">
             <h1 className="text-2xl font-semibold tracking-tight" style={{ color: 'var(--text)' }}>Bem-vindo de volta</h1>
-            <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Entre na sua conta para continuar</p>
+            <p className="text-sm mt-1.5" style={{ color: 'var(--muted)' }}>Entre na sua conta para continuar</p>
           </div>
 
           <Card className="p-7">
@@ -107,7 +106,7 @@ export default function LoginPage() {
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between gap-3">
                   <label htmlFor="login-password" className="text-sm font-medium" style={{ color: 'var(--text)' }}>Senha</label>
-                  <Link href="/recuperar-senha" className="text-sm font-medium" style={{ color: 'var(--primary)' }}>
+                  <Link href="/recuperar-senha" className="text-sm font-semibold" style={{ color: 'var(--primary)' }}>
                     Esqueci a senha
                   </Link>
                 </div>
@@ -122,7 +121,7 @@ export default function LoginPage() {
               </div>
 
               {error && (
-                <p className="text-sm px-3 py-2 rounded-lg" style={{ background: 'oklch(97% 0.04 15)', color: 'var(--danger)', border: '1px solid color-mix(in oklch, var(--danger) 22%, transparent)' }}>{error}</p>
+                <p className="text-sm px-3 py-2 rounded-[12px]" style={{ background: 'oklch(97% 0.04 15)', color: 'var(--danger)', border: '1px solid color-mix(in oklch, var(--danger) 22%, transparent)' }}>{error}</p>
               )}
 
               <Button type="submit" variant="primary" loading={loading} className="w-full h-11 rounded-[12px]">

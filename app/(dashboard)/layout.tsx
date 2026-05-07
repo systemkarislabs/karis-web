@@ -71,46 +71,11 @@ const navItemsBase: Array<{
 function KarisLogo({ collapsed, isMobile }: { collapsed: boolean; isMobile: boolean }) {
   const showFull = !collapsed || isMobile
   return (
-    <div className="flex items-center gap-2.5 min-w-0">
-      <svg
-        viewBox="0 0 32 32"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-label="Karis"
-        className="flex-shrink-0"
-        style={{ width: 32, height: 32 }}
-      >
-        <rect width="32" height="32" rx="10" fill="#679894" />
-        <path
-          d="M7 9.75C7 7.68 8.68 6 10.75 6H21.25C23.32 6 25 7.68 25 9.75V16.75C25 18.82 23.32 20.5 21.25 20.5H15.5L10.5 24V20.5H10.75C8.68 20.5 7 18.82 7 16.75V9.75Z"
-          fill="white"
-        />
-        <circle cx="13" cy="13" r="1.5" fill="#679894" />
-        <circle cx="16" cy="13" r="1.5" fill="#679894" />
-        <circle cx="19" cy="13" r="1.5" fill="#679894" />
-      </svg>
-
-      {showFull && (
-        <svg
-          viewBox="0 0 56 20"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-          style={{ height: 18, width: 'auto', overflow: 'visible' }}
-        >
-          <text
-            x="0"
-            y="15"
-            fontFamily="-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif"
-            fontSize="17"
-            fontWeight="700"
-            letterSpacing="-0.5"
-            fill="currentColor"
-          >
-            Karis
-          </text>
-        </svg>
-      )}
+    <div className="flex items-center gap-3 min-w-0">
+      <span className="brand-k-mark flex-shrink-0" aria-hidden="true">
+        <img src="/designer/karis-k-mark.png" alt="" />
+      </span>
+      {showFull && <span className="brand-wordmark truncate">Karis Atende</span>}
     </div>
   )
 }
@@ -135,10 +100,9 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
 
   return (
     <aside
-      className="flex flex-col h-full transition-all duration-200"
+      className="app-sidebar flex flex-col h-full transition-all duration-200"
       style={{
         width: isMobile ? 280 : (collapsed ? 64 : 220),
-        background: 'var(--surface)',
         borderRight: '1px solid var(--border)',
         flexShrink: 0,
       }}
@@ -177,13 +141,12 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
               key={item.href}
               href={item.href}
               aria-label={item.label}
-              className="flex items-center gap-2.5 w-full rounded-lg text-[13.5px] font-medium transition-colors"
+              className={`nav-item flex items-center gap-2.5 w-full rounded-[12px] text-[13.5px] font-semibold transition-colors ${active ? 'nav-item-active' : ''}`}
               style={{
                 padding: collapsed && !isMobile ? '10px 0' : '9px 12px',
                 justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
-                borderLeft: active ? '3px solid var(--primary)' : '3px solid transparent',
                 background: active ? activeBg : 'transparent',
-                color: active ? 'var(--primary)' : 'var(--muted)',
+                color: active ? 'var(--navy)' : 'var(--muted)',
               }}
               title={collapsed ? item.label : undefined}
               onClick={() => { if (isMobile) onToggle() }}
@@ -202,7 +165,7 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
         <button
           onClick={onToggle}
           aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
-          className="flex items-center gap-2.5 w-full rounded-lg text-[13.5px] font-medium transition-colors"
+            className="nav-item flex items-center gap-2.5 w-full rounded-[12px] text-[13.5px] font-semibold transition-colors"
           style={{
             padding: collapsed && !isMobile ? '10px 0' : '9px 12px',
             justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
@@ -215,7 +178,7 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
         <Link
           href="/configuracoes"
           aria-label="Configurações"
-          className="flex items-center gap-2.5 w-full rounded-lg text-[13.5px] font-medium transition-colors"
+          className="nav-item flex items-center gap-2.5 w-full rounded-[12px] text-[13.5px] font-semibold transition-colors"
           style={{
             padding: collapsed && !isMobile ? '10px 0' : '9px 12px',
             justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
@@ -230,7 +193,7 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
         <button
           onClick={handleLogout}
           aria-label="Sair"
-          className="flex items-center gap-2.5 w-full rounded-lg text-[13.5px] font-medium transition-colors"
+          className="nav-item flex items-center gap-2.5 w-full rounded-[12px] text-[13.5px] font-semibold transition-colors"
           style={{
             padding: collapsed && !isMobile ? '10px 0' : '9px 12px',
             justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
@@ -374,11 +337,10 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
 
   return (
     <header
-      className="flex items-center gap-4 px-5"
+      className="app-topbar flex items-center gap-4 px-5"
       style={{
         height: 'calc(60px + env(safe-area-inset-top))',
         paddingTop: 'env(safe-area-inset-top)',
-        background: 'var(--surface)',
         borderBottom: '1px solid var(--border)',
         flexShrink: 0,
       }}
@@ -386,13 +348,20 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
       <button
         onClick={onMenuClick}
         aria-label="Alternar menu"
-        className="h-10 w-10 inline-flex items-center justify-center rounded-lg transition-colors"
+        className="h-10 w-10 inline-flex items-center justify-center rounded-lg transition-colors flex-shrink-0"
         style={{ color: 'var(--muted)' }}
       >
         <DesignerIcon name="menu" size={18} />
       </button>
 
-      <div className="flex-1 min-w-0">
+      <div className="hidden sm:flex items-center gap-2 pr-2" style={{ borderRight: '1px solid var(--border-soft)' }}>
+        <span className="brand-k-mark !w-8 !h-8" aria-hidden="true">
+          <img src="/designer/karis-k-mark.png" alt="" />
+        </span>
+        <span className="brand-wordmark whitespace-nowrap">Karis Atende</span>
+      </div>
+
+      <div className="flex-1 min-w-0 pl-0 sm:pl-2">
         {title ? (
           <>
             <div className="text-[15px] font-semibold tracking-tight truncate" style={{ color: 'var(--text)' }}>{title}</div>
@@ -400,14 +369,7 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
           </>
         ) : (
           <div className="flex items-center gap-2">
-            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: 24, height: 24 }}>
-              <rect width="32" height="32" rx="10" fill="#679894" />
-              <path d="M7 9.75C7 7.68 8.68 6 10.75 6H21.25C23.32 6 25 7.68 25 9.75V16.75C25 18.82 23.32 20.5 21.25 20.5H15.5L10.5 24V20.5H10.75C8.68 20.5 7 18.82 7 16.75V9.75Z" fill="white" />
-              <circle cx="13" cy="13" r="1.5" fill="#679894" />
-              <circle cx="16" cy="13" r="1.5" fill="#679894" />
-              <circle cx="19" cy="13" r="1.5" fill="#679894" />
-            </svg>
-            <span className="text-[15px] font-semibold" style={{ color: 'var(--text)' }}>Karis</span>
+            <span className="brand-wordmark">Karis Atende</span>
           </div>
         )}
       </div>

@@ -16,10 +16,10 @@ export function Badge({
   children: React.ReactNode
 }) {
   const styles: Record<Variant, { bg: string; fg: string; dot: string }> = {
-    neutral: { bg: '#F3F4F6', fg: '#6B7280', dot: '#9CA3AF' },
-    success: { bg: '#D1FAE5', fg: '#065F46', dot: '#10B981' },
-    warning: { bg: '#FEF3C7', fg: '#92400E', dot: '#F59E0B' },
-    danger: { bg: '#FEF2F2', fg: '#991B1B', dot: '#EF4444' },
+    neutral: { bg: 'rgba(6,30,68,.07)', fg: '#324255', dot: '#6B7A8C' },
+    success: { bg: 'rgba(34,126,87,.12)', fg: '#1F6B4C', dot: '#2FA56E' },
+    warning: { bg: 'rgba(184,135,84,.16)', fg: '#855D2B', dot: '#B88754' },
+    danger: { bg: 'rgba(190,54,72,.11)', fg: '#A3293A', dot: '#D14A5E' },
   }
 
   const s = styles[variant]

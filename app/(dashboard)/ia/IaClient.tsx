@@ -9,7 +9,7 @@ import { AssistantSettingsPanel } from '@/components/ui/AssistantSettingsPanel'
 import { KnowledgeBasePanel } from '@/components/ui/KnowledgeBasePanel'
 import { TrainingPanel } from '@/components/ui/TrainingPanel'
 
-type IaTab = 'agente' | 'conhecimento' | 'treinamento'
+type IaTab = 'agente' | 'conhecimento'
 
 export default function IaClient() {
   const router = useRouter()
@@ -20,7 +20,6 @@ export default function IaClient() {
   const tab = useMemo<IaTab>(() => {
     const raw = (sp.get('tab') ?? '').toLowerCase()
     if (raw === 'conhecimento') return 'conhecimento'
-    if (raw === 'treinamento') return 'treinamento'
     return 'agente'
   }, [sp])
 
@@ -59,18 +58,21 @@ export default function IaClient() {
   if (!allowed) return null
 
   const descriptions: Record<IaTab, string> = {
-    agente: agentName ? `Configure o comportamento de ${agentName}` : 'Configure o comportamento do agente',
-    conhecimento: agentName ? `Gerencie o conhecimento usado por ${agentName}` : 'Gerencie o conhecimento usado pelo agente',
-    treinamento: agentName ? `Materiais de aprendizado para ${agentName}` : 'PDFs e vídeos curtos para treinar o agente',
+    agente: agentName ? `Configure o comportamento e os materiais de aprendizado de ${agentName}` : 'Configure a agente da empresa e seus materiais de aprendizado',
+    conhecimento: agentName ? `Gerencie o conhecimento usado por ${agentName}` : 'Gerencie o conhecimento usado pela agente',
   }
 
   return (
     <div className="max-w-3xl mx-auto flex flex-col gap-4">
       <SectionHeader title="IA" description={descriptions[tab]} />
       <IaTabs />
-      {tab === 'agente' && <AssistantSettingsPanel />}
+      {tab === 'agente' && (
+        <>
+          <AssistantSettingsPanel showHint={false} />
+          <TrainingPanel />
+        </>
+      )}
       {tab === 'conhecimento' && <KnowledgeBasePanel />}
-      {tab === 'treinamento' && <TrainingPanel />}
     </div>
   )
 }

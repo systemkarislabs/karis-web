@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Bot, MessageSquareText, Send } from 'lucide-react'
+import { ArrowLeft, Bot, CheckCheck, MessageSquareText, Send } from 'lucide-react'
 import { api } from '@/lib/api'
 import type { Conversation, Message } from '@/lib/types'
 import { Button } from '@/components/ui/Button'
@@ -40,8 +40,9 @@ function MessageBubble({ msg }: { msg: Message }) {
         >
           {msg.content}
         </div>
-        <p className={`text-xs mt-1 ${isOutbound ? 'text-right mr-1' : 'ml-1'}`} style={{ color: 'var(--muted)' }}>
-          {new Date(msg.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+        <p className={`text-xs mt-1 ${isOutbound ? 'text-right mr-1 inline-flex items-center justify-end gap-1 w-full' : 'ml-1'}`} style={{ color: 'var(--muted)' }}>
+          <span>{new Date(msg.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+          {isOutbound && <CheckCheck size={14} strokeWidth={2.4} aria-label="Mensagem enviada" style={{ color: '#64C7BE' }} />}
         </p>
       </div>
     </div>

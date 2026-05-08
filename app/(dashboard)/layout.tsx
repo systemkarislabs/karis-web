@@ -58,12 +58,12 @@ const navItemsBase: Array<{
   },
   {
     href: '/calendario',
-    label: 'Calendário',
+    label: 'Calend\u00e1rio',
     icon: <DesignerIcon name="calendar" size={18} />,
   },
   {
     href: '/remuneracao',
-    label: 'Remuneração',
+    label: 'Remunera\u00e7\u00e3o',
     icon: <DesignerIcon name="payment" size={18} />,
   },
 ]
@@ -111,21 +111,21 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
     <aside
       className="app-sidebar flex flex-col h-full transition-all duration-200"
       style={{
-        width: isMobile ? 280 : (collapsed ? 64 : 220),
+        width: isMobile ? 280 : 48,
         borderRight: '1px solid var(--border)',
         flexShrink: 0,
       }}
     >
       {/* Logo */}
       <div
-        className="flex items-center justify-between gap-2.5 px-4"
+        className="flex items-center justify-center gap-2.5"
         style={{
-          height: 'calc(60px + env(safe-area-inset-top))',
+          height: 'calc(64px + env(safe-area-inset-top))',
           paddingTop: 'env(safe-area-inset-top)',
           borderBottom: '1px solid var(--border)',
         }}
       >
-        <KarisLogo collapsed={collapsed} isMobile={isMobile} />
+        <KarisLogo collapsed={!isMobile} isMobile={isMobile} />
 
         {isMobile ? (
           <button
@@ -141,29 +141,30 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-2 py-3 flex flex-col gap-0.5 overflow-y-auto">
+      <nav className="flex-1 px-2.5 py-3 flex flex-col gap-1 overflow-y-auto">
         {navItems.map(item => {
           const active = isActiveItem(item)
-          const activeBg = 'color-mix(in oklch, var(--primary) 8%, transparent)'
+          const activeBg = 'rgba(90,152,148,.12)'
           return (
             <Link
               key={item.href}
               href={item.href}
               aria-label={item.label}
-              className={`nav-item flex items-center gap-2.5 w-full rounded-[12px] text-[13.5px] font-semibold transition-colors ${active ? 'nav-item-active' : ''}`}
+              className={`nav-item flex items-center gap-2.5 w-full rounded-[8px] text-[13.5px] font-semibold transition-colors ${active ? 'nav-item-active' : ''}`}
               style={{
-                padding: collapsed && !isMobile ? '10px 0' : '9px 12px',
-                justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
+                minHeight: 36,
+                padding: isMobile ? '9px 12px' : '0',
+                justifyContent: isMobile ? 'flex-start' : 'center',
                 background: active ? activeBg : 'transparent',
                 color: active ? 'var(--navy)' : 'var(--muted)',
               }}
-              title={collapsed ? item.label : undefined}
+              title={!isMobile ? item.label : undefined}
               onClick={() => { if (isMobile) onToggle() }}
             >
-              <span className="flex-shrink-0" style={{ color: active ? 'var(--primary)' : 'var(--muted)' }}>
+              <span className="flex-shrink-0" style={{ color: active ? 'var(--navy)' : 'inherit' }}>
                 {item.icon}
               </span>
-              {(!collapsed || isMobile) && <span>{item.label}</span>}
+              {isMobile && <span>{item.label}</span>}
             </Link>
           )
         })}
@@ -174,44 +175,47 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
         <button
           onClick={onToggle}
           aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
-            className="nav-item flex items-center gap-2.5 w-full rounded-[12px] text-[13.5px] font-semibold transition-colors"
+          className="nav-item flex items-center gap-2.5 w-full rounded-[8px] text-[13.5px] font-semibold transition-colors"
           style={{
-            padding: collapsed && !isMobile ? '10px 0' : '9px 12px',
-            justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
+            minHeight: 36,
+            padding: isMobile ? '9px 12px' : '0',
+            justifyContent: isMobile ? 'flex-start' : 'center',
             color: 'var(--muted)',
           }}
         >
           <DesignerIcon name="menu" size={17} className="flex-shrink-0" />
-          {(!collapsed || isMobile) && <span>Menu</span>}
+          {isMobile && <span>Menu</span>}
         </button>
         <Link
           href="/configuracoes"
-          aria-label="Configurações"
-          className="nav-item flex items-center gap-2.5 w-full rounded-[12px] text-[13.5px] font-semibold transition-colors"
+          aria-label={'Configura\u00e7\u00f5es'}
+          className="nav-item flex items-center gap-2.5 w-full rounded-[8px] text-[13.5px] font-semibold transition-colors"
           style={{
-            padding: collapsed && !isMobile ? '10px 0' : '9px 12px',
-            justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
+            minHeight: 36,
+            padding: isMobile ? '9px 12px' : '0',
+            justifyContent: isMobile ? 'flex-start' : 'center',
             color: 'var(--muted)',
           }}
-          title={collapsed ? 'Configurações' : undefined}
+          title={!isMobile ? 'Configura\u00e7\u00f5es' : undefined}
           onClick={() => { if (isMobile) onToggle() }}
         >
           <DesignerIcon name="settings" size={17} className="flex-shrink-0" />
-          {(!collapsed || isMobile) && <span>Configurações</span>}
+          {isMobile && <span>{'Configura\u00e7\u00f5es'}</span>}
         </Link>
         <button
           onClick={handleLogout}
           aria-label="Sair"
-          className="nav-item flex items-center gap-2.5 w-full rounded-[12px] text-[13.5px] font-semibold transition-colors"
+          className="nav-item flex items-center gap-2.5 w-full rounded-[8px] text-[13.5px] font-semibold transition-colors"
           style={{
-            padding: collapsed && !isMobile ? '10px 0' : '9px 12px',
-            justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
+            minHeight: 36,
+            padding: isMobile ? '9px 12px' : '0',
+            justifyContent: isMobile ? 'flex-start' : 'center',
             color: 'var(--danger)',
           }}
-          title={collapsed ? 'Sair' : undefined}
+          title={!isMobile ? 'Sair' : undefined}
         >
           <DesignerIcon name="logout" size={17} className="flex-shrink-0" />
-          {(!collapsed || isMobile) && <span>Sair</span>}
+          {isMobile && <span>Sair</span>}
         </button>
       </div>
     </aside>
@@ -300,7 +304,7 @@ function UserMenu({ userName, userRole }: { userName: string; userRole: string }
               style={{ color: 'var(--text)' }}
             >
               <DesignerIcon name="settings" size={15} />
-              Configurações
+              {'Configura\u00e7\u00f5es'}
             </Link>
           </div>
 
@@ -342,7 +346,11 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
     return paths.some(p => (p === '/' ? pathname === '/' : pathname.startsWith(p)))
   }
 
-  const title = navItems.find(isActiveItem)?.label ?? ''
+  const activeTopItem = navItems.find(isActiveItem)
+  const title = activeTopItem?.label ?? ''
+  const topItems = activeTopItem && !navItems.slice(0, 6).some(item => item.href === activeTopItem.href)
+    ? [...navItems.slice(0, 5), activeTopItem]
+    : navItems.slice(0, 6)
 
   return (
     <header
@@ -367,7 +375,7 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
         {title ? (
           <>
             <div className="text-[15px] font-semibold tracking-tight truncate" style={{ color: 'var(--text)' }}>{title}</div>
-            <div className="text-[12px] mt-0.5" style={{ color: 'var(--muted)' }}>Operação</div>
+            <div className="text-[12px] mt-0.5" style={{ color: 'var(--muted)' }}>{'Opera\u00e7\u00e3o'}</div>
           </>
         ) : (
           <img
@@ -378,6 +386,17 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
         )}
       </div>
 
+      <nav className="hidden xl:flex items-center gap-1 rounded-full px-1 py-1" style={{ background: '#fff', border: '1px solid var(--border-soft)' }} aria-label={'Navega\u00e7\u00e3o principal'}>
+        {topItems.map(item => {
+          const active = isActiveItem(item)
+          return (
+            <Link key={item.href} href={item.href} className={`top-pill ${active ? 'top-pill-active' : ''}`}>
+              {item.label}
+            </Link>
+          )
+        })}
+      </nav>
+
       <div
         className="hidden md:flex items-center gap-2 rounded-lg px-3"
         style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', height: 36, width: 220 }}
@@ -386,7 +405,7 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
           <DesignerIcon name="search" size={15} className="flex-shrink-0" />
         </span>
         <input
-          placeholder="Buscar…"
+          placeholder="Buscar..."
           aria-label="Buscar"
           className="text-[13px] outline-none bg-transparent w-full"
           style={{ color: 'var(--text)' }}
@@ -462,7 +481,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   }, [entitlements])
 
   return (
-    <div className="flex h-[100dvh] overflow-hidden" style={{ background: 'var(--bg)' }}>
+    <div data-skin="karis-finance-reference-2026-05-07" className="karis-design-stage">
+      <div className="karis-app-frame">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:rounded-xl"
@@ -497,9 +517,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       )}
       <div className="flex flex-col flex-1 min-w-0">
         <Topbar onMenuClick={() => (isMobile ? setMobileOpen(o => !o) : setCollapsed(c => !c))} navItems={navItems} />
-        <main id="main-content" tabIndex={-1} aria-label="Conteúdo principal" className="flex-1 overflow-y-auto p-4 md:p-6 screen-enter">
+        <main id="main-content" tabIndex={-1} aria-label="Conteúdo principal" className="flex-1 overflow-y-auto screen-enter">
           {children}
         </main>
+      </div>
       </div>
     </div>
   )

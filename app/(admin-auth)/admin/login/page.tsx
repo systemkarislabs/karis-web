@@ -30,9 +30,9 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: '#070A12' }}>
+    <div className="auth-modern-page min-h-screen flex items-center justify-center p-6" style={{ background: '#070A12' }}>
       <div
-        className="w-full max-w-md rounded-3xl p-6"
+        className="auth-modern-card w-full max-w-md rounded-3xl p-6"
         style={{
           background: 'linear-gradient(180deg, rgba(13,18,32,1), rgba(13,18,32,.74))',
           border: '1px solid rgba(255,255,255,.08)',
@@ -101,4 +101,3 @@ export default function AdminLoginPage() {
     </div>
   )
 }
-

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { Bot, Brain, Database, MessageSquareText } from 'lucide-react'
 import { api } from '@/lib/api'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { IaTabs } from '@/components/ui/IaTabs'
@@ -63,16 +64,55 @@ export default function IaClient() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-4">
+    <div className="ia-designer-page">
       <SectionHeader title="IA" description={descriptions[tab]} />
-      <IaTabs />
-      {tab === 'agente' && (
-        <>
-          <AssistantSettingsPanel showHint={false} />
-          <TrainingPanel />
-        </>
-      )}
-      {tab === 'conhecimento' && <KnowledgeBasePanel />}
+
+      <div className="ia-reference-grid">
+        <aside className="ia-profile-panel">
+          <div className="ia-profile-mark">
+            <Bot size={28} aria-hidden="true" />
+          </div>
+          <p>AI Agent</p>
+          <h2>{agentName || 'Karis Assistente'}</h2>
+          <span>Atendimento automatizado com contexto de negócio.</span>
+
+          <div className="ia-profile-stats">
+            <div>
+              <MessageSquareText size={15} aria-hidden="true" />
+              <strong>Conversas</strong>
+              <span>Respostas guiadas</span>
+            </div>
+            <div>
+              <Database size={15} aria-hidden="true" />
+              <strong>Conhecimento</strong>
+              <span>Base treinável</span>
+            </div>
+            <div>
+              <Brain size={15} aria-hidden="true" />
+              <strong>Treino</strong>
+              <span>PDFs e vídeos</span>
+            </div>
+          </div>
+        </aside>
+
+        <section className="ia-workspace-panel">
+          <div className="ia-workspace-top">
+            <div>
+              <p>{tab === 'agente' ? 'Agent Settings' : 'Knowledge Base'}</p>
+              <h2>{tab === 'agente' ? 'Controle da agente' : 'Base de conhecimento'}</h2>
+            </div>
+            <IaTabs />
+          </div>
+
+          {tab === 'agente' && (
+            <div className="ia-workspace-stack">
+              <AssistantSettingsPanel showHint={false} />
+              <TrainingPanel />
+            </div>
+          )}
+          {tab === 'conhecimento' && <KnowledgeBasePanel />}
+        </section>
+      </div>
     </div>
   )
 }

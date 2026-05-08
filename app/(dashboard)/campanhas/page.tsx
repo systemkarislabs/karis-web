@@ -59,10 +59,25 @@ export default function CampanhasPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto flex flex-col gap-4">
+    <div className="ops-designer-page campaigns-designer-page flex flex-col gap-4">
       <SectionHeader title="Campanhas" description="Disparos via WhatsApp" />
 
-      <Card className="p-6">
+      <div className="ops-metric-strip">
+        <div className="ops-metric-card brand">
+          <span>Campanhas</span>
+          <strong>{campaigns.length}</strong>
+        </div>
+        <div className="ops-metric-card">
+          <span>Segmentos CRM</span>
+          <strong>{stages.length}</strong>
+        </div>
+        <div className="ops-metric-card">
+          <span>Envio</span>
+          <strong>{sendingId ? 'Ativo' : 'Pronto'}</strong>
+        </div>
+      </div>
+
+      <Card className="ops-panel p-6">
         <p className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Nova campanha</p>
         <form onSubmit={handleCreate} className="flex flex-col gap-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -109,7 +124,7 @@ export default function CampanhasPage() {
       ) : (
         <div className="flex flex-col gap-3">
           {campaigns.map(c => (
-            <Card key={c.id} className="p-5">
+            <Card key={c.id} className="ops-panel p-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{c.name}</div>

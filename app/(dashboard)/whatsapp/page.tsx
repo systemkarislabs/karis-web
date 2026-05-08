@@ -159,11 +159,26 @@ export default function WhatsAppPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto flex flex-col gap-6">
+    <div className="ops-designer-page whatsapp-designer-page flex flex-col gap-4">
       <SectionHeader title="WhatsApp" description="Conecte seu número para receber e enviar mensagens" />
 
+      <div className="ops-metric-strip">
+        <div className="ops-metric-card brand">
+          <span>Status</span>
+          <strong>{status === 'CONNECTED' ? 'Online' : status === 'CONNECTING' ? 'Pareando' : status === 'ERROR' ? 'Erro' : 'Offline'}</strong>
+        </div>
+        <div className="ops-metric-card">
+          <span>QR Code</span>
+          <strong>{qrCode ? 'Pronto' : 'Aguardando'}</strong>
+        </div>
+        <div className="ops-metric-card">
+          <span>Evolution</span>
+          <strong>{diagnostics?.evolutionReachable ? 'OK' : 'Verificar'}</strong>
+        </div>
+      </div>
+
       {/* Status card */}
-      <Card className="p-6 flex flex-col gap-5">
+      <Card className="ops-panel whatsapp-main-panel p-6 flex flex-col gap-5">
         {loading ? (
           <div className="flex items-center justify-center h-20">
             <div className="ui-spinner" />
@@ -303,7 +318,7 @@ export default function WhatsAppPage() {
       </Card>
 
       {status === 'CONNECTING' && !qrCode && (
-        <Card className="p-5">
+        <Card className="ops-panel p-5">
           <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Alternativa: Código de pareamento</p>
           <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
             Se o QR não aparecer, tente gerar um código usando seu número (DDI + DDD + número).
@@ -364,7 +379,7 @@ export default function WhatsAppPage() {
       )}
 
       {/* Instructions card */}
-      <Card className="p-5">
+      <Card className="ops-panel p-5">
         <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Como conectar</p>
         <ol className="flex flex-col gap-2.5">
           {[

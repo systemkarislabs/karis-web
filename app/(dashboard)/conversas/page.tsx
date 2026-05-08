@@ -143,7 +143,7 @@ export default function ConversasPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-4">
+    <div className="ops-designer-page conversations-designer-page flex flex-col gap-4">
       <SectionHeader
         title="Conversas"
         description={`${conversations.length} no total`}
@@ -176,6 +176,21 @@ export default function ConversasPage() {
           </div>
         }
       />
+
+      <div className="ops-metric-strip">
+        <div className="ops-metric-card brand">
+          <span>Conversas</span>
+          <strong>{conversations.length}</strong>
+        </div>
+        <div className="ops-metric-card">
+          <span>Não lidas</span>
+          <strong>{totalUnread}</strong>
+        </div>
+        <div className="ops-metric-card">
+          <span>Filtro</span>
+          <strong>{filter === 'ALL' ? 'Todas' : filter === 'OPEN' ? 'Abertas' : 'Fechadas'}</strong>
+        </div>
+      </div>
 
       <ConversationTabs />
 

@@ -3,6 +3,5 @@
 import { ComingSoon } from '@/components/ui/ComingSoon'
 
 export default function RemuneracaoPage() {
-  return <ComingSoon title="Remuneração" />
+  return <ComingSoon title={'Remunera\u00e7\u00e3o'} />
 }
-

@@ -25,7 +25,7 @@ export function IaTabs() {
 
   return (
     <div
-      className="flex gap-1 p-1 rounded-xl w-fit"
+      className="finance-segmented w-fit"
       style={{ background: 'var(--surface)', border: '1px solid var(--border-soft)' }}
     >
       {tabs.map(t => (
@@ -33,10 +33,9 @@ export function IaTabs() {
           key={t.id}
           href={t.href}
           aria-label={t.ariaLabel}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+          className={tab === t.id ? 'active' : ''}
           style={{
-            background: tab === t.id ? 'var(--teal)' : 'transparent',
-            color: tab === t.id ? 'white' : 'var(--muted)',
+            textDecoration: 'none',
           }}
         >
           {t.label}

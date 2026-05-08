@@ -126,7 +126,7 @@ export default function CrmPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto flex flex-col gap-4">
+    <div className="ops-designer-page crm-designer-page flex flex-col gap-4">
       <SectionHeader
         title="CRM"
         description="Negócios e funil"
@@ -150,6 +150,21 @@ export default function CrmPage() {
         }
       />
 
+      <div className="ops-metric-strip">
+        <div className="ops-metric-card brand">
+          <span>Negócios</span>
+          <strong>{deals.length}</strong>
+        </div>
+        <div className="ops-metric-card">
+          <span>Etapas</span>
+          <strong>{stages.length}</strong>
+        </div>
+        <div className="ops-metric-card">
+          <span>Pipelines</span>
+          <strong>{pipelines.length}</strong>
+        </div>
+      </div>
+
       <Input
         value={q}
         onChange={e => setQ(e.target.value)}
@@ -157,7 +172,7 @@ export default function CrmPage() {
       />
 
       {showNew && (
-        <Card className="p-5">
+        <Card className="ops-panel p-5">
           <p className="text-sm font-semibold mb-4" style={{ color: 'var(--text)' }}>Criar negócio</p>
           <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="md:col-span-2">
@@ -209,11 +224,11 @@ export default function CrmPage() {
       ) : stages.length === 0 ? (
         <EmptyState title="Nenhum estágio" description="Crie um pipeline para começar." className="border-2 border-dashed" />
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
+        <div className="crm-board-grid">
           {stages.map(stage => {
             const list = grouped.get(stage.id) ?? []
             return (
-              <Card key={stage.id} className="p-4">
+              <Card key={stage.id} className="ops-panel p-4">
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{stage.name}</p>
@@ -281,7 +296,7 @@ export default function CrmPage() {
       )}
 
       {activeDealId && (
-        <Card className="p-5">
+        <Card className="ops-panel p-5">
           {dealLoading || !activeDeal ? (
             <div className="flex items-center justify-center h-24">
               <div className="ui-spinner" />

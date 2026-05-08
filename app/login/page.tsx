@@ -6,38 +6,14 @@ import Link from 'next/link'
 import { Eye, EyeOff } from 'lucide-react'
 import { api } from '@/lib/api'
 
-/* ─── Tiny components ───────────────────────────────────────────── */
-
 function Spinner() {
   return (
-    <svg
-      className="animate-spin"
-      style={{ width: 18, height: 18, color: 'currentColor' }}
-      fill="none"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
+    <svg className="animate-spin" style={{ width: 18, height: 18 }} fill="none" viewBox="0 0 24 24" aria-hidden="true">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
     </svg>
   )
 }
-
-function Check() {
-  return (
-    <svg
-      viewBox="0 0 16 16"
-      fill="none"
-      style={{ width: 15, height: 15, flexShrink: 0 }}
-      aria-hidden="true"
-    >
-      <circle cx="8" cy="8" r="7.5" stroke="rgba(103,152,148,.45)" />
-      <path d="M5 8.4l2 2 4-4" stroke="#679894" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-/* ─── Main page ─────────────────────────────────────────────────── */
 
 export default function LoginPage() {
   const router = useRouter()
@@ -68,353 +44,341 @@ export default function LoginPage() {
     }
   }
 
-  const inputBase: React.CSSProperties = {
-    width: '100%',
-    height: 48,
-    padding: '0 14px',
-    border: '1.5px solid #E2E8F0',
-    borderRadius: 10,
-    fontSize: 14,
-    color: '#0F172A',
-    background: '#FFFFFF',
-    outline: 'none',
-    transition: 'border-color .15s, box-shadow .15s',
-  }
-
   return (
-    <div
-      style={{
+    <div style={{ minHeight: '100dvh', display: 'flex', position: 'relative', overflow: 'hidden', background: '#040E1F' }}>
+
+      {/* ── Background orbs ────────────────────────────────── */}
+      <div aria-hidden="true" style={{
+        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+      }}>
+        {/* Teal orb top-left */}
+        <div style={{
+          position: 'absolute', top: '-15%', left: '-8%',
+          width: 600, height: 600, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(103,152,148,.18) 0%, transparent 70%)',
+          filter: 'blur(40px)',
+        }} />
+        {/* Navy-blue orb center */}
+        <div style={{
+          position: 'absolute', top: '30%', left: '25%',
+          width: 500, height: 500, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(15,32,64,.55) 0%, transparent 70%)',
+          filter: 'blur(60px)',
+        }} />
+        {/* Teal orb bottom-right */}
+        <div style={{
+          position: 'absolute', bottom: '-10%', right: '30%',
+          width: 400, height: 400, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(103,152,148,.12) 0%, transparent 70%)',
+          filter: 'blur(50px)',
+        }} />
+        {/* Dot grid */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,.04) 1px, transparent 1px)',
+          backgroundSize: '30px 30px',
+        }} />
+      </div>
+
+      {/* ── Main grid ─────────────────────────────────────── */}
+      <div style={{
+        position: 'relative', zIndex: 1,
         display: 'grid',
-        minHeight: '100dvh',
-        gridTemplateColumns: '1fr clamp(0px, 48%, 540px)',
-      }}
-    >
-      {/* ─── Brand panel (right on desktop) ───────────────────── */}
-      <aside
-        className="hidden lg:flex flex-col justify-between"
-        style={{
-          order: 2,
-          padding: '52px 52px 44px',
-          background: `
-            radial-gradient(ellipse 700px 500px at 10% 0%, rgba(103,152,148,.22) 0%, transparent 55%),
-            radial-gradient(ellipse 500px 400px at 95% 100%, rgba(15,32,64,.9) 0%, transparent 60%),
-            linear-gradient(160deg, #0A1628 0%, #0F2040 45%, #0D1B30 100%)
-          `,
-          backgroundImage: `
-            radial-gradient(circle, rgba(255,255,255,.04) 1px, transparent 1px),
-            radial-gradient(ellipse 700px 500px at 10% 0%, rgba(103,152,148,.22) 0%, transparent 55%),
-            linear-gradient(160deg, #0A1628 0%, #0F2040 45%, #0D1B30 100%)
-          `,
-          backgroundSize: '28px 28px, 100% 100%, 100% 100%',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-        aria-label="Apresentação Karis Atende"
-      >
-        {/* Decorative arc */}
-        <div
-          aria-hidden="true"
-          style={{
-            position: 'absolute',
-            right: -160,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: 380,
-            height: 380,
-            borderRadius: '50%',
-            border: '1.5px solid rgba(103,152,148,.12)',
-            pointerEvents: 'none',
-          }}
-        />
-        <div
-          aria-hidden="true"
-          style={{
-            position: 'absolute',
-            right: -100,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: 240,
-            height: 240,
-            borderRadius: '50%',
-            border: '1px solid rgba(103,152,148,.08)',
-            pointerEvents: 'none',
-          }}
-        />
+        width: '100%',
+        gridTemplateColumns: '1fr clamp(0px,44%,520px)',
+      }}>
 
-        {/* Top: logo + tagline */}
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <img
-            src="/designer/karis-atende-logo-clean.png"
-            alt="Karis Atende"
-            style={{ height: 52, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
-          />
+        {/* ── LEFT: brand panel ─────────────────────────── */}
+        <aside
+          className="hidden lg:flex flex-col justify-between"
+          style={{ padding: '56px 64px 48px', color: '#fff', order: 1 }}
+          aria-label="Apresentação Karis Atende"
+        >
+          <div>
+            {/* Logo */}
+            <img
+              src="/designer/karis-atende-logo-clean.png"
+              alt="Karis Atende"
+              style={{ height: 46, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+            />
 
-          <p
-            style={{
-              marginTop: 28,
-              fontSize: 22,
-              fontWeight: 700,
-              letterSpacing: '-0.4px',
-              lineHeight: 1.35,
-              color: '#FFFFFF',
-              maxWidth: 320,
-            }}
-          >
-            Atendimento com IA que{' '}
-            <span style={{ color: '#8BBFBB' }}>conecta, atende</span> e resolve.
-          </p>
+            {/* Hero copy */}
+            <div style={{ marginTop: 56 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', color: '#679894', textTransform: 'uppercase', marginBottom: 14 }}>
+                Plataforma de Atendimento IA
+              </p>
+              <h1 style={{ fontSize: 38, fontWeight: 800, lineHeight: 1.18, letterSpacing: '-0.8px', color: '#FFFFFF', maxWidth: 400, margin: 0 }}>
+                Conecta.{' '}
+                <span style={{
+                  background: 'linear-gradient(90deg, #8BBFBB, #679894)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}>
+                  Atende.
+                </span>{' '}
+                Resolve.
+              </h1>
+              <p style={{ marginTop: 18, fontSize: 15, color: 'rgba(200,218,215,.68)', lineHeight: 1.65, maxWidth: 360 }}>
+                IA treinada no seu negócio, WhatsApp integrado e métricas em tempo real.
+              </p>
+            </div>
 
-          <p style={{ marginTop: 12, fontSize: 13.5, color: 'rgba(200,215,212,.7)', lineHeight: 1.6, maxWidth: 300 }}>
-            Centralize WhatsApp, treine sua IA e acompanhe cada conversa — tudo em um só lugar.
-          </p>
+            {/* Floating metric badges */}
+            <div style={{ marginTop: 52, display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+              {[
+                { value: '98%', label: 'Satisfação' },
+                { value: '< 2 min', label: 'Tempo de resposta' },
+                { value: '3×', label: 'Mais conversões' },
+              ].map((m, i) => (
+                <div key={i} style={{
+                  padding: '12px 18px',
+                  borderRadius: 14,
+                  background: 'rgba(255,255,255,.05)',
+                  border: '1px solid rgba(255,255,255,.09)',
+                  backdropFilter: 'blur(12px)',
+                  minWidth: 90,
+                }}>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: '#8BBFBB', letterSpacing: '-0.5px', lineHeight: 1 }}>
+                    {m.value}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'rgba(180,205,202,.6)', marginTop: 4, fontWeight: 500 }}>
+                    {m.label}
+                  </div>
+                </div>
+              ))}
+            </div>
 
-          {/* Feature list */}
-          <div style={{ marginTop: 40, display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {[
-              'Agentes de IA treinados com seus produtos e serviços',
-              'WhatsApp, Instagram e Telegram em uma operação só',
-              'Métricas de atendimento em tempo real',
-            ].map((text, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Check />
-                <span style={{ fontSize: 13.5, color: 'rgba(220,232,229,.85)', lineHeight: 1.5 }}>{text}</span>
-              </div>
-            ))}
+            {/* Feature list */}
+            <div style={{ marginTop: 44, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {[
+                'Agentes de IA treinados com seus produtos',
+                'WhatsApp, Instagram e Telegram unificados',
+                'Pausa, múltiplos atendentes e CRM integrado',
+              ].map((text, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{
+                    width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                    background: 'rgba(103,152,148,.15)',
+                    border: '1px solid rgba(103,152,148,.3)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <svg viewBox="0 0 10 10" fill="none" style={{ width: 9, height: 9 }} aria-hidden="true">
+                      <path d="M2 5.2l2 2 4-4" stroke="#679894" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <span style={{ fontSize: 13.5, color: 'rgba(215,230,228,.8)', lineHeight: 1.5 }}>{text}</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Bottom: testimonial + copyright */}
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <blockquote
-            style={{
-              padding: '18px 20px',
-              borderRadius: 14,
-              background: 'rgba(255,255,255,.05)',
-              border: '1px solid rgba(255,255,255,.09)',
-              backdropFilter: 'blur(8px)',
-              marginBottom: 32,
-            }}
-          >
-            <p style={{ fontSize: 13, color: 'rgba(215,228,225,.88)', lineHeight: 1.65, fontStyle: 'italic' }}>
-              "Depois que conectamos a Karis, nossa equipe parou de perder leads e o tempo de resposta caiu 80%."
+          {/* Bottom testimonial */}
+          <div>
+            <div style={{
+              padding: '18px 22px',
+              borderRadius: 16,
+              background: 'rgba(255,255,255,.04)',
+              border: '1px solid rgba(255,255,255,.08)',
+              backdropFilter: 'blur(10px)',
+              marginBottom: 28,
+            }}>
+              <div style={{ display: 'flex', gap: 3, marginBottom: 10 }}>
+                {[0,1,2,3,4].map(i => (
+                  <svg key={i} viewBox="0 0 12 12" fill="#679894" style={{ width: 11, height: 11 }} aria-hidden="true">
+                    <path d="M6 0l1.4 4.1H12L8.3 6.6l1.4 4.1L6 8.2l-3.7 2.5 1.4-4.1L0 4.1h4.6z" />
+                  </svg>
+                ))}
+              </div>
+              <p style={{ fontSize: 13, color: 'rgba(210,228,225,.85)', lineHeight: 1.65, fontStyle: 'italic' }}>
+                "Depois que conectamos a Karis, paramos de perder leads e o tempo de resposta caiu 80%."
+              </p>
+              <p style={{ marginTop: 10, fontSize: 11.5, color: 'rgba(160,190,186,.55)', fontWeight: 600 }}>
+                — Cliente Karis Atende
+              </p>
+            </div>
+            <p style={{ fontSize: 11.5, color: 'rgba(140,170,166,.4)' }}>
+              © {new Date().getFullYear()} Karis Atende · Karis Negócios
             </p>
-            <footer style={{ marginTop: 10, fontSize: 11.5, color: 'rgba(170,195,190,.7)', fontStyle: 'normal', fontWeight: 600, letterSpacing: '0.3px' }}>
-              — Cliente Karis Atende
-            </footer>
-          </blockquote>
+          </div>
+        </aside>
 
-          <p style={{ fontSize: 11.5, color: 'rgba(160,185,180,.45)', letterSpacing: '0.2px' }}>
-            © {new Date().getFullYear()} Karis Atende · Karis Negócios
-          </p>
-        </div>
-      </aside>
+        {/* ── RIGHT: form panel ─────────────────────────── */}
+        <main
+          className="flex flex-col items-center justify-center"
+          style={{
+            order: 2,
+            minHeight: '100dvh',
+            padding: '40px 32px',
+            background: 'rgba(255,255,255,.97)',
+            backdropFilter: 'blur(20px)',
+            borderLeft: '1px solid rgba(255,255,255,.08)',
+          }}
+        >
+          <div style={{ width: '100%', maxWidth: 360 }}>
 
-      {/* ─── Form panel (left on desktop) ─────────────────────── */}
-      <main
-        className="flex flex-col items-center justify-center"
-        style={{ order: 1, background: '#FFFFFF', padding: '40px 24px' }}
-      >
-        <div style={{ width: '100%', maxWidth: 380 }}>
-
-          {/* Heading */}
-          <div style={{ marginBottom: 32, textAlign: 'center' }}>
-            {/* Logo completo em azul natural, proporcional, sem distorção */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 24 }}>
+            {/* Logos lado a lado */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 36 }}>
               <img
                 src="/designer/karis-k-mark.png"
                 alt=""
                 aria-hidden="true"
-                style={{ height: 36, width: 'auto', objectFit: 'contain', flexShrink: 0 }}
+                style={{ height: 34, width: 'auto', objectFit: 'contain', flexShrink: 0 }}
               />
               <img
                 src="/designer/karis-atende-logo-clean.png"
                 alt="Karis Atende"
-                style={{ height: 36, width: 'auto', objectFit: 'contain', flexShrink: 0 }}
-              />
-            </div>
-            <h1
-              style={{
-                fontSize: 24,
-                fontWeight: 700,
-                letterSpacing: '-0.4px',
-                color: '#0F172A',
-                marginBottom: 6,
-              }}
-            >
-              Bem-vindo de volta
-            </h1>
-            <p style={{ fontSize: 13.5, color: '#64748B' }}>
-              Entre na sua conta para continuar
-            </p>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-
-            {/* E-mail */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-              <label
-                htmlFor="login-email"
-                style={{ fontSize: 13, fontWeight: 600, color: '#1E293B', letterSpacing: '0.1px' }}
-              >
-                E-mail
-              </label>
-              <input
-                id="login-email"
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-                placeholder="voce@empresa.com"
-                autoComplete="email"
-                style={inputBase}
-                onFocus={e => {
-                  e.currentTarget.style.borderColor = '#679894'
-                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(103,152,148,.12)'
-                }}
-                onBlur={e => {
-                  e.currentTarget.style.borderColor = '#E2E8F0'
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
+                style={{ height: 34, width: 'auto', objectFit: 'contain', flexShrink: 0 }}
               />
             </div>
 
-            {/* Senha */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <label
-                  htmlFor="login-password"
-                  style={{ fontSize: 13, fontWeight: 600, color: '#1E293B', letterSpacing: '0.1px' }}
-                >
-                  Senha
+            {/* Heading */}
+            <div style={{ marginBottom: 30, textAlign: 'center' }}>
+              <h2 style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.4px', color: '#0F172A', margin: 0 }}>
+                Bem-vindo de volta
+              </h2>
+              <p style={{ fontSize: 13.5, color: '#94A3B8', marginTop: 6 }}>
+                Entre na sua conta para continuar
+              </p>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label htmlFor="login-email" style={{ fontSize: 13, fontWeight: 600, color: '#1E293B' }}>
+                  E-mail
                 </label>
-                <Link
-                  href="/recuperar-senha"
-                  style={{ fontSize: 12.5, fontWeight: 600, color: '#679894', textDecoration: 'none' }}
-                >
-                  Esqueci a senha
-                </Link>
-              </div>
-              <div style={{ position: 'relative' }}>
                 <input
-                  id="login-password"
-                  type={showPwd ? 'text' : 'password'}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  id="login-email"
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
                   required
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                  style={{ ...inputBase, paddingRight: 44 }}
+                  placeholder="voce@empresa.com"
+                  autoComplete="email"
+                  style={{
+                    height: 46, padding: '0 14px', borderRadius: 10,
+                    border: '1.5px solid #E2E8F0', fontSize: 14,
+                    color: '#0F172A', background: '#FAFBFC', outline: 'none',
+                    transition: 'border-color .15s, box-shadow .15s',
+                  }}
                   onFocus={e => {
                     e.currentTarget.style.borderColor = '#679894'
-                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(103,152,148,.12)'
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(103,152,148,.13)'
+                    e.currentTarget.style.background = '#FFFFFF'
                   }}
                   onBlur={e => {
                     e.currentTarget.style.borderColor = '#E2E8F0'
                     e.currentTarget.style.boxShadow = 'none'
+                    e.currentTarget.style.background = '#FAFBFC'
                   }}
                 />
-                <button
-                  type="button"
-                  aria-label={showPwd ? 'Ocultar senha' : 'Mostrar senha'}
-                  onClick={() => setShowPwd(v => !v)}
-                  style={{
-                    position: 'absolute',
-                    right: 14,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: '#94A3B8',
-                    display: 'flex',
-                    padding: 0,
-                  }}
-                >
-                  {showPwd ? <EyeOff size={17} aria-hidden="true" /> : <Eye size={17} aria-hidden="true" />}
-                </button>
               </div>
-            </div>
 
-            {/* Error */}
-            {error && (
-              <div
-                role="alert"
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <label htmlFor="login-password" style={{ fontSize: 13, fontWeight: 600, color: '#1E293B' }}>
+                    Senha
+                  </label>
+                  <Link href="/recuperar-senha" style={{ fontSize: 12.5, fontWeight: 600, color: '#679894', textDecoration: 'none' }}>
+                    Esqueci a senha
+                  </Link>
+                </div>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    id="login-password"
+                    type={showPwd ? 'text' : 'password'}
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    required
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    style={{
+                      width: '100%', height: 46, padding: '0 44px 0 14px',
+                      borderRadius: 10, border: '1.5px solid #E2E8F0',
+                      fontSize: 14, color: '#0F172A', background: '#FAFBFC',
+                      outline: 'none', transition: 'border-color .15s, box-shadow .15s',
+                      boxSizing: 'border-box',
+                    }}
+                    onFocus={e => {
+                      e.currentTarget.style.borderColor = '#679894'
+                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(103,152,148,.13)'
+                      e.currentTarget.style.background = '#FFFFFF'
+                    }}
+                    onBlur={e => {
+                      e.currentTarget.style.borderColor = '#E2E8F0'
+                      e.currentTarget.style.boxShadow = 'none'
+                      e.currentTarget.style.background = '#FAFBFC'
+                    }}
+                  />
+                  <button
+                    type="button"
+                    aria-label={showPwd ? 'Ocultar senha' : 'Mostrar senha'}
+                    onClick={() => setShowPwd(v => !v)}
+                    style={{
+                      position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      color: '#94A3B8', display: 'flex', padding: 4,
+                    }}
+                  >
+                    {showPwd ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <div role="alert" style={{
+                  fontSize: 13, padding: '10px 14px', borderRadius: 10,
+                  background: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA',
+                }}>
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
                 style={{
-                  fontSize: 13,
-                  padding: '10px 14px',
-                  borderRadius: 10,
-                  background: '#FEF2F2',
-                  color: '#DC2626',
-                  border: '1px solid #FECACA',
+                  marginTop: 6, width: '100%', height: 48, borderRadius: 12,
+                  background: loading ? '#0F2040' : 'linear-gradient(135deg, #0F2040 0%, #1C3D6B 100%)',
+                  color: '#FFFFFF', fontSize: 14.5, fontWeight: 700, letterSpacing: '0.2px',
+                  border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  opacity: loading ? 0.8 : 1,
+                  boxShadow: loading ? 'none' : '0 4px 18px rgba(15,32,64,.28)',
+                  transition: 'opacity .15s, box-shadow .15s',
                 }}
+                onMouseEnter={e => { if (!loading) { e.currentTarget.style.opacity = '0.88'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(15,32,64,.35)' } }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.boxShadow = '0 4px 18px rgba(15,32,64,.28)' }}
               >
-                {error}
-              </div>
-            )}
+                {loading && <Spinner />}
+                {loading ? 'Entrando…' : 'Entrar na plataforma'}
+              </button>
+            </form>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                width: '100%',
-                height: 50,
-                borderRadius: 12,
-                background: loading ? '#1a3a60' : 'linear-gradient(135deg, #0F2040 0%, #1a3a60 100%)',
-                color: '#FFFFFF',
-                fontSize: 14.5,
-                fontWeight: 700,
-                letterSpacing: '0.2px',
-                border: 'none',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                transition: 'opacity .15s, transform .1s',
-                opacity: loading ? 0.8 : 1,
-                marginTop: 4,
-                boxShadow: loading ? 'none' : '0 4px 14px rgba(15,32,64,.25)',
-              }}
-              onMouseEnter={e => { if (!loading) e.currentTarget.style.opacity = '0.9' }}
-              onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
-            >
-              {loading && <Spinner />}
-              {loading ? 'Entrando…' : 'Entrar'}
-            </button>
-          </form>
+            <p style={{ textAlign: 'center', fontSize: 13, color: '#94A3B8', marginTop: 22 }}>
+              Não tem conta?{' '}
+              <Link href="/cadastro" style={{ color: '#679894', fontWeight: 700, textDecoration: 'none' }}>
+                Fale com nosso time
+              </Link>
+            </p>
 
-          {/* Footer link */}
-          <p style={{ textAlign: 'center', fontSize: 13, color: '#94A3B8', marginTop: 24 }}>
-            Não tem conta?{' '}
-            <Link
-              href="/cadastro"
-              style={{ color: '#679894', fontWeight: 700, textDecoration: 'none' }}
-            >
-              Fale com nosso time
-            </Link>
-          </p>
-
-          {/* Trust line */}
-          <div
-            style={{
-              marginTop: 44,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
-            }}
-          >
-            <svg viewBox="0 0 16 16" fill="none" style={{ width: 13, height: 13 }} aria-hidden="true">
-              <path d="M8 1.5L2 4v4c0 3.3 2.6 6.4 6 7 3.4-.6 6-3.7 6-7V4L8 1.5z" stroke="#CBD5E1" strokeWidth="1.2" strokeLinejoin="round" />
-            </svg>
-            <span style={{ fontSize: 11.5, color: '#CBD5E1', letterSpacing: '0.2px' }}>
-              Conexão segura e criptografada
-            </span>
+            {/* Trust badges */}
+            <div style={{ marginTop: 40, paddingTop: 24, borderTop: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
+              {[
+                { icon: '🔒', label: 'Conexão segura' },
+                { icon: '🛡️', label: 'Dados protegidos' },
+                { icon: '✓', label: 'LGPD' },
+              ].map((b, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{ fontSize: 11 }} aria-hidden="true">{b.icon}</span>
+                  <span style={{ fontSize: 11, color: '#CBD5E1', fontWeight: 500 }}>{b.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   )
 }

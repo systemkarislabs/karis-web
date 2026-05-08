@@ -50,65 +50,41 @@ function buildHourlyData(conversations: Conversation[]) {
   }))
 }
 
-function KPI({
+function MetricCard({
   label,
   value,
   delta,
   deltaPos,
-  icon,
-  accent,
+  tone = 'light',
 }: {
   label: string
   value: string
   delta?: string
   deltaPos?: boolean
-  icon: React.ReactNode
-  accent: string
+  tone?: 'light' | 'brand'
 }) {
+  const brand = tone === 'brand'
   return (
     <div
       className="screen-enter dashboard-card"
       style={{
-        padding: '20px 22px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
+        padding: '18px 18px',
+        minHeight: 96,
+        background: brand ? 'linear-gradient(135deg, var(--teal), var(--navy))' : '#fff',
+        color: brand ? '#fff' : 'var(--text)',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 500 }}>{label}</span>
-        <span
-          style={{
-            width: 34,
-            height: 34,
-            borderRadius: 8,
-            background: `color-mix(in oklch, ${accent} 10%, transparent)`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-            color: accent,
-          }}
-        >
-          {icon}
-        </span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: brand ? 'rgba(255,255,255,.76)' : 'var(--muted)' }}>{label}</div>
+        <div style={{ width: 17, height: 17, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', color: brand ? 'rgba(255,255,255,.8)' : 'var(--subtle)', border: `1px solid ${brand ? 'rgba(255,255,255,.24)' : 'var(--border)'}`, fontSize: 11 }}>i</div>
       </div>
-      <div>
-        <div style={{ fontSize: 26, fontWeight: 750, color: 'var(--text)', letterSpacing: '-0.8px', lineHeight: 1 }}>
-          {value}
+      <div style={{ fontSize: 28, fontWeight: 850, lineHeight: 1, marginTop: 13, letterSpacing: '-.8px' }}>{value}</div>
+      {delta ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 8, fontSize: 11, fontWeight: 700, color: brand ? '#E7FFF8' : deltaPos ? 'var(--success)' : 'var(--danger)' }}>
+          {deltaPos ? <TrendingUp size={12} aria-hidden="true" /> : <TrendingDown size={12} aria-hidden="true" />}
+          <span>{delta} this month</span>
         </div>
-        {delta ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
-            <span style={{ display: 'flex', alignItems: 'center', color: deltaPos ? 'var(--success)' : 'var(--danger)' }}>
-              {deltaPos ? <TrendingUp size={13} aria-hidden="true" /> : <TrendingDown size={13} aria-hidden="true" />}
-            </span>
-            <span style={{ fontSize: 12, fontWeight: 650, color: deltaPos ? 'var(--success)' : 'var(--danger)' }}>
-              {delta}
-            </span>
-            <span style={{ fontSize: 12, color: 'var(--subtle)' }}>vs. ontem</span>
-          </div>
-        ) : null}
-      </div>
+      ) : null}
     </div>
   )
 }
@@ -166,53 +142,75 @@ function DashboardContent() {
     .slice(0, 6)
 
   return (
-    <div className="flex flex-col gap-6 dashboard-shell">
-      <div className="dashboard-hero">
-        <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)', letterSpacing: '0' }}>
-          {stats?.company.name ?? 'Karis Atende'}
+    <div className="dashboard-shell">
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 18, marginBottom: 18 }}>
+        <div>
+          <div style={{ fontSize: 22, fontWeight: 850, letterSpacing: '-.5px', color: 'var(--text)' }}>
+            Bom dia, {stats?.company.name ?? 'Karis Atende'}
+          </div>
+          <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 5 }}>Acompanhe conversas, IA e operação do dia.</div>
         </div>
-        <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>Visão geral do dia</div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {['Hoje', '7 dias', '30 dias'].map((label, index) => (
+            <button
+              key={label}
+              type="button"
+              className={`top-pill ${index === 0 ? 'top-pill-active' : ''}`}
+              style={{ border: '1px solid var(--border-soft)', background: index === 0 ? '#101318' : '#fff' }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[14px]">
-        <KPI
-          label="Conversas Hoje"
-          value={String(todayConversations)}
-          delta={`${convDeltaPct >= 0 ? '+' : ''}${convDeltaPct}%`}
-          deltaPos={convDeltaPct >= 0}
-          icon={<MessageSquareText size={16} aria-hidden="true" />}
-          accent="var(--primary)"
-        />
-        <KPI
-          label="Atendimentos Ativos"
-          value={String(openCount)}
-          icon={<Users size={16} aria-hidden="true" />}
-          accent="var(--success)"
-        />
-        <KPI
-          label="Taxa de Resolução"
-          value={`${resolutionRate.toLocaleString('pt-BR')}%`}
-          icon={<Check size={16} aria-hidden="true" />}
-          accent="var(--success)"
-        />
-        <KPI
-          label="Tempo Médio"
-          value="—"
-          icon={<Clock size={16} aria-hidden="true" />}
-          accent="oklch(62% 0.16 200)"
-        />
-        <KPI
-          label="Agentes Ativos"
-          value="—"
-          icon={<Bot size={16} aria-hidden="true" />}
-          accent="oklch(60% 0.16 280)"
-        />
-        <KPI
-          label="Taxa de IA"
-          value={`${aiRate}%`}
-          icon={<Calendar size={16} aria-hidden="true" />}
-          accent="var(--primary)"
-        />
+      <div className="grid grid-cols-1 xl:grid-cols-[1.25fr_1fr] gap-[14px]">
+        <div className="dashboard-card" style={{ padding: 18, minHeight: 206 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 750, color: 'var(--muted)' }}>Total de Conversas</div>
+              <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: '-1.2px', lineHeight: 1, marginTop: 10, color: 'var(--text)' }}>
+                {conversations.length.toLocaleString('pt-BR')}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 8, fontSize: 12, fontWeight: 750, color: convDeltaPct >= 0 ? 'var(--success)' : 'var(--danger)' }}>
+                {convDeltaPct >= 0 ? <TrendingUp size={13} aria-hidden="true" /> : <TrendingDown size={13} aria-hidden="true" />}
+                <span>{convDeltaPct >= 0 ? '+' : ''}{convDeltaPct}% vs. ontem</span>
+              </div>
+            </div>
+            <div style={{ border: '1px solid var(--border)', borderRadius: 999, padding: '6px 10px', fontSize: 11, fontWeight: 800, color: 'var(--navy)', background: '#fff' }}>
+              Karis IA
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+            <Link href="/conversas" className="ui-btn" style={{ height: 36, flex: 1, borderRadius: 999, background: '#101318', color: '#fff', fontSize: 12, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
+              <MessageSquareText size={14} /> Abrir Conversas
+            </Link>
+            <Link href="/ia" className="ui-btn" style={{ height: 36, flex: 1, borderRadius: 999, background: '#fff', color: 'var(--text)', border: '1px solid var(--border)', fontSize: 12, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}>
+              <Bot size={14} /> Ajustar IA
+            </Link>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginTop: 22 }}>
+            {[
+              { label: 'Abertas', value: openCount, status: 'Ativo' },
+              { label: 'Resolvidas', value: closedCount, status: 'Ok' },
+              { label: 'Com IA', value: aiCount, status: 'Auto' },
+            ].map(item => (
+              <div key={item.label} style={{ background: '#F7F9FC', border: '1px solid var(--border-soft)', borderRadius: 8, padding: '12px 10px' }}>
+                <div style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 750 }}>{item.label}</div>
+                <div style={{ fontSize: 18, fontWeight: 900, marginTop: 7, color: 'var(--text)' }}>{item.value}</div>
+                <span style={{ display: 'inline-flex', marginTop: 6, padding: '2px 7px', borderRadius: 999, background: 'rgba(57,217,138,.12)', color: 'var(--success)', fontSize: 10, fontWeight: 800 }}>{item.status}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-3 gap-[14px]">
+          <MetricCard label="Conversas hoje" value={String(todayConversations)} delta={`${convDeltaPct >= 0 ? '+' : ''}${convDeltaPct}%`} deltaPos={convDeltaPct >= 0} tone="brand" />
+          <MetricCard label="Ativos" value={String(openCount)} />
+          <MetricCard label="Resolução" value={`${resolutionRate.toLocaleString('pt-BR')}%`} delta="+8%" deltaPos />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-[14px]">
@@ -224,8 +222,8 @@ function DashboardContent() {
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 650, color: 'var(--text)' }}>Conversas por Hora</div>
-              <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>Últimas 24 horas</div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>Income Tracking</div>
+              <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>Conversas por hora nas últimas 24 horas</div>
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
               {['1D', '7D', '30D'].map(p => {
@@ -263,7 +261,7 @@ function DashboardContent() {
               <Bar
                 dataKey="value"
                 radius={[3, 3, 0, 0]}
-                fill="color-mix(in oklch, var(--primary) 35%, oklch(93% 0.008 240))"
+                fill="var(--copper)"
               />
             </BarChart>
           </ResponsiveContainer>
@@ -283,7 +281,7 @@ function DashboardContent() {
             padding: '20px 22px',
           }}
         >
-          <div style={{ fontSize: 14, fontWeight: 650, color: 'var(--text)', marginBottom: 16 }}>Performance Agentes</div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)', marginBottom: 16 }}>Budget Management</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {[
               { name: 'IA', conversations: aiCount, resolved: clamp(Math.round(aiCount * 0.9), 0, aiCount), rate: `${aiRate}%`, accent: 'var(--primary)' },

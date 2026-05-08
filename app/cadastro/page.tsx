@@ -37,7 +37,7 @@ export default function CadastroPage() {
   }
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2" style={{ background: 'var(--bg)' }}>
+    <div className="auth-modern-page signup-modern-page min-h-screen grid lg:grid-cols-2" style={{ background: 'var(--bg)' }}>
       <aside
         className="hidden lg:flex flex-col justify-between px-14 py-12"
         style={{
@@ -90,7 +90,7 @@ export default function CadastroPage() {
             <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Comece agora e configure seu atendimento</p>
           </div>
 
-          <Card className="p-7">
+          <Card className="auth-modern-card p-7">
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="signup-name" className="text-sm font-medium" style={{ color: 'var(--text)' }}>Seu nome</label>

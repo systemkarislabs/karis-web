@@ -47,7 +47,7 @@ export default function ResetPasswordClient() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--bg)' }}>
+    <div className="auth-modern-page min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--bg)' }}>
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
           <div className="brand-logo-auth">
@@ -62,7 +62,7 @@ export default function ResetPasswordClient() {
           </p>
         </div>
 
-        <Card className="p-7">
+        <Card className="auth-modern-card p-7">
           {done ? (
             <div className="flex flex-col gap-3">
               <p className="text-sm" style={{ color: 'var(--text)' }}>Senha redefinida com sucesso. Redirecionando para o login…</p>

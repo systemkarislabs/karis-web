@@ -210,7 +210,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div
-      className="flex h-screen overflow-hidden"
+      className="admin-skin karis-design-stage"
       style={
         {
           background: 'var(--bg)',
@@ -230,10 +230,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       >
         Pular para o conteúdo
       </a>
+      <div className="karis-app-frame">
       <Sidebar collapsed={collapsed} />
       <div className="flex flex-col flex-1 min-w-0">
         <Topbar onMenuClick={() => setCollapsed(c => !c)} />
-        <main id="admin-main-content" tabIndex={-1} aria-label="Conteúdo principal" className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main id="admin-main-content" tabIndex={-1} aria-label="Conteúdo principal" className="admin-main-content flex-1 overflow-y-auto p-6">{children}</main>
+      </div>
       </div>
     </div>
   )

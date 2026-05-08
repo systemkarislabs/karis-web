@@ -65,6 +65,14 @@ function snippet(text: string, max = 60) {
   return t.slice(0, max - 1) + '…'
 }
 
+function followUpLabel(dateStr?: string | null) {
+  if (!dateStr) return ''
+  const diff = new Date(dateStr).getTime() - Date.now()
+  if (diff <= 0) return 'Follow-up vencido'
+  const min = Math.ceil(diff / 60000)
+  return `Follow-up em ${min}m`
+}
+
 export default function MultiChatPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -360,6 +368,12 @@ export default function MultiChatPage() {
                                 {manualLabel}
                               </div>
                             )}
+                            {c.pendingFollowUp && (
+                              <div className="text-[11px] font-semibold px-2 py-1 rounded-full"
+                                style={{ background: 'rgba(249,115,22,.12)', color: '#C2410C' }}>
+                                {followUpLabel(c.pendingFollowUp.dueAt)}
+                              </div>
+                            )}
                           </div>
                         </button>
                       </li>
@@ -395,6 +409,12 @@ export default function MultiChatPage() {
                     style={{ background: active.status === 'OPEN' ? '#D1FAE5' : '#F3F4F6', color: active.status === 'OPEN' ? '#065F46' : '#6B7280' }}>
                     {active.status === 'OPEN' ? 'Aberta' : 'Fechada'}
                   </div>
+                  {active.pendingFollowUp && (
+                    <div className="text-[11px] font-semibold px-2 py-1 rounded-full"
+                      style={{ background: 'rgba(249,115,22,.12)', color: '#C2410C' }}>
+                      {followUpLabel(active.pendingFollowUp.dueAt)}
+                    </div>
+                  )}
                   {active.assignedUser?.id ? (
                     <div className="text-[11px] font-semibold px-2 py-1 rounded-full"
                       style={{ background: '#EFF6FF', color: '#1D4ED8' }}>

@@ -40,6 +40,7 @@ export interface Conversation {
   humanTakeovers?: HumanTakeover[]
   _count?: { messages: number }
   lastMessage?: ConversationLastMessage | null
+  pendingFollowUp?: Pick<FollowUp, 'id' | 'status' | 'dueAt'> | null
   unreadCount?: number
 }
 
@@ -138,7 +139,9 @@ export interface CrmDeal {
   conversation?: { id: string } | null
   notes?: { id: string; content: string; createdAt: string; authorUserId: string | null }[]
   tasks?: CrmTask[]
+  followUps?: FollowUp[]
   activities?: { id: string; source: 'AI' | 'HUMAN' | 'SYSTEM'; type: string; payload: any; createdAt: string }[]
+  _count?: { tasks: number; notes: number; activities: number }
 }
 
 export interface CrmTask {
@@ -209,6 +212,37 @@ export interface KnowledgeBase {
   content: string
   fileUrl?: string | null
   createdAt: string
+}
+
+export interface FollowUpSetting {
+  id: string
+  companyId: string
+  enabled: boolean
+  delayMinutes: 15 | 30 | 45
+  messageTemplate: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface FollowUp {
+  id: string
+  companyId: string
+  conversationId: string
+  contactId: string
+  dealId: string | null
+  messageId: string | null
+  status: 'PENDING' | 'SENDING' | 'SENT' | 'CANCELED' | 'FAILED'
+  dueAt: string
+  sentAt: string | null
+  canceledAt: string | null
+  lastError: string | null
+  attemptCount: number
+  template: string
+  createdAt: string
+  updatedAt: string
+  contact?: { id: string; name: string | null; phone: string }
+  deal?: { id: string; title: string } | null
+  conversation?: { id: string; status: 'OPEN' | 'CLOSED' }
 }
 
 export type PlatformUserRole = 'SUPERADMIN' | 'STAFF'

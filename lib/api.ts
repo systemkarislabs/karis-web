@@ -190,11 +190,35 @@ export const api = {
     return request<{ tasks: import('./types').CrmTask[] }>('GET', `/api/crm/tasks${suffix}`)
   },
 
+  updateCrmTask: (id: string, data: Partial<{ title: string; dueAt: string | null; status: 'OPEN' | 'DONE' | 'CANCELED'; assignedUserId: string | null }>) =>
+    request<{ task: import('./types').CrmTask }>('PATCH', `/api/crm/tasks/${id}`, data),
+
+  getFollowUpSetting: () =>
+    request<{ setting: import('./types').FollowUpSetting }>('GET', '/api/crm/follow-up-setting'),
+
+  updateFollowUpSetting: (data: Partial<Pick<import('./types').FollowUpSetting, 'enabled' | 'delayMinutes' | 'messageTemplate'>>) =>
+    request<{ setting: import('./types').FollowUpSetting }>('PATCH', '/api/crm/follow-up-setting', data),
+
+  getFollowUps: (params?: { status?: string; conversationId?: string; dealId?: string }) => {
+    const qs = new URLSearchParams()
+    if (params?.status) qs.set('status', params.status)
+    if (params?.conversationId) qs.set('conversationId', params.conversationId)
+    if (params?.dealId) qs.set('dealId', params.dealId)
+    const suffix = qs.toString() ? `?${qs.toString()}` : ''
+    return request<{ followUps: import('./types').FollowUp[] }>('GET', `/api/crm/follow-ups${suffix}`)
+  },
+
   startTakeover: (id: string, reason?: string) =>
     request<{ takeover: import('./types').HumanTakeover }>('POST', `/api/conversations/${id}/human-takeover`, { reason }),
 
   endTakeover: (id: string, enableAi = true) =>
     request<{ takeover: import('./types').HumanTakeover }>('POST', `/api/conversations/${id}/human-takeover/end`, { enableAi }),
+
+  scheduleConversationFollowUp: (id: string, data?: { dealId?: string | null; contactId?: string }) =>
+    request<{ followUp: import('./types').FollowUp }>('POST', `/api/conversations/${id}/follow-up`, data || {}),
+
+  cancelConversationFollowUp: (id: string) =>
+    request<{ canceled: number }>('DELETE', `/api/conversations/${id}/follow-up`),
 
   // Messages
   getMessages: (conversationId: string) =>

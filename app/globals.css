@@ -377,7 +377,7 @@ button:disabled {
 }
 
 .karis-app-frame {
-  width: min(100%, 1128px);
+  width: min(calc(100vw - 24px), 1440px);
   height: calc(100dvh - 12px);
   margin: 0 auto;
   overflow: hidden;

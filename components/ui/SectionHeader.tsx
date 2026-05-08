@@ -24,14 +24,7 @@ export function SectionHeader({
           </span>
         )}
       </div>
-      <div className="flex items-center gap-2">
-        <div className="finance-segmented" aria-label="Visualização">
-          <span className="active">Overview</span>
-          <span>Activity</span>
-          <span>Reports</span>
-        </div>
-        {right ? <div className="flex items-center gap-2">{right}</div> : null}
-      </div>
+      {right ? <div className="flex items-center gap-2">{right}</div> : null}
     </div>
   )
 }

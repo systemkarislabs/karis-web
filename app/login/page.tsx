@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Eye, EyeOff } from 'lucide-react'
+import { BadgeCheck, Eye, EyeOff, LockKeyhole, ShieldCheck } from 'lucide-react'
 import { api } from '@/lib/api'
 
 function Spinner() {
@@ -97,9 +97,15 @@ export default function LoginPage() {
           <div>
             {/* Logo */}
             <img
-              src="/designer/karis-atende-logo-clean.png"
+              src="/designer/karis-k-mark.png"
               alt="Karis Atende"
-              style={{ height: 46, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+              style={{
+                height: 48,
+                width: 'auto',
+                objectFit: 'contain',
+                filter: 'brightness(0) invert(1)',
+                opacity: 0.96,
+              }}
             />
 
             {/* Hero copy */}
@@ -172,30 +178,8 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Bottom testimonial */}
+          {/* Footer */}
           <div>
-            <div style={{
-              padding: '18px 22px',
-              borderRadius: 16,
-              background: 'rgba(255,255,255,.04)',
-              border: '1px solid rgba(255,255,255,.08)',
-              backdropFilter: 'blur(10px)',
-              marginBottom: 28,
-            }}>
-              <div style={{ display: 'flex', gap: 3, marginBottom: 10 }}>
-                {[0,1,2,3,4].map(i => (
-                  <svg key={i} viewBox="0 0 12 12" fill="#679894" style={{ width: 11, height: 11 }} aria-hidden="true">
-                    <path d="M6 0l1.4 4.1H12L8.3 6.6l1.4 4.1L6 8.2l-3.7 2.5 1.4-4.1L0 4.1h4.6z" />
-                  </svg>
-                ))}
-              </div>
-              <p style={{ fontSize: 13, color: 'rgba(210,228,225,.85)', lineHeight: 1.65, fontStyle: 'italic' }}>
-                "Depois que conectamos a Karis, paramos de perder leads e o tempo de resposta caiu 80%."
-              </p>
-              <p style={{ marginTop: 10, fontSize: 11.5, color: 'rgba(160,190,186,.55)', fontWeight: 600 }}>
-                — Cliente Karis Atende
-              </p>
-            </div>
             <p style={{ fontSize: 11.5, color: 'rgba(140,170,166,.4)' }}>
               © {new Date().getFullYear()} Karis Atende · Karis Negócios
             </p>
@@ -216,18 +200,12 @@ export default function LoginPage() {
         >
           <div style={{ width: '100%', maxWidth: 360 }}>
 
-            {/* Logos lado a lado */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 36 }}>
-              <img
-                src="/designer/karis-k-mark.png"
-                alt=""
-                aria-hidden="true"
-                style={{ height: 34, width: 'auto', objectFit: 'contain', flexShrink: 0 }}
-              />
+            {/* Logo principal */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 38 }}>
               <img
                 src="/designer/karis-atende-logo-clean.png"
                 alt="Karis Atende"
-                style={{ height: 34, width: 'auto', objectFit: 'contain', flexShrink: 0 }}
+                style={{ height: 58, width: 'auto', objectFit: 'contain', flexShrink: 0 }}
               />
             </div>
 
@@ -364,15 +342,25 @@ export default function LoginPage() {
             </p>
 
             {/* Trust badges */}
-            <div style={{ marginTop: 40, paddingTop: 24, borderTop: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
+            <div style={{ marginTop: 42, paddingTop: 26, borderTop: '1px solid #E8EEF5', display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
               {[
-                { icon: '🔒', label: 'Conexão segura' },
-                { icon: '🛡️', label: 'Dados protegidos' },
-                { icon: '✓', label: 'LGPD' },
-              ].map((b, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <span style={{ fontSize: 11 }} aria-hidden="true">{b.icon}</span>
-                  <span style={{ fontSize: 11, color: '#CBD5E1', fontWeight: 500 }}>{b.label}</span>
+                { Icon: LockKeyhole, label: 'Conexão segura' },
+                { Icon: ShieldCheck, label: 'Dados protegidos' },
+                { Icon: BadgeCheck, label: 'LGPD' },
+              ].map(({ Icon, label }) => (
+                <div key={label} style={{
+                  minHeight: 54,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  borderRadius: 12,
+                  background: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
+                }}>
+                  <Icon size={16} aria-hidden="true" style={{ color: '#679894' }} />
+                  <span style={{ fontSize: 11.5, color: '#64748B', fontWeight: 700, textAlign: 'center', lineHeight: 1.2 }}>{label}</span>
                 </div>
               ))}
             </div>

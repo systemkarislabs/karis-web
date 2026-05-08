@@ -28,11 +28,6 @@ export function ComingSoon({ title }: { title: string }) {
           <h1>{title}</h1>
           <span>{'Opera\u00e7\u00e3o Karis Atende'}</span>
         </div>
-        <div className="finance-segmented" aria-label="Seções">
-          <span className="active">Overview</span>
-          <span>Activity</span>
-          <span>Reports</span>
-        </div>
       </div>
 
       <div className="settings-reference-grid">

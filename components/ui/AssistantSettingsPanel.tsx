@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Bot, Check, Phone, Power, Sparkles, Wand2 } from 'lucide-react'
+import { AlertCircle, Bot, Check, Phone, Power, Sparkles, Wand2 } from 'lucide-react'
 import { api } from '@/lib/api'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -21,6 +21,7 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
     isActive: true,
     personality: '' as string,
     transferPhone: '',
+    transferConditions: '',
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -28,6 +29,8 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
   const [magicLoading, setMagicLoading] = useState(false)
   const [magicDesc, setMagicDesc] = useState('')
   const [showMagic, setShowMagic] = useState(false)
+  const [magicError, setMagicError] = useState('')
+  const [magicDone, setMagicDone] = useState(false)
 
   useEffect(() => {
     let alive = true
@@ -40,6 +43,7 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
           isActive: d.assistant.isActive,
           personality: d.assistant.personality ?? '',
           transferPhone: d.assistant.transferPhone ?? '',
+          transferConditions: d.assistant.transferConditions ?? '',
         })
       })
       .catch(() => {})
@@ -58,6 +62,7 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
         isActive: form.isActive,
         personality: (form.personality || null) as any,
         transferPhone: form.transferPhone || null,
+        transferConditions: form.transferConditions || null,
       })
       setSaved(true)
       setTimeout(() => setSaved(false), 2500)
@@ -66,19 +71,32 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
   }
 
   async function handleMagicPrompt() {
-    if (!magicDesc.trim() && !form.instructions.trim()) return
+    if (!magicDesc.trim() && !form.instructions.trim()) {
+      setMagicError('Descreva sua empresa ou adicione um comportamento atual para a IA melhorar.')
+      return
+    }
     setMagicLoading(true)
+    setMagicError('')
+    setMagicDone(false)
     try {
       const res = await api.aiMagicPrompt({
         description: magicDesc || undefined,
         currentPrompt: form.instructions || undefined,
         assistantName: form.name || undefined,
       })
+      if (!res.prompt) {
+        setMagicError('A IA não conseguiu gerar um prompt. Tente novamente.')
+        return
+      }
       setForm(f => ({ ...f, instructions: res.prompt }))
-      setShowMagic(false)
+      setMagicDone(true)
       setMagicDesc('')
-    } catch { /* noop */ }
-    finally { setMagicLoading(false) }
+      setTimeout(() => setMagicDone(false), 3000)
+    } catch {
+      setMagicError('Falha ao conectar com a IA. Tente novamente.')
+    } finally {
+      setMagicLoading(false)
+    }
   }
 
   return (
@@ -177,8 +195,8 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
 
             {/* Comportamento + Magic Prompt */}
             <div className="flex flex-col gap-1.5">
-              <div className="flex items-center justify-between">
-                <div>
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
                   <label htmlFor="assistant-instructions" className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
                     Comportamento da agente
                   </label>
@@ -188,7 +206,7 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
                 </div>
                 <button
                   type="button"
-                  onClick={() => setShowMagic(v => !v)}
+                  onClick={() => { setShowMagic(v => !v); setMagicError(''); setMagicDone(false) }}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px',
                     borderRadius: 8, border: '1.5px solid var(--teal)', background: 'transparent',
@@ -208,29 +226,41 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
                   display: 'flex', flexDirection: 'column', gap: 10
                 }}>
                   <p className="text-xs font-semibold" style={{ color: 'var(--teal)', margin: 0 }}>
-                    ✨ A IA vai melhorar ou criar o comportamento com base na sua descrição
+                    ✨ Descreva sua empresa e a IA cria ou melhora o comportamento automaticamente
                   </p>
                   <Textarea
                     value={magicDesc}
-                    onChange={e => setMagicDesc(e.target.value)}
-                    placeholder="Descreva sua empresa, serviços e como quer que a agente se comporte (opcional — sem descrição, a IA melhora o prompt atual)"
-                    style={{ minHeight: 80, fontSize: 13 }}
+                    onChange={e => { setMagicDesc(e.target.value); setMagicError('') }}
+                    placeholder="Ex: Somos uma clínica de estética. Atendemos agendamentos, dúvidas sobre procedimentos e valores. A agente deve ser acolhedora e indicar o WhatsApp do gerente para pagamentos..."
+                    style={{ minHeight: 90, fontSize: 13 }}
                   />
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  {magicError && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#EF4444', fontSize: 13 }}>
+                      <AlertCircle size={14} />
+                      {magicError}
+                    </div>
+                  )}
+                  {magicDone && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--teal)', fontSize: 13, fontWeight: 600 }}>
+                      <Check size={14} />
+                      Comportamento atualizado pela IA — revise abaixo e salve.
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <Button
                       type="button"
                       variant="primary"
                       loading={magicLoading}
                       onClick={handleMagicPrompt}
                     >
-                      {magicLoading ? 'Gerando...' : 'Gerar com IA'}
+                      {magicLoading ? 'Gerando...' : form.instructions ? 'Melhorar com IA' : 'Criar com IA'}
                     </Button>
                     <button
                       type="button"
-                      onClick={() => { setShowMagic(false); setMagicDesc('') }}
+                      onClick={() => { setShowMagic(false); setMagicDesc(''); setMagicError(''); setMagicDone(false) }}
                       style={{ fontSize: 13, color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 10px' }}
                     >
-                      Cancelar
+                      Fechar
                     </button>
                   </div>
                 </div>
@@ -246,21 +276,42 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
             </div>
 
             {/* Transferência */}
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="transfer-phone" className="text-sm font-semibold" style={{ color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Phone size={14} />
-                Número para transferência
-              </label>
-              <p className="text-xs" style={{ color: 'var(--muted)' }}>
-                Quando a IA não conseguir resolver ou o cliente pedir atendimento humano, esse número receberá uma notificação no WhatsApp com o contato, assunto e horário.
-              </p>
-              <Input
-                id="transfer-phone"
-                type="tel"
-                value={form.transferPhone}
-                onChange={e => setForm(f => ({ ...f, transferPhone: e.target.value }))}
-                placeholder="Ex: 5511999999999 (com DDI e DDD, sem espaços)"
-              />
+            <div className="flex flex-col gap-3">
+              <div>
+                <label className="text-sm font-semibold" style={{ color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Phone size={14} />
+                  Transferência para atendente humano
+                </label>
+                <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
+                  Quando a IA detectar que precisa transferir, ela notifica esse número no WhatsApp com o contato, assunto e horário.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="transfer-phone" className="text-xs font-semibold" style={{ color: 'var(--text)' }}>
+                  Número de WhatsApp
+                </label>
+                <Input
+                  id="transfer-phone"
+                  type="tel"
+                  value={form.transferPhone}
+                  onChange={e => setForm(f => ({ ...f, transferPhone: e.target.value }))}
+                  placeholder="Ex: 5511999999999 (com DDI e DDD, sem espaços)"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="transfer-conditions" className="text-xs font-semibold" style={{ color: 'var(--text)' }}>
+                  Quando transferir
+                </label>
+                <Input
+                  id="transfer-conditions"
+                  type="text"
+                  value={form.transferConditions}
+                  onChange={e => setForm(f => ({ ...f, transferConditions: e.target.value }))}
+                  placeholder="Ex: quando o cliente quiser efetuar pagamento, pedir desconto ou falar com um consultor"
+                />
+              </div>
             </div>
 
             <div className="flex items-center gap-3">

@@ -64,8 +64,13 @@ export default function ConversaPage() {
   const loadMessages = useCallback(async () => {
     try {
       const data = await api.getMessages(id)
-      setMessages(data.messages)
-      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+      setMessages(prev => {
+        const existingIds = new Set(prev.map(m => m.id))
+        const newOnes = data.messages.filter((m: Message) => !existingIds.has(m.id))
+        if (newOnes.length === 0) return prev
+        setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+        return [...prev, ...newOnes]
+      })
     } catch { /* noop */ }
   }, [id])
 

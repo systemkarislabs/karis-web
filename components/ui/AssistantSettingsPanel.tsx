@@ -289,14 +289,14 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
 
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="transfer-phone" className="text-xs font-semibold" style={{ color: 'var(--text)' }}>
-                  Número de WhatsApp
+                  Números de WhatsApp
                 </label>
                 <Input
                   id="transfer-phone"
-                  type="tel"
+                  type="text"
                   value={form.transferPhone}
                   onChange={e => setForm(f => ({ ...f, transferPhone: e.target.value }))}
-                  placeholder="Ex: 5511999999999 (com DDI e DDD, sem espaços)"
+                  placeholder="Ex: 5511999999999, 5521988887777 (separe por vírgula)"
                 />
               </div>
 

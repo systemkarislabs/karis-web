@@ -39,6 +39,7 @@ async function request<T>(
   if (res.status === 401) {
     localStorage.removeItem('karisAuthToken')
     localStorage.removeItem('karisCurrentUser')
+    try { await fetch('/api/auth', { method: 'DELETE' }) } catch {}
     window.location.href = '/login'
     throw new Error('Sessão expirada')
   }

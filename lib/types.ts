@@ -16,6 +16,8 @@ export interface Assistant {
   name: string
   instructions: string | null
   isActive: boolean
+  personality: 'prestativo' | 'direto' | 'formal' | 'descontraido' | null
+  transferPhone: string | null
 }
 
 export interface Contact {

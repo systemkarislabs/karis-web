@@ -115,6 +115,9 @@ export const api = {
   upsertAssistant: (data: Partial<import('./types').Assistant>) =>
     request<{ assistant: import('./types').Assistant }>('PUT', '/api/assistant', data),
 
+  aiMagicPrompt: (data: { description?: string; currentPrompt?: string; assistantName?: string; companyName?: string }) =>
+    request<{ prompt: string }>('POST', '/api/assistant/ai-magic', data),
+
   // Knowledge
   getKnowledge: () =>
     request<{ knowledge: import('./types').KnowledgeBase[] }>('GET', '/api/knowledge'),
@@ -197,7 +200,7 @@ export const api = {
   getFollowUpSetting: () =>
     request<{ setting: import('./types').FollowUpSetting }>('GET', '/api/crm/follow-up-setting'),
 
-  updateFollowUpSetting: (data: Partial<Pick<import('./types').FollowUpSetting, 'enabled' | 'delayMinutes' | 'messageTemplate'>>) =>
+  updateFollowUpSetting: (data: Partial<Pick<import('./types').FollowUpSetting, 'enabled' | 'delayMinutes'>>) =>
     request<{ setting: import('./types').FollowUpSetting }>('PATCH', '/api/crm/follow-up-setting', data),
 
   getFollowUps: (params?: { status?: string; conversationId?: string; dealId?: string }) => {

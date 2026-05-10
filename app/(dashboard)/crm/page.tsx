@@ -189,7 +189,6 @@ export default function CrmPage() {
       const data = await api.updateFollowUpSetting({
         enabled: setting.enabled,
         delayMinutes: setting.delayMinutes,
-        messageTemplate: setting.messageTemplate,
       })
       setSetting(data.setting)
     } finally {
@@ -280,10 +279,7 @@ export default function CrmPage() {
                 ))}
               </div>
             </div>
-            <div className="lg:col-span-3">
-              <textarea value={setting.messageTemplate} onChange={e => setSetting({ ...setting, messageTemplate: e.target.value })} rows={5} className="w-full rounded-2xl p-4 text-sm outline-none" style={{ background: 'var(--surface)', border: '1px solid var(--border-soft)', color: 'var(--text)' }} />
-              <p className="text-xs mt-2" style={{ color: 'var(--muted)' }}>Variaveis: {'{{nome}}'}, {'{{telefone}}'}, {'{{empresa}}'}, {'{{negocio}}'}</p>
-            </div>
+
             <div><Button variant="primary" onClick={saveSetting} loading={savingSetting}>Salvar configuracao</Button></div>
           </div>
         </Card>

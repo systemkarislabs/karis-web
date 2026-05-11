@@ -82,7 +82,7 @@ function MetricCard({
       {delta ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 8, fontSize: 11, fontWeight: 700, color: brand ? '#E7FFF8' : deltaPos ? 'var(--success)' : 'var(--danger)' }}>
           {deltaPos ? <TrendingUp size={12} aria-hidden="true" /> : <TrendingDown size={12} aria-hidden="true" />}
-          <span>{delta} this month</span>
+          <span>{delta} este mês</span>
         </div>
       ) : null}
     </div>
@@ -222,7 +222,7 @@ function DashboardContent() {
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>Income Tracking</div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)' }}>Volume por hora</div>
               <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>Conversas por hora nas últimas 24 horas</div>
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
@@ -281,7 +281,7 @@ function DashboardContent() {
             padding: '20px 22px',
           }}
         >
-          <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)', marginBottom: 16 }}>Budget Management</div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)', marginBottom: 16 }}>Distribuição do atendimento</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {[
               { name: 'IA', conversations: aiCount, resolved: clamp(Math.round(aiCount * 0.9), 0, aiCount), rate: `${aiRate}%`, accent: 'var(--primary)' },
@@ -385,7 +385,7 @@ function DashboardContent() {
                 const channel = 'WhatsApp'
                 const statusLabel = r.status === 'OPEN' ? 'Em atendimento' : 'Concluído'
                 const statusType = r.status === 'OPEN' ? 'info' : 'success'
-                const agent = r.assignedUser?.name ?? (r.aiEnabled ? 'Sofia IA' : '—')
+                const agent = r.assignedUser?.name ?? (r.aiEnabled ? (stats?.assistant?.name ?? 'IA') : '—')
                 const time = timeAgo(r.updatedAt ?? r.createdAt)
 
                 const badgeColors: Record<string, { bg: string; text: string }> = {

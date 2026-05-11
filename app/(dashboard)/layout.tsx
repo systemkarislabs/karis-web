@@ -89,11 +89,11 @@ function KarisLogo({ collapsed, isMobile }: { collapsed: boolean; isMobile: bool
   )
 }
 
-function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onToggle: () => void; navItems: typeof navItemsBase }) {
+function Sidebar({ collapsed, onToggle, navItems, isMobile }: { collapsed: boolean; onToggle: () => void; navItems: typeof navItemsBase; isMobile: boolean }) {
   const pathname = usePathname()
   const router = useRouter()
 
-  const isMobile = typeof window !== 'undefined' ? window.matchMedia('(max-width: 1023px)').matches : false
+  const showLabels = isMobile || !collapsed
 
   function isActiveItem(item: (typeof navItemsBase)[number]) {
     const paths = item.activePaths?.length ? item.activePaths : [item.href]
@@ -107,31 +107,36 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
     router.push('/login')
   }
 
+  const sidebarWidth = isMobile ? 280 : collapsed ? 48 : 220
+
   return (
     <aside
       className="app-sidebar flex flex-col h-full transition-all duration-200"
       style={{
-        width: isMobile ? 280 : 48,
+        width: sidebarWidth,
         borderRight: '1px solid var(--border)',
         flexShrink: 0,
       }}
     >
       {/* Logo */}
       <div
-        className="flex items-center justify-center gap-2.5"
+        className="flex items-center gap-2.5 overflow-hidden"
         style={{
           height: 'calc(64px + env(safe-area-inset-top))',
           paddingTop: 'env(safe-area-inset-top)',
+          paddingLeft: showLabels ? 14 : 0,
+          paddingRight: showLabels ? 14 : 0,
+          justifyContent: showLabels ? 'space-between' : 'center',
           borderBottom: '1px solid var(--border)',
         }}
       >
-        <KarisLogo collapsed={!isMobile} isMobile={isMobile} />
+        <KarisLogo collapsed={!showLabels} isMobile={isMobile} />
 
         {isMobile ? (
           <button
             type="button"
             aria-label="Fechar menu"
-            className="h-10 w-10 inline-flex items-center justify-center rounded-lg transition-colors"
+            className="h-10 w-10 inline-flex items-center justify-center rounded-lg transition-colors flex-shrink-0"
             style={{ color: 'var(--muted)' }}
             onClick={onToggle}
           >
@@ -153,18 +158,18 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
               className={`nav-item flex items-center gap-2.5 w-full rounded-[8px] text-[13.5px] font-semibold transition-colors ${active ? 'nav-item-active' : ''}`}
               style={{
                 minHeight: 36,
-                padding: isMobile ? '9px 12px' : '0',
-                justifyContent: isMobile ? 'flex-start' : 'center',
+                padding: showLabels ? '9px 12px' : '0',
+                justifyContent: showLabels ? 'flex-start' : 'center',
                 background: active ? activeBg : 'transparent',
                 color: active ? 'var(--navy)' : 'var(--muted)',
               }}
-              title={!isMobile ? item.label : undefined}
+              title={!showLabels ? item.label : undefined}
               onClick={() => { if (isMobile) onToggle() }}
             >
               <span className="flex-shrink-0" style={{ color: active ? 'var(--navy)' : 'inherit' }}>
                 {item.icon}
               </span>
-              {isMobile && <span>{item.label}</span>}
+              {showLabels && <span>{item.label}</span>}
             </Link>
           )
         })}
@@ -178,13 +183,13 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
           className="nav-item flex items-center gap-2.5 w-full rounded-[8px] text-[13.5px] font-semibold transition-colors"
           style={{
             minHeight: 36,
-            padding: isMobile ? '9px 12px' : '0',
-            justifyContent: isMobile ? 'flex-start' : 'center',
+            padding: showLabels ? '9px 12px' : '0',
+            justifyContent: showLabels ? 'flex-start' : 'center',
             color: 'var(--muted)',
           }}
         >
           <DesignerIcon name="menu" size={17} className="flex-shrink-0" />
-          {isMobile && <span>Menu</span>}
+          {showLabels && <span>Menu</span>}
         </button>
         <Link
           href="/configuracoes"
@@ -192,15 +197,15 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
           className="nav-item flex items-center gap-2.5 w-full rounded-[8px] text-[13.5px] font-semibold transition-colors"
           style={{
             minHeight: 36,
-            padding: isMobile ? '9px 12px' : '0',
-            justifyContent: isMobile ? 'flex-start' : 'center',
+            padding: showLabels ? '9px 12px' : '0',
+            justifyContent: showLabels ? 'flex-start' : 'center',
             color: 'var(--muted)',
           }}
-          title={!isMobile ? 'Configura\u00e7\u00f5es' : undefined}
+          title={!showLabels ? 'Configura\u00e7\u00f5es' : undefined}
           onClick={() => { if (isMobile) onToggle() }}
         >
           <DesignerIcon name="settings" size={17} className="flex-shrink-0" />
-          {isMobile && <span>{'Configura\u00e7\u00f5es'}</span>}
+          {showLabels && <span>{'Configura\u00e7\u00f5es'}</span>}
         </Link>
         <button
           onClick={handleLogout}
@@ -208,14 +213,14 @@ function Sidebar({ collapsed, onToggle, navItems }: { collapsed: boolean; onTogg
           className="nav-item flex items-center gap-2.5 w-full rounded-[8px] text-[13.5px] font-semibold transition-colors"
           style={{
             minHeight: 36,
-            padding: isMobile ? '9px 12px' : '0',
-            justifyContent: isMobile ? 'flex-start' : 'center',
+            padding: showLabels ? '9px 12px' : '0',
+            justifyContent: showLabels ? 'flex-start' : 'center',
             color: 'var(--danger)',
           }}
-          title={!isMobile ? 'Sair' : undefined}
+          title={!showLabels ? 'Sair' : undefined}
         >
           <DesignerIcon name="logout" size={17} className="flex-shrink-0" />
-          {isMobile && <span>Sair</span>}
+          {showLabels && <span>Sair</span>}
         </button>
       </div>
     </aside>
@@ -325,6 +330,30 @@ function UserMenu({ userName, userRole }: { userName: string; userRole: string }
   )
 }
 
+const PAGE_SUBTITLES: Record<string, string> = {
+  '/': 'Painel de controle',
+  '/conversas': 'Atendimento ao cliente',
+  '/multi-chat': 'Atendimento ao cliente',
+  '/contatos': 'Gestão de contatos',
+  '/whatsapp': 'Conexão WhatsApp',
+  '/ia': 'Agente inteligente',
+  '/assistente': 'Agente inteligente',
+  '/conhecimento': 'Agente inteligente',
+  '/treinamento': 'Agente inteligente',
+  '/crm': 'Pipeline de vendas',
+  '/campanhas': 'Marketing',
+  '/calendario': 'Agendamentos',
+  '/configuracoes': 'Configurações gerais',
+  '/remuneracao': 'Comissões',
+}
+
+function getPageSubtitle(pathname: string): string {
+  for (const [prefix, label] of Object.entries(PAGE_SUBTITLES)) {
+    if (prefix === '/' ? pathname === '/' : pathname.startsWith(prefix)) return label
+  }
+  return 'Karis Atende'
+}
+
 function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: typeof navItemsBase }) {
   const pathname = usePathname()
   const [userName, setUserName] = useState('')
@@ -375,7 +404,7 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
         {title ? (
           <>
             <div className="text-[15px] font-semibold tracking-tight truncate" style={{ color: 'var(--text)' }}>{title}</div>
-            <div className="text-[12px] mt-0.5" style={{ color: 'var(--muted)' }}>{'Opera\u00e7\u00e3o'}</div>
+            <div className="text-[12px] mt-0.5" style={{ color: 'var(--muted)' }}>{getPageSubtitle(pathname)}</div>
           </>
         ) : (
           <img
@@ -509,11 +538,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               boxShadow: mobileOpen ? '0 18px 60px rgba(0,0,0,.28)' : 'none',
             }}
           >
-            <Sidebar collapsed={false} onToggle={() => setMobileOpen(o => !o)} navItems={navItems} />
+            <Sidebar collapsed={false} onToggle={() => setMobileOpen(o => !o)} navItems={navItems} isMobile={true} />
           </div>
         </>
       ) : (
-        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} navItems={navItems} />
+        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} navItems={navItems} isMobile={false} />
       )}
       <div className="flex flex-col flex-1 min-w-0">
         <Topbar onMenuClick={() => (isMobile ? setMobileOpen(o => !o) : setCollapsed(c => !c))} navItems={navItems} />

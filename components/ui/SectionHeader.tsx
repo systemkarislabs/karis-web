@@ -16,13 +16,8 @@ export function SectionHeader({
   return (
     <div className={cn('finance-page-head', className)}>
       <div>
-        <p className="finance-kicker">Karis Atende</p>
         <h1>{title}</h1>
-        {description && (
-          <span>
-            {description}
-          </span>
-        )}
+        {description && <span>{description}</span>}
       </div>
       {right ? <div className="flex items-center gap-2">{right}</div> : null}
     </div>

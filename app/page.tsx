@@ -229,7 +229,7 @@ function DashboardContent() {
                     fontSize: 12,
                   }}
                   labelStyle={{ fontWeight: 700, color: 'var(--text)' }}
-                  formatter={(v: number | string | undefined) => [v ?? 0, 'conversas']}
+                  formatter={(v) => [String(v ?? 0), 'conversas'] as [string, string]}
                 />
                 <Bar dataKey="value" radius={[4, 4, 0, 0]} fill="var(--teal)" />
               </BarChart>

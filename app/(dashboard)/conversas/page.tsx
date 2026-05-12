@@ -247,7 +247,7 @@ export default function ConversasPage() {
               const preview = conv.lastMessage?.content ? snippet(conv.lastMessage.content, 64) : ''
               const assigneeLabel = conv.assignedUser?.name ? `Atendente · ${conv.assignedUser.name.split(' ')[0]}` : ''
               return (
-                <li key={conv.id}>
+                <li key={conv.id} className="group">
                   <Link href={`/conversas/${conv.id}`}
                     className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
                     {/* Avatar */}

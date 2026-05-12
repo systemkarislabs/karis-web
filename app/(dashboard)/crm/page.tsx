@@ -73,7 +73,7 @@ export default function CrmPage() {
       setPipelines(p.pipelines ?? [])
       setContacts(c.contacts ?? [])
       setSetting(s.setting)
-      setTasks(t.tasks ?? [])
+      setTasks(t.data ?? [])
       setPipelineId(prev => prev ?? p.pipelines?.[0]?.id ?? null)
     } finally {
       setLoading(false)
@@ -83,7 +83,7 @@ export default function CrmPage() {
   async function loadDeals(nextPipelineId = pipelineId) {
     if (!nextPipelineId) return
     const data = await api.getCrmDeals({ pipelineId: nextPipelineId, q: q.trim() || undefined })
-    setDeals((data.deals ?? []) as DealView[])
+    setDeals((data.data ?? []) as DealView[])
   }
 
   useEffect(() => { loadBase().catch(() => setLoading(false)) }, [])
@@ -169,7 +169,7 @@ export default function CrmPage() {
     setTaskDueAt('')
     const [d, t] = await Promise.all([api.getCrmDeal(activeDealId), api.getCrmTasks({ status: 'OPEN' })])
     setActiveDeal(d.deal as DealView)
-    setTasks(t.tasks ?? [])
+    setTasks(t.data ?? [])
   }
 
   async function completeTask(taskId: string) {
@@ -179,7 +179,7 @@ export default function CrmPage() {
       setActiveDeal(d.deal as DealView)
     }
     const t = await api.getCrmTasks({ status: 'OPEN' })
-    setTasks(t.tasks ?? [])
+    setTasks(t.data ?? [])
   }
 
   async function saveSetting() {

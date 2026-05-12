@@ -164,14 +164,8 @@ export const api = {
     request<{ pipelines: import('./types').CrmPipeline[] }>('GET', '/api/crm/pipelines'),
 
   getCrmDeals: (params?: { pipelineId?: string; stageId?: string; status?: string; assignedUserId?: string; q?: string }) => {
-    const qs = new URLSearchParams()
-    if (params?.pipelineId) qs.set('pipelineId', params.pipelineId)
-    if (params?.stageId) qs.set('stageId', params.stageId)
-    if (params?.status) qs.set('status', params.status)
-    if (params?.assignedUserId) qs.set('assignedUserId', params.assignedUserId)
-    if (params?.q) qs.set('q', params.q)
-    const suffix = qs.toString() ? `?${qs.toString()}` : ''
-    return request<{ deals: import('./types').CrmDeal[] }>('GET', `/api/crm/deals${suffix}`)
+    const suffix = params ? `?${new URLSearchParams(Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined).map(([k, v]) => [k, String(v)]))).toString()}` : ''
+    return request<{ data: import('./types').CrmDeal[]; total: number; page: number; limit: number; totalPages: number; hasNext: boolean }>('GET', `/api/crm/deals${suffix}`)
   },
 
   createCrmDeal: (data: { title: string; valueCents?: number | null; currency?: string; contactId?: string; conversationId?: string; pipelineId?: string; stageId?: string; assignedUserId?: string | null }) =>
@@ -190,11 +184,8 @@ export const api = {
     request<{ task: import('./types').CrmTask }>('POST', `/api/crm/deals/${id}/tasks`, data),
 
   getCrmTasks: (params?: { mine?: boolean; status?: string }) => {
-    const qs = new URLSearchParams()
-    if (params?.mine) qs.set('mine', '1')
-    if (params?.status) qs.set('status', params.status)
-    const suffix = qs.toString() ? `?${qs.toString()}` : ''
-    return request<{ tasks: import('./types').CrmTask[] }>('GET', `/api/crm/tasks${suffix}`)
+    const suffix = params ? `?${new URLSearchParams(Object.entries(params).filter(([, v]) => v !== undefined).map(([k, v]) => [k, String(v)]).toString())}` : ''
+    return request<{ data: import('./types').CrmTask[]; total: number; page: number; limit: number; totalPages: number; hasNext: boolean }>('GET', `/api/crm/tasks${suffix}`)
   },
 
   updateCrmTask: (id: string, data: Partial<{ title: string; dueAt: string | null; status: 'OPEN' | 'DONE' | 'CANCELED'; assignedUserId: string | null }>) =>

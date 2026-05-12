@@ -1,6 +1,6 @@
 'use client'
 
-const BASE = process.env.NEXT_PUBLIC_API_URL || ''
+const BASE = process.env.NEXT_PUBLIC_API_URL || 'https://atende.karisnegocios.com.br'
 
 function getToken(): string | null {
   if (typeof window === 'undefined') return null

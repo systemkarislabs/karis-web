@@ -1,6 +1,6 @@
 'use client'
 
-const BASE = process.env.NEXT_PUBLIC_API_URL || 'https://karis-atende-api-production.up.railway.app'
+const BASE = 'https://karis-atende-api-production.up.railway.app'
 
 function getToken(): string | null {
   if (typeof window === 'undefined') return null

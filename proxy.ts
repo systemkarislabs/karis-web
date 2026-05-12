@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const PUBLIC_PATHS = ['/login', '/cadastro', '/recuperar-senha', '/redefinir-senha']
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || ''
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://karis-atende-api-production.up.railway.app'
 
 async function isTokenValid(token: string): Promise<boolean> {
   try {

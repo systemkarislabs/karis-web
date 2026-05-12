@@ -26,6 +26,7 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState('')
   const [magicLoading, setMagicLoading] = useState(false)
   const [magicDesc, setMagicDesc] = useState('')
   const [showMagic, setShowMagic] = useState(false)
@@ -65,9 +66,11 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
         transferConditions: form.transferConditions || null,
       })
       setSaved(true)
+      setSaveError('')
       setTimeout(() => setSaved(false), 2500)
-    } catch { /* noop */ }
-    finally { setSaving(false) }
+    } catch (err: any) {
+      setSaveError(err?.message || 'Erro ao salvar. Tente novamente.')
+    } finally { setSaving(false) }
   }
 
   async function handleMagicPrompt() {
@@ -322,6 +325,11 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
                 <span className="text-sm flex items-center gap-1.5" style={{ color: 'var(--teal)' }}>
                   <Check size={16} aria-hidden="true" />
                   Salvo
+                </span>
+              )}
+              {saveError && (
+                <span className="text-sm" style={{ color: 'var(--red)' }}>
+                  {saveError}
                 </span>
               )}
             </div>

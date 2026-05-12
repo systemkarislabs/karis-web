@@ -291,16 +291,35 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="transfer-phone" className="text-xs font-semibold" style={{ color: 'var(--text)' }}>
-                  Números de WhatsApp
+                <label className="text-xs font-semibold" style={{ color: 'var(--text)' }}>
+                  Telefones por setor
                 </label>
-                <Input
-                  id="transfer-phone"
-                  type="text"
-                  value={form.transferPhone}
-                  onChange={e => setForm(f => ({ ...f, transferPhone: e.target.value }))}
-                  placeholder="Ex: 5511999999999, 5521988887777 (separe por vírgula)"
-                />
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { key: 'vendas', label: 'Vendas' },
+                    { key: 'suporte', label: 'Suporte' },
+                    { key: 'financeiro', label: 'Financeiro' },
+                    { key: 'geral', label: 'Geral' },
+                  ].map(s => (
+                    <Input
+                      key={s.key}
+                      type="text"
+                      value={(() => {
+                        const phones = (form.transferPhone || '').split(/[,;]+/).map(p => p.trim()).filter(Boolean)
+                        const idx = ['vendas','suporte','financeiro','geral'].indexOf(s.key)
+                        return phones[idx] || ''
+                      })()}
+                      onChange={e => {
+                        const phones = ['vendas','suporte','financeiro','geral'].map((k, i) => {
+                          const current = (form.transferPhone || '').split(/[,;]+/).map(p => p.trim()).filter(Boolean)
+                          return k === s.key ? e.target.value : (current[i] || '')
+                        })
+                        setForm(f => ({ ...f, transferPhone: phones.filter(Boolean).join(', ') }))
+                      }}
+                      placeholder={s.label}
+                    />
+                  ))}
+                </div>
               </div>
 
               <div className="flex flex-col gap-1.5">

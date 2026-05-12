@@ -26,7 +26,7 @@ export default function CampanhasPage() {
       .then(([p, c]) => {
         if (!alive) return
         setPipelines(p.pipelines ?? [])
-        setCampaigns(c.campaigns ?? [])
+        setCampaigns(c.data ?? [])
       })
       .catch((err: any) => { console.error('Operation failed:', err?.message || err) })
       .finally(() => { if (alive) setLoading(false) })
@@ -53,7 +53,7 @@ export default function CampanhasPage() {
     try {
       await api.sendCampaign(id)
       const d = await api.getCampaigns()
-      setCampaigns(d.campaigns ?? [])
+      setCampaigns(d.data ?? [])
     } catch (err: any) { console.error('Operation failed:', err?.message || err) }
     finally { setSendingId(null) }
   }

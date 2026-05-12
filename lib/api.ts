@@ -130,7 +130,7 @@ export const api = {
 
   // Contacts
   getContacts: () =>
-    request<{ contacts: import('./types').Contact[] }>('GET', '/api/contacts'),
+    request<{ data: import('./types').Contact[]; total: number; page: number; limit: number; totalPages: number; hasNext: boolean }>('GET', '/api/contacts'),
 
   // Conversations
   getConversations: () =>
@@ -243,7 +243,7 @@ export const api = {
 
   // Campaigns
   getCampaigns: () =>
-    request<{ campaigns: import('./types').Campaign[] }>('GET', '/api/campaigns'),
+    request<{ data: import('./types').Campaign[]; total: number; page: number; limit: number; totalPages: number; hasNext: boolean }>('GET', '/api/campaigns'),
 
   createCampaign: (data: { name: string; message: string; stageId?: string | null }) =>
     request<{ campaign: import('./types').Campaign }>('POST', '/api/campaigns', data),
@@ -345,15 +345,15 @@ export const api = {
   adminMetrics: () =>
     adminRequest<any>('GET', '/api/admin/metrics'),
   // Coupons
-  getCoupons: () => request<{ data: any[]; total: number }>('GET', '/api/coupons'),
+  getCoupons: () => request<{ data: any[]; total: number; page: number; limit: number; totalPages: number; hasNext: boolean }>('GET', '/api/coupons'),
   createCoupon: (data: { code: string; type: string; value: number; validFrom: string; validUntil: string; maxUses?: number }) =>
     request<{ coupon: any }>('POST', '/api/coupons', data),
   // Affiliates
-  getAffiliates: () => request<{ data: any[] }>('GET', '/api/affiliates'),
+  getAffiliates: () => request<{ data: any[]; total: number; page: number; limit: number; totalPages: number; hasNext: boolean }>('GET', '/api/affiliates'),
   createAffiliate: (data: { name: string; email: string; commissionType?: string; commissionRate?: number }) =>
     request<{ affiliate: any }>('POST', '/api/affiliates', data),
   // Automations
-  getAutomations: () => request<{ data: any[] }>('GET', '/api/automations'),
+  getAutomations: () => request<{ data: any[]; total: number; page: number; limit: number; totalPages: number; hasNext: boolean }>('GET', '/api/automations'),
   createAutomation: (data: { name: string; triggerType: string; triggerConfig?: any; graph?: any }) =>
     request<{ automation: any }>('POST', '/api/automations', data),
   // AI

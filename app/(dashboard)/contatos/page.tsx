@@ -32,7 +32,7 @@ export default function ContatosPage() {
 
   useEffect(() => {
     api.getContacts()
-      .then(d => setContacts(d?.contacts ?? []))
+      .then(d => setContacts(d?.data ?? []))
       .catch(() => toast('Erro ao carregar contatos', 'error'))
       .finally(() => setLoading(false))
   }, [toast])

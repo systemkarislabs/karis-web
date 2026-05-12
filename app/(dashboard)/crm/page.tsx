@@ -71,7 +71,7 @@ export default function CrmPage() {
         api.getCrmTasks({ status: 'OPEN' }),
       ])
       setPipelines(p.pipelines ?? [])
-      setContacts(c.contacts ?? [])
+      setContacts(c.data ?? [])
       setSetting(s.setting)
       setTasks(t.data ?? [])
       setPipelineId(prev => prev ?? p.pipelines?.[0]?.id ?? null)

@@ -1,7 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // standalone removido — usando next start via npm start no Railway
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path((?!auth).*)',
+        destination: `${process.env.NEXT_PUBLIC_API_URL || 'https://karis-atende-api-production.up.railway.app'}/api/:path*`,
+      },
+    ]
+  },
 };
 
 export default nextConfig;

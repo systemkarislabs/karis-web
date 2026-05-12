@@ -61,7 +61,7 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
         name: form.name,
         instructions: form.instructions,
         isActive: form.isActive,
-        personality: form.personality || undefined,
+        personality: (form.personality as any) || undefined,
         transferPhone: form.transferPhone || null,
         transferConditions: form.transferConditions || null,
       })

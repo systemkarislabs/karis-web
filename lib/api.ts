@@ -151,6 +151,9 @@ export const api = {
   setConversationAssignee: (id: string, userId: string | null) =>
     request<{ conversation: import('./types').Conversation }>('PUT', `/api/conversations/${id}/assignee`, { userId }),
 
+  deleteConversation: (id: string) =>
+    request<{ ok: boolean }>('DELETE', `/api/conversations/${id}`),
+
   getUsers: (role?: 'ADMIN' | 'AGENT') => {
     const qs = role ? `?role=${encodeURIComponent(role)}` : ''
     return request<{ users: import('./types').User[] }>('GET', `/api/users${qs}`)

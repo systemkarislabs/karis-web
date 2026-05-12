@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Download, MessageSquareText } from 'lucide-react'
+import { Download, MessageSquareText, Trash2 } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useToast } from '@/components/Toast'
 import type { Conversation } from '@/lib/types'
@@ -103,6 +103,21 @@ export default function ConversasPage() {
   const [filter, setFilter] = useState<Filter>('ALL')
   const [stageFilter, setStageFilter] = useState<StageFilter>('ALL')
   const [markingAll, setMarkingAll] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  async function handleDelete(id: string) {
+    if (!confirm('Tem certeza que deseja excluir esta conversa? Todas as mensagens serão removidas.')) return
+    setDeletingId(id)
+    try {
+      await api.deleteConversation(id)
+      setConversations(prev => prev.filter(c => c.id !== id))
+      toast('Conversa excluída', 'success')
+    } catch {
+      toast('Erro ao excluir conversa', 'error')
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   async function load() {
     setLoading(true)
@@ -276,6 +291,18 @@ export default function ConversasPage() {
                       <AiBadge enabled={conv.aiEnabled} />
                       <span className="text-xs" style={{ color: 'var(--muted)' }}>{timeAgo(conv.updatedAt)}</span>
                     </div>
+                    <button
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(conv.id) }}
+                      disabled={deletingId === conv.id}
+                      className="ml-2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-50 transition-all"
+                      title="Excluir conversa"
+                    >
+                      {deletingId === conv.id ? (
+                        <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Trash2 size={16} style={{ color: 'var(--muted)' }} />
+                      )}
+                    </button>
                   </Link>
                 </li>
               )

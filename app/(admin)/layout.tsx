@@ -106,7 +106,7 @@ function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
     try {
       const raw = localStorage.getItem('karisAdminUser')
       if (raw) setEmail(JSON.parse(raw).email ?? '')
-    } catch {}
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
   }, [])
 
   useEffect(() => {

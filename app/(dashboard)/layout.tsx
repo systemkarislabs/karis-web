@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo, type ReactNode } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
+import { useToast } from '@/components/Toast'
 import type { Entitlements } from '@/lib/types'
 import { DesignerIcon } from '@/components/ui/DesignerIcon'
 
@@ -356,6 +357,7 @@ function getPageSubtitle(pathname: string): string {
 
 function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: typeof navItemsBase }) {
   const pathname = usePathname()
+  const { toast } = useToast()
   const [userName, setUserName] = useState('')
   const [userRole, setUserRole] = useState<string>('')
 
@@ -367,7 +369,7 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
         setUserName(parsed.name ?? '')
         setUserRole(parsed.role ?? '')
       }
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
   }, [])
 
   function isActiveItem(item: (typeof navItemsBase)[number]) {
@@ -438,6 +440,7 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
           aria-label="Buscar"
           className="text-[13px] outline-none bg-transparent w-full"
           style={{ color: 'var(--text)' }}
+          onChange={() => {/* placeholder: search not implemented yet */}}
         />
       </div>
 
@@ -446,6 +449,7 @@ function Topbar({ onMenuClick, navItems }: { onMenuClick: () => void; navItems: 
         aria-label="Notificações"
         className="h-10 w-10 inline-flex items-center justify-center rounded-lg transition-colors"
         style={{ color: 'var(--muted)' }}
+        onClick={() => toast('Em breve', 'info')}
       >
         <DesignerIcon name="bell" size={18} />
       </button>
@@ -470,7 +474,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         if (!alive) return
         setEntitlements(res.company.entitlements)
       })
-      .catch(() => { /* noop */ })
+      .catch((err: any) => { console.error('Operation failed:', err?.message || err) })
 
     return () => { alive = false }
   }, [])

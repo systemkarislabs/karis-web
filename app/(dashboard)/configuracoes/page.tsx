@@ -28,7 +28,7 @@ function ContaPanel() {
     try {
       const raw = localStorage.getItem('karisCurrentUser')
       if (raw) setUser(JSON.parse(raw))
-    } catch {}
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
   }, [])
 
   const roleLabel =
@@ -77,7 +77,7 @@ function EquipePanel() {
   useEffect(() => {
     api.getUsers()
       .then(d => setUsers(d.users ?? []))
-      .catch(() => {})
+      .catch((err: any) => { console.error('Operation failed:', err?.message || err) })
       .finally(() => setLoading(false))
   }, [])
 
@@ -123,7 +123,7 @@ function AutomacaoPanel() {
   useEffect(() => {
     api.getFollowUpSetting()
       .then(d => setSetting(d.setting))
-      .catch(() => {})
+      .catch((err: any) => { console.error('Operation failed:', err?.message || err) })
       .finally(() => setLoading(false))
   }, [])
 
@@ -231,7 +231,7 @@ function IntegracoesPanel() {
   useEffect(() => {
     api.getGoogleStatus()
       .then(setStatus)
-      .catch(() => {})
+      .catch((err: any) => { console.error('Operation failed:', err?.message || err) })
       .finally(() => setLoading(false))
   }, [])
 

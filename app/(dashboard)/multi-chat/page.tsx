@@ -104,7 +104,7 @@ export default function MultiChatPage() {
         const parsed = JSON.parse(raw)
         if (parsed?.id && parsed?.role) currentUserRef.current = { id: parsed.id, role: parsed.role }
       }
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
 
     api.getMyCompany()
       .then(({ company }) => {
@@ -119,14 +119,14 @@ export default function MultiChatPage() {
             setConversations(list)
             if (!activeId && list.length) setActiveId(list[0].id)
           })
-          .catch(() => {})
+          .catch((err: any) => { console.error('Operation failed:', err?.message || err) })
           .finally(() => { if (alive) setLoading(false) })
 
         refreshList()
 
         listPollRef.current = setInterval(refreshList, 10000)
       })
-      .catch(() => { if (alive) setLoading(false) })
+      .catch((err: any) => { console.error('Operation failed:', err?.message || err); if (alive) setLoading(false) })
 
     return () => {
       alive = false
@@ -158,13 +158,13 @@ export default function MultiChatPage() {
         setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
         return [...prev, ...newOnes]
       })
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
   }, [])
 
   useEffect(() => {
     if (!activeId) return
     loadMessages(activeId)
-    api.markConversationRead(activeId).catch(() => {})
+    api.markConversationRead(activeId).catch((err: any) => { console.error('Operation failed:', err?.message || err) })
 
     pollRef.current = setInterval(() => loadMessages(activeId), 5000)
     return () => { if (pollRef.current) clearInterval(pollRef.current) }
@@ -182,7 +182,7 @@ export default function MultiChatPage() {
       const data = await api.sendMessage(activeId, text.trim())
       setMessages(prev => [...prev, data.message])
       setText('')
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
     finally { setSending(false) }
   }
 
@@ -206,7 +206,7 @@ export default function MultiChatPage() {
     try {
       const updated = await api.updateConversation(active.id, { aiEnabled: !active.aiEnabled })
       updateConversationLocal(active.id, { aiEnabled: updated.conversation.aiEnabled })
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
     finally { setTogglingAi(false) }
   }
 
@@ -219,10 +219,10 @@ export default function MultiChatPage() {
         updateConversationLocal(active.id, { aiEnabled: true, humanTakeovers: [] })
       } else {
         const data = await api.startTakeover(active.id, 'Atendimento manual')
-        const takeover: HumanTakeover = data.takeover as any
+        const takeover: HumanTakeover = data.takeover
         updateConversationLocal(active.id, { aiEnabled: false, humanTakeovers: [takeover] })
       }
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
     finally { setTogglingTakeover(false) }
   }
 
@@ -233,11 +233,11 @@ export default function MultiChatPage() {
       const nextStatus = active.status === 'OPEN' ? 'CLOSED' : 'OPEN'
       const updated = await api.updateConversation(active.id, { status: nextStatus })
       updateConversationLocal(active.id, {
-        status: updated.conversation.status as any,
+        status: updated.conversation.status,
         aiEnabled: updated.conversation.aiEnabled,
         ...(nextStatus === 'CLOSED' ? { humanTakeovers: [] } : {}),
       })
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
     finally { setTogglingStatus(false) }
   }
 
@@ -247,7 +247,7 @@ export default function MultiChatPage() {
     try {
       const updated = await api.setConversationAssignee(active.id, userId)
       updateConversationLocal(active.id, { assignedUser: updated.conversation.assignedUser ?? null })
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
     finally { setTogglingAssignee(false) }
   }
 

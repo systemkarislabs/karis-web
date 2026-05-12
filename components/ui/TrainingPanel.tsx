@@ -39,7 +39,7 @@ function TrainingCard({ item, onDelete }: { item: TrainingItem; onDelete: (id: s
     try {
       await api.deleteKnowledge(item.id)
       onDelete(item.id)
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
     finally { setDeleting(false) }
   }
 
@@ -133,7 +133,7 @@ export function TrainingPanel() {
         const all: TrainingItem[] = (d?.knowledge ?? [])
         setItems(all.filter((kb: TrainingItem) => kb.trainingType === 'pdf' || kb.trainingType === 'video'))
       })
-      .catch(() => {})
+      .catch((err: any) => { console.error('Operation failed:', err?.message || err) })
       .finally(() => { if (alive) setLoading(false) })
     return () => { alive = false }
   }, [])
@@ -154,10 +154,10 @@ export function TrainingPanel() {
         fileUrl: form.fileUrl || undefined,
         trainingType,
       }
-      const data = await api.createKnowledge(payload as any)
+      const data = await api.createKnowledge({ title: payload.title, content: payload.content })
       setItems(prev => [{ ...data.knowledge, trainingType, fileUrl: form.fileUrl || undefined }, ...prev])
       resetForm()
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
     finally { setSaving(false) }
   }
 

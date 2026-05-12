@@ -2,28 +2,6 @@
 
 import Link from 'next/link'
 
-function StatCard({ label, value, hint, tone }: { label: string; value: string; hint: string; tone: 'blue' | 'emerald' | 'amber' }) {
-  const tones: Record<string, { a: string; b: string; border: string }> = {
-    blue: { a: 'rgba(59,130,246,.18)', b: 'rgba(59,130,246,.06)', border: 'rgba(59,130,246,.25)' },
-    emerald: { a: 'rgba(16,185,129,.16)', b: 'rgba(16,185,129,.06)', border: 'rgba(16,185,129,.22)' },
-    amber: { a: 'rgba(245,158,11,.16)', b: 'rgba(245,158,11,.06)', border: 'rgba(245,158,11,.22)' },
-  }
-  const t = tones[tone]
-  return (
-    <div
-      className="rounded-2xl p-5"
-      style={{
-        background: `linear-gradient(180deg, ${t.a}, ${t.b})`,
-        border: `1px solid ${t.border}`,
-      }}
-    >
-      <div className="text-xs font-semibold tracking-wide uppercase" style={{ color: 'rgba(155,178,209,.92)' }}>{label}</div>
-      <div className="mt-2 text-2xl font-semibold" style={{ color: 'rgba(255,255,255,.92)' }}>{value}</div>
-      <div className="mt-1 text-xs" style={{ color: 'rgba(155,178,209,.92)' }}>{hint}</div>
-    </div>
-  )
-}
-
 export default function AdminHomePage() {
   return (
     <div className="space-y-6">
@@ -57,12 +35,6 @@ export default function AdminHomePage() {
             Ver planos
           </Link>
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard label="Empresas" value="—" hint="Total cadastrado" tone="blue" />
-        <StatCard label="Assinaturas" value="—" hint="Ativas / trial / canceladas" tone="emerald" />
-        <StatCard label="Uso" value="—" hint="Usuários / conversas / mensagens" tone="amber" />
       </div>
 
       <div

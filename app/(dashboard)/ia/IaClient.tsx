@@ -44,7 +44,7 @@ export default function IaClient() {
     let alive = true
     api.getAssistant()
       .then(d => { if (alive && d?.assistant?.name) setAgentName(d.assistant.name) })
-      .catch(() => {})
+      .catch((err: any) => { console.error('Operation failed:', err?.message || err) })
     return () => { alive = false }
   }, [])
 

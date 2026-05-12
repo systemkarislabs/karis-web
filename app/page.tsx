@@ -96,7 +96,7 @@ function DashboardContent() {
     api
       .getStats()
       .then(setStats)
-      .catch(() => {})
+      .catch((err: any) => { console.error('Operation failed:', err?.message || err) })
       .finally(() => setLoading(false))
 
     api

@@ -58,7 +58,7 @@ export default function AdminCompanyPage() {
   async function save() {
     setSaving(true)
     try {
-      await api.adminUpdateCompany(id, { name, whatsappEnabled, aiEnabled, karisLinkEnabled } as any)
+      await api.adminUpdateCompany(id, { name, whatsappEnabled, aiEnabled, karisLinkEnabled })
       if (planId) {
         await api.adminUpsertCompanySubscription(id, { planId, status, applyPlanToCompany })
       }

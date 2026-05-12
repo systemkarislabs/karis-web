@@ -76,9 +76,9 @@ export default function AdminPlansPage() {
         whatsappEnabled,
         karisLinkEnabled,
         features: { modules },
-        maxUsers: Number.isFinite(maxUsersNum as any) ? (maxUsersNum as any) : null,
-        maxWhatsappConnections: Number.isFinite(maxWhatsNum as any) ? (maxWhatsNum as any) : null,
-      } as any)
+        maxUsers: maxUsersNum !== null && Number.isFinite(maxUsersNum) ? maxUsersNum : null,
+        maxWhatsappConnections: maxWhatsNum !== null && Number.isFinite(maxWhatsNum) ? maxWhatsNum : null,
+      })
       toast('Plano criado', 'success')
       setName('')
       setDescription('')
@@ -101,7 +101,7 @@ export default function AdminPlansPage() {
       if (p.isActive) {
         await api.adminDisablePlan(p.id)
       } else {
-        await api.adminUpdatePlan(p.id, { isActive: true } as any)
+        await api.adminUpdatePlan(p.id, { isActive: true })
       }
       await load()
     } catch (e: any) {

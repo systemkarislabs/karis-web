@@ -28,7 +28,7 @@ export default function CampanhasPage() {
         setPipelines(p.pipelines ?? [])
         setCampaigns(c.campaigns ?? [])
       })
-      .catch(() => {})
+      .catch((err: any) => { console.error('Operation failed:', err?.message || err) })
       .finally(() => { if (alive) setLoading(false) })
     return () => { alive = false }
   }, [])
@@ -44,7 +44,7 @@ export default function CampanhasPage() {
       })
       setCampaigns(prev => [data.campaign, ...prev])
       setForm({ name: '', message: '', stageId: '' })
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
     finally { setCreating(false) }
   }
 
@@ -54,7 +54,7 @@ export default function CampanhasPage() {
       await api.sendCampaign(id)
       const d = await api.getCampaigns()
       setCampaigns(d.campaigns ?? [])
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
     finally { setSendingId(null) }
   }
 

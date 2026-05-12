@@ -71,7 +71,7 @@ export default function ConversaPage() {
         setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
         return [...prev, ...newOnes]
       })
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
   }, [id])
 
   useEffect(() => {
@@ -80,7 +80,7 @@ export default function ConversaPage() {
         const data = await api.getConversation(id)
         setConversation(data.conversation)
         setMessages(data.conversation.messages)
-        api.markConversationRead(id).catch(() => {})
+        api.markConversationRead(id).catch((err: any) => { console.error('Operation failed:', err?.message || err) })
         const active = data.conversation.humanTakeovers?.some(t => !t.endedAt) ?? false
         setTakeover(active)
       } catch { router.push('/conversas') }
@@ -104,7 +104,7 @@ export default function ConversaPage() {
       const data = await api.sendMessage(id, text.trim())
       setMessages(prev => [...prev, data.message])
       setText('')
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
     finally { setSending(false) }
   }
 
@@ -113,20 +113,22 @@ export default function ConversaPage() {
     try {
       const updated = await api.updateConversation(id, { aiEnabled: !conversation.aiEnabled })
       setConversation(c => c ? { ...c, aiEnabled: updated.conversation.aiEnabled } : c)
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
   }
 
   async function handleTakeover() {
     if (!conversation) return
-    if (takeover) {
-      await api.endTakeover(id, true)
-      setTakeover(false)
-      setConversation(c => c ? { ...c, aiEnabled: true } : c)
-    } else {
-      await api.startTakeover(id, 'Atendimento manual')
-      setTakeover(true)
-      setConversation(c => c ? { ...c, aiEnabled: false } : c)
-    }
+    try {
+      if (takeover) {
+        await api.endTakeover(id, true)
+        setTakeover(false)
+        setConversation(c => c ? { ...c, aiEnabled: true } : c)
+      } else {
+        await api.startTakeover(id, 'Atendimento manual')
+        setTakeover(true)
+        setConversation(c => c ? { ...c, aiEnabled: false } : c)
+      }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
   }
 
   if (loading) {

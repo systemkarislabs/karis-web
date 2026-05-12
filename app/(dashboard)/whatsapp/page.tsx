@@ -49,7 +49,7 @@ export default function WhatsAppPage() {
     try {
       const d = await api.getWhatsappDiagnostics()
       setDiagnostics(d)
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
   }, [])
 
   const fetchStatus = useCallback(async () => {
@@ -65,7 +65,7 @@ export default function WhatsAppPage() {
       const msg = e?.message || 'Erro ao consultar status do WhatsApp'
       setStatus('ERROR')
       setStatusError(msg)
-      fetchDiagnostics().catch(() => {})
+      fetchDiagnostics().catch((err: any) => { console.error('Operation failed:', err?.message || err) })
     }
   }, [fetchDiagnostics])
 
@@ -80,7 +80,7 @@ export default function WhatsAppPage() {
         }
         Promise.all([fetchStatus(), fetchDiagnostics()]).finally(() => { if (alive) setLoading(false) })
       })
-      .catch(() => { if (alive) setLoading(false) })
+      .catch((err: any) => { console.error('Operation failed:', err?.message || err); if (alive) setLoading(false) })
 
     return () => { alive = false }
   }, [fetchStatus])
@@ -109,12 +109,12 @@ export default function WhatsAppPage() {
       } else {
         toast('Conectando… o QR Code aparecerá em instantes. Clique em "Atualizar QR" se demorar.', 'info')
       }
-      fetchDiagnostics().catch(() => {})
+      fetchDiagnostics().catch((err: any) => { console.error('Operation failed:', err?.message || err) })
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Erro ao conectar WhatsApp', 'error')
       setStatus('ERROR')
       setStatusError(err instanceof Error ? err.message : 'Erro ao conectar WhatsApp')
-      fetchDiagnostics().catch(() => {})
+      fetchDiagnostics().catch((err: any) => { console.error('Operation failed:', err?.message || err) })
     } finally {
       setConnecting(false)
     }
@@ -129,8 +129,8 @@ export default function WhatsAppPage() {
       setConnection(null)
       setQrCode(null)
       setStatusError(null)
-      fetchDiagnostics().catch(() => {})
-    } catch { /* noop */ }
+      fetchDiagnostics().catch((err: any) => { console.error('Operation failed:', err?.message || err) })
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
     finally { setDisconnecting(false) }
   }
 
@@ -149,10 +149,10 @@ export default function WhatsAppPage() {
       } else {
         toast('Reset efetuado. Aguarde e clique em "Atualizar QR".', 'info')
       }
-      fetchDiagnostics().catch(() => {})
+      fetchDiagnostics().catch((err: any) => { console.error('Operation failed:', err?.message || err) })
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Erro ao resetar instância', 'error')
-      fetchDiagnostics().catch(() => {})
+      fetchDiagnostics().catch((err: any) => { console.error('Operation failed:', err?.message || err) })
     } finally {
       setResetting(false)
     }
@@ -351,7 +351,7 @@ export default function WhatsAppPage() {
         </Card>
       )}
 
-      {false && diagnostics && (
+      {diagnostics && (
         <Card className="p-5">
           <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Diagnóstico</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">

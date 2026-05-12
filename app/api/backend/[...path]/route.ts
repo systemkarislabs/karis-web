@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const API_BASE_URL = process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'https://karis-atende-api-production.up.railway.app'
+const API_BASE_URL = process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_URL
 
 type Params = {
   params: Promise<{ path: string[] }>

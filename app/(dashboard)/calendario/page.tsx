@@ -69,7 +69,7 @@ export default function CalendarioPage() {
     setRefreshing(true)
     try {
       await refreshAll()
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
     finally { setRefreshing(false) }
   }
 
@@ -77,7 +77,7 @@ export default function CalendarioPage() {
     let alive = true
     setLoading(true)
     refreshAll()
-      .catch(() => {})
+      .catch((err: any) => { console.error('Operation failed:', err?.message || err) })
       .finally(() => { if (alive) setLoading(false) })
     return () => { alive = false }
   }, [])
@@ -87,7 +87,7 @@ export default function CalendarioPage() {
     try {
       const { url } = await api.getGoogleAuthUrl()
       window.location.href = url
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
     finally { setConnecting(false) }
   }
 
@@ -96,7 +96,7 @@ export default function CalendarioPage() {
     try {
       await api.disconnectGoogle()
       await refreshAll()
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
   }
 
   async function handleCreate(e: React.FormEvent) {
@@ -111,7 +111,7 @@ export default function CalendarioPage() {
       })
       setForm({ title: '', startAt: '', endAt: '' })
       await refreshAll()
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
     finally { setCreating(false) }
   }
 

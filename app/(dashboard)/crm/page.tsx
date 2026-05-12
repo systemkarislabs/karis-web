@@ -93,7 +93,7 @@ export default function CrmPage() {
     setStages(p?.stages ?? [])
   }, [pipelineId, pipelines])
 
-  useEffect(() => { loadDeals().catch(() => {}) }, [pipelineId, q])
+  useEffect(() => { loadDeals().catch((err: any) => { console.error('Operation failed:', err?.message || err) }) }, [pipelineId, q])
 
   useEffect(() => {
     if (!activeDealId) {
@@ -233,7 +233,7 @@ export default function CrmPage() {
               <Search size={16} className="absolute left-3 top-3" style={{ color: 'var(--muted)' }} />
               <Input value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar negocio, contato ou telefone" className="pl-9 h-10" />
             </div>
-            <select value={temperature} onChange={e => setTemperature(e.target.value as any)} className="h-10 rounded-xl px-3 text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border-soft)', color: 'var(--text)' }}>
+            <select value={temperature} onChange={e => setTemperature(e.target.value as 'ALL' | 'HOT' | 'WARM' | 'COLD')} className="h-10 rounded-xl px-3 text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border-soft)', color: 'var(--text)' }}>
               <option value="ALL">Todas temperaturas</option>
               <option value="HOT">Quentes</option>
               <option value="WARM">Mornos</option>

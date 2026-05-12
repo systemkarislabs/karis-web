@@ -109,7 +109,7 @@ export default function CadastroPage() {
 
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="signup-password" className="text-sm font-medium" style={{ color: 'var(--text)' }}>Senha</label>
-                <Input id="signup-password" type="password" value={form.password} onChange={e => set('password', e.target.value)} required placeholder="Mínimo 6 caracteres" minLength={6} />
+                <Input id="signup-password" type="password" value={form.password} onChange={e => set('password', e.target.value)} required placeholder="Mínimo 8 caracteres" minLength={8} />
               </div>
 
               {error && (

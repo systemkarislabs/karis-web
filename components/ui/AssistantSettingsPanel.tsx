@@ -47,7 +47,7 @@ export function AssistantSettingsPanel({ showHint = true }: { showHint?: boolean
           transferConditions: d.assistant.transferConditions ?? '',
         })
       })
-      .catch(() => {})
+      .catch((err: any) => { console.error('Operation failed:', err?.message || err) })
       .finally(() => { if (alive) setLoading(false) })
     return () => { alive = false }
   }, [])

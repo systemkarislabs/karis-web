@@ -19,7 +19,7 @@ function KnowledgeCard({ kb, onDelete }: { kb: KnowledgeBase; onDelete: (id: str
     try {
       await api.deleteKnowledge(kb.id)
       onDelete(kb.id)
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
     finally { setDeleting(false) }
   }
 
@@ -77,7 +77,7 @@ export function KnowledgeBasePanel() {
     let alive = true
     api.getKnowledge()
       .then(d => { if (alive) setItems(d?.knowledge ?? []) })
-      .catch(() => {})
+      .catch((err: any) => { console.error('Operation failed:', err?.message || err) })
       .finally(() => { if (alive) setLoading(false) })
     return () => { alive = false }
   }, [])
@@ -90,7 +90,7 @@ export function KnowledgeBasePanel() {
       setItems(prev => [data.knowledge, ...prev])
       setForm({ title: '', content: '' })
       setShowForm(false)
-    } catch { /* noop */ }
+    } catch (err: any) { console.error('Operation failed:', err?.message || err) }
     finally { setSaving(false) }
   }
 

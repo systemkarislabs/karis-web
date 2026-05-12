@@ -1,6 +1,6 @@
 'use client'
 
-const BASE = process.env.NEXT_PUBLIC_API_URL!
+const BASE = process.env.NEXT_PUBLIC_API_URL || ''
 
 function getToken(): string | null {
   if (typeof window === 'undefined') return null
@@ -39,7 +39,7 @@ async function request<T>(
   if (res.status === 401) {
     localStorage.removeItem('karisAuthToken')
     localStorage.removeItem('karisCurrentUser')
-    try { await fetch('/api/auth', { method: 'DELETE' }) } catch {}
+    try { await fetch('/api/auth', { method: 'DELETE' }) } catch (err: any) { console.error('Operation failed:', err?.message || err) }
     window.location.href = '/login'
     throw new Error('Sessão expirada')
   }

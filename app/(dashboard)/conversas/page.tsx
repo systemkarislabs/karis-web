@@ -123,7 +123,7 @@ export default function ConversasPage() {
     setLoading(true)
     try {
       const d = await api.getConversations()
-      setConversations(d?.conversations ?? [])
+      setConversations(d?.data ?? [])
     } catch {
       toast('Erro ao carregar conversas', 'error')
     } finally {

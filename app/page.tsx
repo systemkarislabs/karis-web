@@ -101,7 +101,7 @@ function DashboardContent() {
 
     api
       .getConversations()
-      .then(d => setConversations(d?.conversations ?? []))
+      .then(d => setConversations(d?.data ?? []))
       .catch(() => setConvsError(true))
   }, [])
 

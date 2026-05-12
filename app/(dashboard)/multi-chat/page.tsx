@@ -115,7 +115,7 @@ export default function MultiChatPage() {
           api.getConversations()
           .then(d => {
             if (!alive) return
-            const list = (d?.conversations ?? []).slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+            const list = (d?.data ?? []).slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
             setConversations(list)
             if (!activeId && list.length) setActiveId(list[0].id)
           })

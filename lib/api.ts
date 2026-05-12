@@ -134,7 +134,7 @@ export const api = {
 
   // Conversations
   getConversations: () =>
-    request<{ conversations: import('./types').Conversation[] }>('GET', '/api/conversations'),
+    request<{ data: import('./types').Conversation[]; total: number; page: number; limit: number; totalPages: number; hasNext: boolean }>('GET', '/api/conversations'),
 
   getConversation: (id: string) =>
     request<{ conversation: import('./types').Conversation & { messages: import('./types').Message[] } }>('GET', `/api/conversations/${id}`),

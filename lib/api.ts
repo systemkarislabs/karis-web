@@ -350,4 +350,54 @@ export const api = {
       `/api/admin/companies/${companyId}/subscription`,
       data
     ),
+  // Admin metrics
+  adminMetrics: () =>
+    adminRequest<any>('GET', '/api/admin/metrics'),
+  // Coupons
+  getCoupons: () => request<{ data: any[]; total: number }>('GET', '/api/coupons'),
+  createCoupon: (data: { code: string; type: string; value: number; validFrom: string; validUntil: string; maxUses?: number }) =>
+    request<{ coupon: any }>('POST', '/api/coupons', data),
+  // Affiliates
+  getAffiliates: () => request<{ data: any[] }>('GET', '/api/affiliates'),
+  createAffiliate: (data: { name: string; email: string; commissionType?: string; commissionRate?: number }) =>
+    request<{ affiliate: any }>('POST', '/api/affiliates', data),
+  // Automations
+  getAutomations: () => request<{ data: any[] }>('GET', '/api/automations'),
+  createAutomation: (data: { name: string; triggerType: string; triggerConfig?: any; graph?: any }) =>
+    request<{ automation: any }>('POST', '/api/automations', data),
+  // AI
+  aiPlayground: (data: { message: string }) =>
+    request<{ reply: string }>('POST', '/api/ai/playground', data),
+  aiSuggestReply: (conversationId: string) =>
+    request<{ suggestion: string }>('POST', '/api/ai/suggest', { conversationId }),
+  // Sales
+  salesForecast: (period?: string) =>
+    request<any>('GET', `/api/sales/forecast?period=${period || 'month'}`),
+  salesFunnel: () => request<{ funnel: any[] }>('GET', '/api/sales/funnel'),
+  // API Keys
+  getApiKeys: () => request<{ keys: any[] }>('GET', '/api/api-keys'),
+  createApiKey: (data: { name: string; scopes?: string[] }) =>
+    request<{ key: any }>('POST', '/api/api-keys', data),
+  revokeApiKey: (id: string) => request<void>('DELETE', `/api/api-keys/${id}`),
+  // Billing
+  getBillingCustomer: () => request<{ customer: any }>('GET', '/api/billing/customer'),
+  getInvoices: () => request<{ invoices: any[] }>('GET', '/api/billing/invoices'),
+  // Templates
+  getTemplates: (vertical?: string) =>
+    request<{ templates: any[] }>('GET', `/api/templates${vertical ? `?vertical=${vertical}` : ''}`),
+  applyTemplate: (templateId: string) =>
+    request<any>('POST', '/api/templates/apply', { templateId }),
+  // LGPD
+  lgpdExport: (contactId: string) => request<any>('POST', '/api/lgpd/export', { contactId }),
+  lgpdDelete: (contactId: string) => request<any>('POST', '/api/lgpd/delete', { contactId }),
+  // Snooze
+  snoozeConversation: (id: string, minutes: number) =>
+    request<any>('POST', `/api/conversations/${id}/snooze`, { minutes }),
+  // Booking
+  getBookingPages: () => request<{ pages: any[] }>('GET', '/api/booking'),
+  // Contact memories
+  getContactMemories: (contactId: string) =>
+    request<{ memories: any[] }>('GET', `/api/contact-memories?contactId=${contactId}`),
+  // Prompt variants
+  getPromptVariants: () => request<{ variants: any[] }>('GET', '/api/prompt-variants'),
 }

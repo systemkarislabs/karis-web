@@ -150,7 +150,6 @@ function Sidebar({ collapsed, onToggle, navItems, isMobile }: { collapsed: boole
       <nav className="flex-1 px-2.5 py-3 flex flex-col gap-1 overflow-y-auto">
         {navItems.map(item => {
           const active = isActiveItem(item)
-          const activeBg = 'rgba(90,152,148,.12)'
           return (
             <Link
               key={item.href}
@@ -161,13 +160,13 @@ function Sidebar({ collapsed, onToggle, navItems, isMobile }: { collapsed: boole
                 minHeight: 36,
                 padding: showLabels ? '9px 12px' : '0',
                 justifyContent: showLabels ? 'flex-start' : 'center',
-                background: active ? activeBg : 'transparent',
-                color: active ? 'var(--navy)' : 'var(--muted)',
+                background: active ? 'var(--brand-50)' : 'transparent',
+                color: active ? 'var(--brand)' : 'var(--muted)',
               }}
               title={!showLabels ? item.label : undefined}
               onClick={() => { if (isMobile) onToggle() }}
             >
-              <span className="flex-shrink-0" style={{ color: active ? 'var(--navy)' : 'inherit' }}>
+              <span className="flex-shrink-0" style={{ color: active ? 'var(--brand)' : 'inherit' }}>
                 {item.icon}
               </span>
               {showLabels && <span>{item.label}</span>}

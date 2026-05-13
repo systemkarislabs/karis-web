@@ -7,7 +7,7 @@ const poppins = Poppins({ subsets: ['latin'], weight: ['400', '500', '600', '700
 const jetbrains = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], display: 'swap', variable: '--font-mono' })
 
 export const metadata: Metadata = {
-  title: 'Atena.ai — Atendimento Inteligente',
+  title: 'Karis Atende — Atendimento Inteligente',
   description: 'Plataforma de atendimento inteligente via WhatsApp com IA',
   icons: { icon: '/favicon.png' },
 }

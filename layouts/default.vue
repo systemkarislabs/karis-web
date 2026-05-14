@@ -9,6 +9,7 @@
         <p class="app-nav-label">Operação</p>
         <NavItem to="/dashboard" :icon="LayoutDashboard" :label="$t('nav.dashboard')" />
         <NavItem to="/inbox" :icon="MessageSquare" :label="$t('nav.inbox')" />
+        <NavItem to="/whatsapp" :icon="MessageCircle" :label="$t('nav.whatsapp')" />
         <NavItem to="/contacts" :icon="Users" :label="$t('nav.contacts')" />
         <NavItem to="/crm" :icon="Kanban" :label="$t('nav.crm')" />
         <NavItem to="/agent" :icon="Bot" :label="$t('nav.agent')" />
@@ -90,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { BarChart3, Bell, Bot, Kanban, LayoutDashboard, ListOrdered, LogOut, Megaphone, Menu, MessageSquare, Search, Settings, Users, X } from "lucide-vue-next";
+import { BarChart3, Bell, Bot, Kanban, LayoutDashboard, ListOrdered, LogOut, Megaphone, Menu, MessageCircle, MessageSquare, Search, Settings, Users, X } from "lucide-vue-next";
 import { useCmdK } from "~/composables/useCmdK";
 
 const auth = useAuthStore();
@@ -101,6 +102,7 @@ const mobileMenuOpen = ref(false);
 const mobileItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/inbox", icon: MessageSquare, label: "Inbox" },
+  { to: "/whatsapp", icon: MessageCircle, label: "WhatsApp" },
   { to: "/contacts", icon: Users, label: "Contatos" },
   { to: "/crm", icon: Kanban, label: "CRM" },
   { to: "/agent", icon: Bot, label: "Agente IA" },
@@ -115,6 +117,7 @@ onMounted(() => {
   auth.fetchMe();
   cmdK.register({ key: "g d", label: "Ir para Dashboard", action: () => navigateTo("/dashboard") });
   cmdK.register({ key: "g i", label: "Ir para Inbox", action: () => navigateTo("/inbox") });
+  cmdK.register({ key: "g w", label: "Ir para WhatsApp", action: () => navigateTo("/whatsapp") });
   cmdK.register({ key: "g c", label: "Ir para CRM", action: () => navigateTo("/crm") });
   cmdK.register({ key: "g a", label: "Agente IA", action: () => navigateTo("/agent") });
   cmdK.register({ key: "g s", label: "Configurações", action: () => navigateTo("/settings") });

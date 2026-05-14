@@ -37,6 +37,6 @@ definePageMeta({ layout: false, middleware: "auth" });
 
 const links = [
   { to: "/settings/business", label: "Empresa", description: "Nome, recursos habilitados e limites do plano.", icon: Building2 },
-  { to: "/settings/whatsapp", label: "WhatsApp", description: "Status da instancia, QR Code e diagnostico do canal.", icon: MessageCircle },
+  { to: "/whatsapp", label: "WhatsApp", description: "Status da instancia, QR Code e diagnostico do canal.", icon: MessageCircle },
 ];
 </script>

@@ -45,7 +45,7 @@
         </div>
 
         <div class="queue-card__meta">
-          <Badge :variant="item.waitSeconds > 300 ? 'destructive' : item.waitSeconds > 120 ? 'warning' : 'secondary'">
+          <Badge :variant="item.waitSeconds > 300 ? 'destructive' : item.waitSeconds > 120 ? 'warning' : 'neutral'">
             <Clock class="h-3 w-3 mr-1" />
             {{ formatWait(item.waitSeconds) }}
           </Badge>
@@ -74,7 +74,7 @@ import { Clock, RefreshCw, UserCheck } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'default' })
 
-const { $api } = useNuxtApp()
+const api = useApi()
 const toast = useToast()
 
 const queue = ref<any[]>([])
@@ -92,8 +92,8 @@ async function refresh() {
   loading.value = true
   try {
     const [queueRes, statsRes] = await Promise.all([
-      useApi('/queue'),
-      useApi('/queue/stats'),
+      api.fetch<any>('/queue'),
+      api.fetch<any>('/queue/stats'),
     ])
     queue.value = queueRes.queue ?? []
     stats.value = statsRes
@@ -107,7 +107,7 @@ async function refresh() {
 async function pickup(conversationId: string) {
   pickingUp.value = conversationId
   try {
-    await useApi(`/queue/${conversationId}/pickup`, { method: 'POST' })
+    await api.fetch(`/queue/${conversationId}/pickup`, { method: 'POST' })
     toast.success('Conversa atribuída a você!')
     await refresh()
     navigateTo(`/inbox`)
@@ -141,7 +141,7 @@ onUnmounted(() => clearInterval(interval))
          transition-colors;
 }
 .queue-card--urgent {
-  @apply border-red-300 bg-red-50 dark:bg-red-950/20;
+  @apply border-red-300 bg-red-50;
 }
 .queue-card__info    { @apply flex-1 min-w-0; }
 .queue-card__name    { @apply font-semibold text-[--ka-fg] truncate; }

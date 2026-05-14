@@ -164,7 +164,7 @@ async function logoutAll() {
   try {
     await api.fetch("/auth/logout", { method: "POST" });
     superAdmin.clear();
-    navigateTo("/super-admin/login");
+    navigateTo("/login");
   } catch { logoutLoading.value = false; }
 }
 

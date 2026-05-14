@@ -11,15 +11,10 @@
         <NavItem to="/inbox" :icon="MessageSquare" :label="$t('nav.inbox')" />
         <NavItem to="/contacts" :icon="Users" :label="$t('nav.contacts')" />
         <NavItem to="/crm" :icon="Kanban" :label="$t('nav.crm')" />
-        <NavItem to="/sales" :icon="TrendingUp" :label="$t('nav.sales')" />
         <NavItem to="/agent" :icon="Bot" :label="$t('nav.agent')" />
 
         <p class="app-nav-label app-nav-label-spaced">Crescimento</p>
-        <NavItem to="/automations" :icon="Workflow" :label="$t('nav.automations')" />
         <NavItem to="/campaigns" :icon="Megaphone" :label="$t('nav.campaigns')" />
-        <NavItem to="/calendar" :icon="Calendar" :label="$t('nav.calendar')" />
-        <NavItem to="/affiliates" :icon="Share2" :label="$t('nav.affiliates')" />
-        <NavItem to="/coupons" :icon="TicketPercent" :label="$t('nav.coupons')" />
         <NavItem to="/reports" :icon="BarChart3" :label="$t('nav.reports')" />
         <NavItem to="/settings" :icon="Settings" :label="$t('nav.settings')" />
       </nav>
@@ -94,7 +89,7 @@
 </template>
 
 <script setup lang="ts">
-import { BarChart3, Bell, Bot, Calendar, Kanban, LayoutDashboard, LogOut, Megaphone, Menu, MessageSquare, Search, Settings, Share2, TicketPercent, TrendingUp, Users, Workflow, X } from "lucide-vue-next";
+import { BarChart3, Bell, Bot, Kanban, LayoutDashboard, LogOut, Megaphone, Menu, MessageSquare, Search, Settings, Users, X } from "lucide-vue-next";
 import { useCmdK } from "~/composables/useCmdK";
 
 const auth = useAuthStore();
@@ -107,13 +102,8 @@ const mobileItems = [
   { to: "/inbox", icon: MessageSquare, label: "Inbox" },
   { to: "/contacts", icon: Users, label: "Contatos" },
   { to: "/crm", icon: Kanban, label: "CRM" },
-  { to: "/sales", icon: TrendingUp, label: "Vendas" },
   { to: "/agent", icon: Bot, label: "Agente IA" },
-  { to: "/automations", icon: Workflow, label: "Automações" },
   { to: "/campaigns", icon: Megaphone, label: "Campanhas" },
-  { to: "/calendar", icon: Calendar, label: "Calendário" },
-  { to: "/affiliates", icon: Share2, label: "Afiliados" },
-  { to: "/coupons", icon: TicketPercent, label: "Cupons" },
   { to: "/reports", icon: BarChart3, label: "Relatórios" },
   { to: "/settings", icon: Settings, label: "Configurações" },
 ];

@@ -52,7 +52,7 @@
 
         <form class="stack-form" @submit.prevent="savePlan">
           <label>Nome<input v-model="form.name" required /></label>
-          <label>Slug<input v-model="form.slug" placeholder="pro, starter..." /></label>
+          <label>Slug<input v-model="form.slug" placeholder="essencial, business..." /></label>
           <label>Descrição<textarea v-model="form.description" rows="3" /></label>
           <div class="split-fields">
             <label>Preço mensal<input v-model.number="priceReais" type="number" min="0" step="1" /></label>

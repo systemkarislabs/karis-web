@@ -57,6 +57,6 @@ onMounted(() => superAdmin.fetchMe());
 
 function logout() {
   superAdmin.clear();
-  navigateTo("/super-admin/login");
+  navigateTo("/login");
 }
 </script>

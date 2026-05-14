@@ -31,13 +31,12 @@
 </template>
 
 <script setup lang="ts">
-import { Building2, ChevronRight, CreditCard, MessageCircle } from "lucide-vue-next";
+import { Building2, ChevronRight, MessageCircle } from "lucide-vue-next";
 
 definePageMeta({ layout: false, middleware: "auth" });
 
 const links = [
   { to: "/settings/business", label: "Empresa", description: "Nome, recursos habilitados e limites do plano.", icon: Building2 },
-  { to: "/settings/billing", label: "Faturamento", description: "Cliente de cobranca, assinatura e faturas reais.", icon: CreditCard },
   { to: "/settings/whatsapp", label: "WhatsApp", description: "Status da instancia, QR Code e diagnostico do canal.", icon: MessageCircle },
 ];
 </script>

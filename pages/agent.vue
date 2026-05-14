@@ -195,7 +195,17 @@ async function saveAssistant() {
       body: JSON.stringify(form),
     });
     assistant.value = res.assistant;
+    Object.assign(form, {
+      name: assistant.value?.name || "Assistente Karis",
+      instructions: assistant.value?.instructions || "",
+      isActive: assistant.value?.isActive ?? true,
+      personality: assistant.value?.personality || "",
+      transferPhone: assistant.value?.transferPhone || "",
+      transferConditions: assistant.value?.transferConditions || "",
+    });
     toast.success("Agente atualizado.");
+  } catch (err: any) {
+    toast.error(err?.data?.message || err?.message || "Nao foi possivel publicar as mudancas.");
   } finally {
     saving.value = false;
   }

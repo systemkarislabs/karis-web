@@ -14,6 +14,7 @@
         <NavItem to="/agent" :icon="Bot" :label="$t('nav.agent')" />
 
         <p class="app-nav-label app-nav-label-spaced">Crescimento</p>
+        <NavItem to="/queue" :icon="ListOrdered" :label="$t('nav.queue')" />
         <NavItem to="/campaigns" :icon="Megaphone" :label="$t('nav.campaigns')" />
         <NavItem to="/reports" :icon="BarChart3" :label="$t('nav.reports')" />
         <NavItem to="/settings" :icon="Settings" :label="$t('nav.settings')" />
@@ -89,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import { BarChart3, Bell, Bot, Kanban, LayoutDashboard, LogOut, Megaphone, Menu, MessageSquare, Search, Settings, Users, X } from "lucide-vue-next";
+import { BarChart3, Bell, Bot, Kanban, LayoutDashboard, ListOrdered, LogOut, Megaphone, Menu, MessageSquare, Search, Settings, Users, X } from "lucide-vue-next";
 import { useCmdK } from "~/composables/useCmdK";
 
 const auth = useAuthStore();
@@ -103,6 +104,7 @@ const mobileItems = [
   { to: "/contacts", icon: Users, label: "Contatos" },
   { to: "/crm", icon: Kanban, label: "CRM" },
   { to: "/agent", icon: Bot, label: "Agente IA" },
+  { to: "/queue", icon: ListOrdered, label: "Fila" },
   { to: "/campaigns", icon: Megaphone, label: "Campanhas" },
   { to: "/reports", icon: BarChart3, label: "Relatórios" },
   { to: "/settings", icon: Settings, label: "Configurações" },

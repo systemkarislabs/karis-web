@@ -42,11 +42,16 @@
           >
             <Avatar :name="conv.contact?.name || conv.contact?.phone" size="sm" />
             <span class="inbox-thread-body">
-              <strong>{{ conv.contact?.name || conv.contact?.phone || "Contato" }}</strong>
+              <span class="inbox-thread-row">
+                <strong>{{ conv.contact?.name || conv.contact?.phone || "Contato" }}</strong>
+                <time>{{ relativeTime(conv.updatedAt) }}</time>
+              </span>
               <small>{{ conv.lastMessage?.content || "Sem mensagens ainda" }}</small>
-              <em>{{ statusLabel(conv.status) }} · {{ relativeTime(conv.updatedAt) }}</em>
+              <span class="inbox-thread-row">
+                <span class="inbox-status-badge" :class="`is-${(conv.status || 'open').toLowerCase()}`">{{ statusLabel(conv.status) }}</span>
+                <b v-if="conv.unreadCount" class="inbox-unread">{{ conv.unreadCount }}</b>
+              </span>
             </span>
-            <b v-if="conv.unreadCount" class="inbox-unread">{{ conv.unreadCount }}</b>
           </button>
           <EmptyState v-if="!loadingConversations && !filteredConversations.length" :icon="MessageSquare" title="Sem conversas" description="Nenhum atendimento real encontrado para este filtro." />
         </div>
@@ -100,12 +105,13 @@
                 <time>{{ formatDateTime(msg.createdAt) }}</time>
               </div>
 
-              <article v-if="lastAiMessage" class="inbox-ai-suggestion">
+              <article v-if="lastAiMessage && !dismissedSuggestion" class="inbox-ai-suggestion">
                 <p><Sparkles class="h-4 w-4" /> Sugestão da IA</p>
                 <strong>{{ lastAiMessage.content }}</strong>
                 <div>
-                  <Button size="sm" @click="draft = lastAiMessage.content">Editar antes</Button>
-                  <Button variant="secondary" size="sm" @click="draft = lastAiMessage.content; sendMessage()">Aceitar e enviar</Button>
+                  <Button size="sm" @click="draft = lastAiMessage.content; sendMessage()">Aceitar e enviar</Button>
+                  <Button variant="secondary" size="sm" @click="draft = lastAiMessage.content">Editar antes</Button>
+                  <Button variant="ghost" size="sm" @click="dismissedSuggestion = true">Descartar</Button>
                 </div>
               </article>
 
@@ -145,17 +151,21 @@
             <dt>Email</dt>
             <dd>{{ selectedContact?.email || "Não informado" }}</dd>
           </div>
+          <div v-if="selectedContact?.city || selectedContact?.state">
+            <dt>Cidade</dt>
+            <dd>{{ [selectedContact?.city, selectedContact?.state].filter(Boolean).join(", ") }}</dd>
+          </div>
           <div>
-            <dt>Origem</dt>
-            <dd>{{ selectedConversation.channel || "WhatsApp" }}</dd>
+            <dt>1º contato</dt>
+            <dd>{{ selectedContact?.createdAt ? relativeTime(selectedContact.createdAt) : "Não informado" }}</dd>
           </div>
           <div>
             <dt>Última compra</dt>
             <dd>{{ selectedContact?.lastPurchaseAt ? formatDate(selectedContact.lastPurchaseAt) : "Sem registro" }}</dd>
           </div>
           <div>
-            <dt>Atualizado</dt>
-            <dd>{{ formatDateTime(selectedConversation.updatedAt) }}</dd>
+            <dt>Origem</dt>
+            <dd>{{ selectedConversation.channel || "WhatsApp" }}</dd>
           </div>
         </dl>
 
@@ -185,6 +195,7 @@ const draft = ref("");
 const loadingConversations = ref(true);
 const loadingMessages = ref(false);
 const sending = ref(false);
+const dismissedSuggestion = ref(false);
 
 const filters = computed(() => [
   { key: "all", label: "Todas", count: conversations.value.length },
@@ -233,6 +244,7 @@ async function loadConversations() {
 
 async function selectConversation(id: string) {
   selectedId.value = id;
+  dismissedSuggestion.value = false;
   loadingMessages.value = true;
   try {
     const [convRes, msgRes] = await Promise.all([

@@ -41,20 +41,29 @@
               type="button"
               @click="openDeal(deal)"
             >
-              <div class="crm-deal-title">
-                <Avatar :name="deal.contact?.name || deal.title" size="sm" />
-                <strong>{{ deal.contact?.name || deal.title }}</strong>
+              <div class="crm-deal-head">
+                <div class="crm-deal-title">
+                  <Avatar :name="deal.contact?.name || deal.title" size="sm" />
+                  <strong>{{ deal.contact?.name || deal.title }}</strong>
+                </div>
+                <span class="crm-deal-score">+{{ deal.aiScore ?? 0 }}</span>
               </div>
-              <b>{{ deal.valueCents ? formatMoney(deal.valueCents) : "Sem valor" }}</b>
-              <p>{{ deal.aiNextAction || deal.conversation?.messages?.[0]?.content || "Sem próximo passo registrado" }}</p>
-              <div>
-                <Badge :variant="scoreVariant(deal.aiScore)" size="sm">+ {{ deal.aiScore ?? 0 }}</Badge>
-                <span>{{ deal.tasks?.[0]?.dueAt ? relativeTime(deal.tasks[0].dueAt) : relativeTime(deal.updatedAt) }}</span>
+              <b class="crm-deal-value">{{ deal.valueCents ? formatMoney(deal.valueCents) : "—" }}</b>
+              <p v-if="deal.aiNextAction" class="crm-deal-action">
+                → {{ deal.aiNextAction }}
+              </p>
+              <div class="crm-deal-footer">
+                <span v-for="tag in (deal.contact?.tags || []).slice(0, 2)" :key="tag" class="crm-deal-tag">{{ tag }}</span>
+                <span class="crm-deal-time">{{ deal.tasks?.[0]?.dueAt ? relativeTime(deal.tasks[0].dueAt) : relativeTime(deal.updatedAt) }}</span>
               </div>
             </button>
 
             <div v-if="!stageDeals(stage.id).length" class="crm-empty">Sem negócios nesta etapa.</div>
           </div>
+
+          <button class="crm-add-deal" type="button" @click="openNewDeal(stage.id)">
+            <Plus class="h-3.5 w-3.5" /> Adicionar
+          </button>
         </article>
       </section>
 
@@ -213,8 +222,8 @@ const formLoading = ref(false);
 const formError = ref("");
 const form = reactive({ title: "", contactName: "", stageId: "", valueReais: null as number | null });
 
-function openNewDeal() {
-  Object.assign(form, { title: "", contactName: "", stageId: stages.value[0]?.id || "", valueReais: null });
+function openNewDeal(stageId?: string) {
+  Object.assign(form, { title: "", contactName: "", stageId: stageId || stages.value[0]?.id || "", valueReais: null });
   formError.value = "";
   showNewDeal.value = true;
 }

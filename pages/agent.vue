@@ -9,7 +9,8 @@
             <h1>{{ form.name || "Agente IA da Karis" }}</h1>
             <small>
               <i :class="form.isActive ? 'is-online' : 'is-offline'" />
-              {{ assistantStatus }}
+              {{ form.isActive ? "Ativa" : "Inativa" }}
+              <template v-if="agentStats.today > 0"> · {{ agentStats.today }} conversas hoje · {{ agentStats.successRate }}% sem necessidade humana</template>
             </small>
           </div>
         </div>
@@ -49,8 +50,14 @@
 
         <aside class="agent-aside">
           <article class="agent-card">
+            <h3>Modelo</h3>
+            <Select v-model="form.model" class="mt-4" label="Modelo de IA" :options="modelOptions" />
+          </article>
+
+          <article class="agent-card">
             <h3>Personalidade</h3>
             <Select v-model="form.personality" class="mt-4" label="Tom de voz" :options="personalityOptions" />
+            <Select v-model="form.language" class="mt-3" label="Idioma principal" :options="languageOptions" />
           </article>
 
           <article class="agent-card">
@@ -58,6 +65,10 @@
             <label class="agent-toggle">
               <span>Responder automaticamente</span>
               <input v-model="form.isActive" type="checkbox" />
+            </label>
+            <label class="agent-toggle mt-2">
+              <span>Sugerir para o humano</span>
+              <input v-model="form.suggestToHuman" type="checkbox" />
             </label>
           </article>
         </aside>
@@ -206,7 +217,8 @@ const sectorSaving = ref(false);
 const sectorFormVisible = ref(false);
 const editingSectorId = ref<string | null>(null);
 
-const form = reactive({ name: "Assistente Karis", instructions: "", isActive: true, personality: "", transferPhone: "", transferConditions: "" });
+const form = reactive({ name: "Assistente Karis", instructions: "", isActive: true, suggestToHuman: false, personality: "", language: "pt-BR", model: "karis-pro", transferPhone: "", transferConditions: "" });
+const agentStats = reactive({ today: 0, successRate: 0 });
 const knowledgeForm = reactive({ title: "", content: "" });
 const sectorForm = reactive({ name: "", phone: "", description: "", transferWhen: "" });
 const playgroundMessage = ref("Como vocês podem me ajudar no atendimento?");
@@ -219,6 +231,17 @@ const tabs = [
   { key: "playground",label: "Playground" },
 ];
 
+const modelOptions = [
+  { value: "karis-pro",   label: "Karis Pro (recomendado)" },
+  { value: "karis-fast",  label: "Karis Fast — rápido · preciso" },
+];
+
+const languageOptions = [
+  { value: "pt-BR", label: "Português (Brasil)" },
+  { value: "en",    label: "English" },
+  { value: "es",    label: "Español" },
+];
+
 const personalityOptions = [
   { value: "",            label: "Padrão (cordial e profissional)" },
   { value: "descontraido",label: "Descontraído 😊 (usa emojis, tom próximo)" },
@@ -227,7 +250,7 @@ const personalityOptions = [
   { value: "direto",      label: "Direto (respostas curtas e precisas)" },
 ];
 
-const assistantStatus = computed(() => assistant.value?.isActive ? "Ativa · pronta para responder conversas reais." : "Inativa · publique mudanças para retomar o atendimento.");
+const assistantStatus = computed(() => form.isActive ? "Ativa · pronta para responder conversas reais." : "Inativa · publique mudanças para retomar o atendimento.");
 
 watch(activeTab, (value) => {
   if (value === "sectors" && !sectors.value.length) loadSectors();
@@ -247,20 +270,28 @@ function formatDate(d: string) {
 async function loadAgent() {
   loading.value = true;
   try {
-    const [assistantRes, knowledgeRes] = await Promise.all([
+    const [assistantRes, knowledgeRes, overviewRes] = await Promise.all([
       api.fetch<any>("/assistant"),
       api.fetch<any>("/knowledge").catch(() => ({ knowledge: [] })),
+      api.fetch<any>("/analytics/overview").catch(() => null),
     ]);
     assistant.value = assistantRes.assistant;
     Object.assign(form, {
       name: assistant.value?.name || "Assistente Karis",
       instructions: assistant.value?.instructions || "",
       isActive: assistant.value?.isActive ?? true,
+      suggestToHuman: assistant.value?.suggestToHuman ?? false,
       personality: assistant.value?.personality || "",
+      language: assistant.value?.language || "pt-BR",
+      model: assistant.value?.model || "karis-pro",
       transferPhone: assistant.value?.transferPhone || "",
       transferConditions: assistant.value?.transferConditions || "",
     });
     knowledge.value = knowledgeRes.knowledge || assistant.value?.knowledge || [];
+    if (overviewRes) {
+      agentStats.today = overviewRes?.conversations?.today ?? 0;
+      agentStats.successRate = overviewRes?.ai?.successRate ?? 0;
+    }
   } finally {
     loading.value = false;
   }
@@ -351,7 +382,10 @@ async function saveAssistant() {
       name: assistant.value?.name || "Assistente Karis",
       instructions: assistant.value?.instructions || "",
       isActive: assistant.value?.isActive ?? true,
+      suggestToHuman: assistant.value?.suggestToHuman ?? false,
       personality: assistant.value?.personality || "",
+      language: assistant.value?.language || "pt-BR",
+      model: assistant.value?.model || "karis-pro",
       transferPhone: assistant.value?.transferPhone || "",
       transferConditions: assistant.value?.transferConditions || "",
     });

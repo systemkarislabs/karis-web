@@ -15,6 +15,7 @@ export default defineI18nConfig(() => ({
         campaigns: "Campanhas",
         calendar: "Calendário",
         affiliates: "Afiliados",
+        queue: "Fila",
         reports: "Relatórios",
         settings: "Configurações",
         users: "Usuários",

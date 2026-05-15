@@ -273,7 +273,7 @@ async function loadNotes(dealId: string) {
   notesLoading.value = true;
   try {
     const res = await api.fetch<any>(`/crm/deals/${dealId}/notes`);
-    notes.value = unwrapList(res);
+    notes.value = unwrapList(res, ["notes"]);
   } catch {
     notes.value = [];
   } finally {
@@ -285,7 +285,7 @@ async function loadTasks(dealId: string) {
   tasksLoading.value = true;
   try {
     const res = await api.fetch<any>(`/crm/deals/${dealId}/tasks`);
-    tasks.value = unwrapList(res);
+    tasks.value = unwrapList(res, ["tasks"]);
   } catch {
     tasks.value = [];
   } finally {

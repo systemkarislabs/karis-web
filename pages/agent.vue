@@ -230,7 +230,7 @@ async function runPlayground() {
   playgroundLoading.value = true;
   playgroundReply.value = "";
   try {
-    const res = await api.fetch<any>("/ai/playground", {
+    const res = await api.fetch<any>("/assistant/playground", {
       method: "POST",
       body: JSON.stringify({ message: playgroundMessage.value }),
     });

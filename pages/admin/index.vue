@@ -2,9 +2,9 @@
   <NuxtLayout name="default">
     <section class="ka-page space-y-6">
       <PageHeader
-        eyebrow="Administracao"
+        eyebrow="Administração"
         title="Admin"
-        description="Dados globais aparecem somente quando a sessao tiver acesso admin compativel com a API."
+        description="Dados globais da conta — requer permissão de administrador."
       />
 
       <div v-if="loading" class="space-y-4">
@@ -15,12 +15,12 @@
       <EmptyState
         v-else-if="error"
         :icon="ShieldAlert"
-        title="Acesso admin indisponivel"
+        title="Acesso admin indisponível"
         :description="error"
       />
 
       <Card v-else padding="none" class="overflow-hidden">
-        <Table :columns="columns" :rows="rows" empty-title="Nenhuma empresa encontrada" empty-description="A API retornou acesso valido, mas sem empresas para listar." />
+        <Table :columns="columns" :rows="rows" empty-title="Nenhuma empresa encontrada" empty-description="A API retornou acesso válido, mas sem empresas para listar." />
       </Card>
     </section>
   </NuxtLayout>
@@ -39,7 +39,7 @@ const companies = ref<any[]>([]);
 const columns = [
   { key: "name", label: "Empresa" },
   { key: "plan", label: "Plano" },
-  { key: "users", label: "Usuarios" },
+  { key: "users", label: "Usuários" },
   { key: "status", label: "Status" },
   { key: "createdAt", label: "Criada em" },
 ];
@@ -59,7 +59,7 @@ onMounted(async () => {
     const data = await api.fetch<any>("/admin/companies");
     companies.value = unwrapList(data, ["companies"]);
   } catch (err: any) {
-    error.value = err?.data?.message || "A sessao atual nao possui token admin para consultar `/api/admin/companies`.";
+    error.value = err?.data?.message || "Acesso negado. Esta conta não possui permissão de administrador.";
   } finally {
     loading.value = false;
   }

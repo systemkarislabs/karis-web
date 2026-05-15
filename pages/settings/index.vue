@@ -2,9 +2,9 @@
   <NuxtLayout name="default">
     <section class="ka-page space-y-6">
       <PageHeader
-        eyebrow="Preferencias"
-        title="Configuracoes"
-        description="Ajuste empresa, faturamento e canais usando apenas dados carregados da API."
+        eyebrow="Preferências"
+        title="Configurações"
+        description="Ajuste empresa, faturamento e canais da sua conta."
       />
 
       <div class="grid gap-4 md:grid-cols-3">
@@ -37,6 +37,6 @@ definePageMeta({ layout: false, middleware: "auth" });
 
 const links = [
   { to: "/settings/business", label: "Empresa", description: "Nome, recursos habilitados e limites do plano.", icon: Building2 },
-  { to: "/whatsapp", label: "WhatsApp", description: "Status da instancia, QR Code e diagnostico do canal.", icon: MessageCircle },
+  { to: "/whatsapp", label: "WhatsApp", description: "Status da instância, QR Code e diagnóstico do canal.", icon: MessageCircle },
 ];
 </script>

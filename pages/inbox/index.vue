@@ -61,9 +61,19 @@
               <p>{{ selectedContact?.phone || "Telefone não informado" }} · {{ statusLabel(selectedConversation.status) }}</p>
             </div>
             <div class="inbox-chat-actions">
-              <Button variant="secondary" size="sm" @click="markRead">
-                <Check class="h-4 w-4" />
-                Marcar lida
+              <Button
+                v-if="selectedConversation.status === 'OPEN'"
+                variant="success"
+                size="sm"
+                :loading="resolving"
+                @click="resolveConversation"
+              >
+                <CheckCheck class="h-4 w-4" />
+                Resolver
+              </Button>
+              <Button v-else variant="secondary" size="sm" @click="reopenConversation">
+                <RotateCcw class="h-4 w-4" />
+                Reabrir
               </Button>
               <Button variant="ghost" size="icon" aria-label="Mais ações">
                 <MoreHorizontal class="h-4 w-4" />
@@ -159,7 +169,7 @@
 </template>
 
 <script setup lang="ts">
-import { Check, MessageSquare, MoreHorizontal, Phone, RefreshCw, Send, Sparkles, UserRound } from "lucide-vue-next";
+import { Check, CheckCheck, MessageSquare, MoreHorizontal, Phone, RefreshCw, RotateCcw, Send, Sparkles, UserRound } from "lucide-vue-next";
 
 definePageMeta({ layout: false, middleware: "auth" });
 
@@ -240,6 +250,40 @@ async function markRead() {
   if (!selectedId.value) return;
   await api.fetch(`/conversations/${selectedId.value}/read`, { method: "POST" });
   await loadConversations();
+}
+
+const resolving = ref(false);
+
+async function resolveConversation() {
+  if (!selectedId.value || resolving.value) return;
+  resolving.value = true;
+  try {
+    await api.fetch(`/conversations/${selectedId.value}`, {
+      method: "PUT",
+      body: JSON.stringify({ status: "CLOSED" }),
+    });
+    await loadConversations();
+    selectedId.value = null;
+    toast.success("Conversa resolvida.");
+  } catch {
+    toast.error("Não foi possível resolver a conversa.");
+  } finally {
+    resolving.value = false;
+  }
+}
+
+async function reopenConversation() {
+  if (!selectedId.value) return;
+  try {
+    await api.fetch(`/conversations/${selectedId.value}`, {
+      method: "PUT",
+      body: JSON.stringify({ status: "OPEN" }),
+    });
+    await loadConversations();
+    toast.success("Conversa reaberta.");
+  } catch {
+    toast.error("Não foi possível reabrir a conversa.");
+  }
 }
 
 async function sendMessage() {

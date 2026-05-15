@@ -45,7 +45,7 @@
           <p>{{ kpi.label }}</p>
           <Skeleton v-if="loading" class="mt-3" height="2.2rem" width="6rem" />
           <strong v-else>{{ kpi.value }}</strong>
-          <small>{{ kpi.note }}</small>
+          <small :class="kpi.noteClass">{{ kpi.note }}</small>
         </article>
       </section>
 
@@ -133,12 +133,16 @@ const overview = ref<any>(null);
 const messageDays = ref<any[]>([]);
 const conversations = ref<any[]>([]);
 
-const kpis = computed(() => [
-  { label: "Conversas hoje", value: String(overview.value?.conversations?.today ?? 0), note: "Criadas desde 00h", icon: MessageSquare },
-  { label: "Contatos", value: String(stats.value?.stats?.contacts ?? 0), note: "Base total da empresa", icon: Users },
-  { label: "Leads novos", value: String(overview.value?.contacts?.newLast7d ?? 0), note: "Criados nos últimos 7 dias", icon: UserPlus },
-  { label: "Respostas IA", value: String(overview.value?.ai?.repliesLast30d ?? 0), note: `${overview.value?.ai?.successRate ?? 0}% de sucesso`, icon: Bot },
-]);
+const kpis = computed(() => {
+  const successRate = Number(overview.value?.ai?.successRate ?? 0);
+  const newLeads = Number(overview.value?.contacts?.newLast7d ?? 0);
+  return [
+    { label: "Conversas hoje", value: String(overview.value?.conversations?.today ?? 0), note: "Criadas desde 00h", noteClass: "", icon: MessageSquare },
+    { label: "Contatos", value: String(stats.value?.stats?.contacts ?? 0), note: "Base total da empresa", noteClass: "", icon: Users },
+    { label: "Leads novos", value: String(newLeads), note: "Nos últimos 7 dias", noteClass: newLeads > 0 ? "is-positive" : "", icon: UserPlus },
+    { label: "Respostas IA", value: String(overview.value?.ai?.repliesLast30d ?? 0), note: `${successRate}% de sucesso`, noteClass: successRate >= 70 ? "is-positive" : successRate > 0 && successRate < 40 ? "is-negative" : "", icon: Bot },
+  ];
+});
 
 const chartDays = computed(() => messageDays.value.slice(-7));
 const maxMessages = computed(() => Math.max(1, ...chartDays.value.map((d: any) => Math.max(Number(d.inbound || 0), Number(d.ai || 0), Number(d.human || 0), Number(d.total || 0)))));

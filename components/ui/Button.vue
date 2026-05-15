@@ -18,7 +18,7 @@ import { Loader2 } from "lucide-vue-next";
 
 withDefaults(
   defineProps<{
-    variant?: "primary" | "secondary" | "ghost" | "destructive" | "outline";
+    variant?: "primary" | "secondary" | "ghost" | "destructive" | "outline" | "success";
     size?: "sm" | "md" | "lg" | "icon";
     loading?: boolean;
     disabled?: boolean;
@@ -34,11 +34,12 @@ withDefaults(
 );
 
 const variantClasses: Record<string, string> = {
-  primary: "bg-[--ka-brand] text-white shadow-[--ka-shadow-brand] hover:bg-[--ka-brand-dark]",
-  secondary: "border border-[--ka-border] bg-[--ka-surface] text-[--ka-fg] hover:bg-[--ka-gray-50]",
-  ghost: "text-[--ka-fg-2] hover:bg-[--ka-gray-100] hover:text-[--ka-fg]",
+  primary:     "bg-[--ka-brand] text-white shadow-[--ka-shadow-brand] hover:bg-[--ka-brand-dark] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[--ka-brand]",
+  secondary:   "border border-[--ka-border] bg-[--ka-surface] text-[--ka-fg] hover:bg-[--ka-gray-50] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[--ka-brand]",
+  ghost:       "text-[--ka-fg-2] hover:bg-[--ka-gray-100] hover:text-[--ka-fg]",
   destructive: "bg-[--ka-danger] text-white hover:brightness-95",
-  outline: "border border-[--ka-border] bg-transparent text-[--ka-fg] hover:bg-[--ka-gray-50]",
+  outline:     "border border-[--ka-border] bg-transparent text-[--ka-fg] hover:bg-[--ka-gray-50]",
+  success:     "bg-[--ka-success] text-white hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[--ka-success]",
 };
 
 const sizeClasses: Record<string, string> = {

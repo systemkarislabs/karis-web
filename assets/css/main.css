@@ -1045,6 +1045,13 @@ button {
     min-height: 78px;
     padding: 14px;
     text-align: left;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  }
+
+  .dashboard-shortcut:hover {
+    border-color: var(--ka-brand);
+    background: var(--ka-brand-50);
+    box-shadow: var(--ka-shadow-md);
   }
 
   .dashboard-shortcut span {
@@ -1104,10 +1111,13 @@ button {
   .dashboard-kpi small {
     display: block;
     margin-top: 7px;
-    color: var(--ka-success);
+    color: var(--ka-fg-2);
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 600;
   }
+
+  .dashboard-kpi small.is-positive { color: var(--ka-success); }
+  .dashboard-kpi small.is-negative { color: var(--ka-danger); }
 
   .dashboard-kpi-icon {
     position: absolute;
@@ -1502,7 +1512,7 @@ button {
     width: 280px;
     min-width: 280px;
     flex-direction: column;
-    background: #F9FBFF;
+    background: var(--ka-surface-2);
     padding: 12px;
   }
 
@@ -2169,10 +2179,6 @@ button {
     font-size: 31px;
   }
 
-  .dashboard-kpi small {
-    color: var(--ka-success);
-  }
-
   .dashboard-content-grid {
     grid-template-columns: minmax(0, 1.65fr) minmax(330px, 0.95fr);
   }
@@ -2530,9 +2536,9 @@ button {
   .inbox-ai-suggestion {
     max-width: 620px;
     margin: 18px auto 8px;
-    border: 1px solid #D8CCFF;
+    border: 1px solid color-mix(in srgb, var(--ka-bot) 25%, transparent);
     border-radius: var(--ka-r-lg);
-    background: #F6F1FF;
+    background: var(--ka-bot-bg);
     padding: 14px;
     box-shadow: var(--ka-shadow-sm);
   }

@@ -1,108 +1,196 @@
 <template>
   <NuxtLayout name="default">
-    <section class="ka-page space-y-6">
-      <PageHeader eyebrow="Operacao" title="WhatsApp" description="Conecte e monitore a instancia Evolution vinculada a empresa.">
-        <template #actions>
-          <Button variant="secondary" :loading="loading" @click="load">
-            <RefreshCw class="h-4 w-4" />
+    <div class="ka-page" style="max-width:960px">
+
+      <!-- Header -->
+      <div class="page-header">
+        <div>
+          <p class="page-header-eyebrow">Operação</p>
+          <h1>WhatsApp</h1>
+          <p class="page-header-description">Conecte e monitore a instância Evolution vinculada à empresa.</p>
+        </div>
+        <div class="page-header-actions">
+          <Button variant="secondary" size="sm" :disabled="loading" @click="load">
+            <RefreshCw class="h-4 w-4" :class="loading ? 'animate-spin' : ''" />
             Atualizar
           </Button>
-          <Button v-if="status !== 'DISCONNECTED'" variant="outline" :loading="disconnecting" @click="disconnect">
+          <Button v-if="status !== 'DISCONNECTED'" variant="outline" size="sm" :disabled="disconnecting" @click="disconnect">
             <Unplug class="h-4 w-4" />
             Desconectar
           </Button>
-          <Button :loading="connecting" @click="connect">
+          <Button size="sm" :disabled="connecting" @click="connect">
             <QrCode class="h-4 w-4" />
-            Conectar
+            {{ connecting ? "Conectando…" : "Conectar" }}
           </Button>
-        </template>
-      </PageHeader>
-
-      <div v-if="loading" class="grid gap-4 lg:grid-cols-[360px_1fr]">
-        <Skeleton class="h-64" />
-        <Skeleton class="h-64" />
+        </div>
       </div>
 
-      <EmptyState v-else-if="error" :icon="AlertCircle" title="WhatsApp indisponivel" :description="error" />
+      <!-- Loading -->
+      <div v-if="loading" style="display:grid;grid-template-columns:340px 1fr;gap:16px;margin-bottom:16px">
+        <Skeleton height="260px" style="border-radius:var(--ka-r-lg)" />
+        <Skeleton height="260px" style="border-radius:var(--ka-r-lg)" />
+      </div>
 
-      <div v-else class="grid gap-4 lg:grid-cols-[360px_1fr]">
-        <Card padding="lg" class="space-y-5">
-          <div class="flex items-center justify-between">
-            <p class="text-sm font-semibold text-[--ka-fg]">Status</p>
-            <Badge :variant="statusVariant" dot>{{ statusLabel(status) }}</Badge>
-          </div>
-          <dl class="space-y-3 text-sm">
-            <div class="flex justify-between gap-4">
-              <dt class="text-[--ka-fg-muted]">Numero</dt>
-              <dd class="font-mono text-[--ka-fg]">{{ connection?.phoneNumber || "--" }}</dd>
-            </div>
-            <div class="flex justify-between gap-4">
-              <dt class="text-[--ka-fg-muted]">Instancia</dt>
-              <dd class="max-w-44 truncate font-mono text-[--ka-fg]">{{ connection?.evolutionInstanceName || "--" }}</dd>
-            </div>
-            <div class="flex justify-between gap-4">
-              <dt class="text-[--ka-fg-muted]">Atualizado</dt>
-              <dd class="text-[--ka-fg]">{{ connection?.updatedAt ? formatDateTime(connection.updatedAt) : "--" }}</dd>
-            </div>
-            <div v-if="connection?.lastError" class="rounded-[--ka-r-md] bg-[--ka-danger-bg] p-3 text-[--ka-danger]">
-              {{ connection.lastError }}
-            </div>
-          </dl>
-        </Card>
+      <!-- Error -->
+      <div v-else-if="error" class="dashboard-panel" style="padding:48px 32px;text-align:center">
+        <div style="width:52px;height:52px;border-radius:50%;background:var(--ka-danger-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+          <AlertCircle class="h-6 w-6" style="color:var(--ka-danger)" />
+        </div>
+        <h2 style="font-size:16px;font-weight:600;color:var(--ka-fg);margin-bottom:6px">WhatsApp indisponível</h2>
+        <p style="font-size:14px;color:var(--ka-fg-muted)">{{ error }}</p>
+      </div>
 
-        <Card padding="lg" class="min-h-72">
-          <div v-if="qrImageSource" class="flex flex-col items-center justify-center gap-4">
-            <img :src="qrImageSource" alt="QR Code do WhatsApp" class="h-64 w-64 rounded-[--ka-radius] border border-[--ka-border] bg-white p-3" />
-            <p class="text-center text-sm text-[--ka-fg-muted]">Escaneie o QR Code pelo WhatsApp para concluir a conexao.</p>
+      <!-- Main content -->
+      <div v-else style="display:grid;grid-template-columns:340px 1fr;gap:16px;margin-bottom:16px">
+
+        <!-- Status card -->
+        <div class="dashboard-panel" style="padding:24px;display:flex;flex-direction:column;gap:20px">
+          <!-- Status badge -->
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <p style="font-size:13px;font-weight:600;color:var(--ka-fg-muted);text-transform:uppercase;letter-spacing:0.06em">Status</p>
+            <span
+              style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600"
+              :style="statusStyle"
+            >
+              <span style="width:7px;height:7px;border-radius:50%;display:inline-block" :style="statusDotStyle" />
+              {{ statusLabel }}
+            </span>
           </div>
-          <div v-else-if="qrCode" class="flex flex-col items-center justify-center gap-4">
-            <div class="max-w-full rounded-[--ka-r-md] border border-[--ka-border] bg-[--ka-gray-50] p-4 font-mono text-xs text-[--ka-fg-2]">
+
+          <!-- Connection info -->
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:10px;background:var(--ka-gray-50)">
+              <span style="font-size:13px;color:var(--ka-fg-muted);display:flex;align-items:center;gap:8px">
+                <Phone class="h-4 w-4" style="color:var(--ka-brand)" />
+                Número
+              </span>
+              <strong style="font-size:14px;color:var(--ka-fg);font-family:monospace">
+                {{ connection?.phoneNumber || "--" }}
+              </strong>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:10px;background:var(--ka-gray-50)">
+              <span style="font-size:13px;color:var(--ka-fg-muted);display:flex;align-items:center;gap:8px">
+                <Server class="h-4 w-4" style="color:var(--ka-brand)" />
+                Instância
+              </span>
+              <strong style="font-size:13px;color:var(--ka-fg);font-family:monospace;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                {{ connection?.evolutionInstanceName || "--" }}
+              </strong>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:10px;background:var(--ka-gray-50)">
+              <span style="font-size:13px;color:var(--ka-fg-muted);display:flex;align-items:center;gap:8px">
+                <Clock class="h-4 w-4" style="color:var(--ka-brand)" />
+                Atualizado
+              </span>
+              <strong style="font-size:13px;color:var(--ka-fg)">
+                {{ connection?.updatedAt ? formatDateTime(connection.updatedAt) : "--" }}
+              </strong>
+            </div>
+          </div>
+
+          <!-- Last error -->
+          <div v-if="connection?.lastError" style="padding:12px;border-radius:10px;background:var(--ka-danger-bg);color:var(--ka-danger);font-size:13px;line-height:1.5">
+            <AlertCircle class="h-4 w-4" style="display:inline;margin-right:6px;vertical-align:middle" />
+            {{ connection.lastError }}
+          </div>
+
+          <!-- Connected indicator -->
+          <div v-if="status === 'CONNECTED'" style="padding:12px;border-radius:10px;background:var(--ka-success-bg,#f0fdf4);color:var(--ka-success);font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px">
+            <CheckCircle class="h-4 w-4" />
+            WhatsApp conectado e operacional
+          </div>
+        </div>
+
+        <!-- QR code panel -->
+        <div class="dashboard-panel" style="padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:260px;gap:16px">
+          <!-- QR image -->
+          <template v-if="qrImageSource">
+            <img :src="qrImageSource" alt="QR Code WhatsApp" style="width:220px;height:220px;border-radius:12px;border:1px solid var(--ka-border);background:white;padding:12px" />
+            <div style="text-align:center">
+              <p style="font-size:14px;font-weight:600;color:var(--ka-fg);margin-bottom:4px">Escaneie pelo WhatsApp</p>
+              <p style="font-size:13px;color:var(--ka-fg-muted)">Abra o WhatsApp → Dispositivos conectados → Conectar dispositivo</p>
+            </div>
+          </template>
+
+          <!-- QR text code -->
+          <template v-else-if="qrCode">
+            <div style="max-width:100%;padding:16px;border-radius:10px;border:1px solid var(--ka-border);background:var(--ka-gray-50);font-family:monospace;font-size:11px;color:var(--ka-fg-2);overflow-x:auto;word-break:break-all">
               {{ qrCode }}
             </div>
-            <p class="text-center text-sm text-[--ka-fg-muted]">A API retornou um codigo de pareamento em vez de imagem.</p>
-          </div>
-          <EmptyState
-            v-else
-            :icon="MessageCircle"
-            title="Nenhum QR Code ativo"
-            description="Clique em conectar para solicitar um QR Code real da API."
-          />
-        </Card>
+            <p style="font-size:13px;color:var(--ka-fg-muted);text-align:center">Código de pareamento retornado pela API (não é imagem).</p>
+          </template>
 
-        <Card padding="lg" class="space-y-4 lg:col-span-2">
-          <div class="flex items-center justify-between gap-3">
-            <div>
-              <h2 class="font-display text-lg font-semibold text-[--ka-fg]">Diagnostico da conexao</h2>
-              <p class="text-sm text-[--ka-fg-muted]">Dados carregados da API para confirmar configuracao, webhook e estado da Evolution.</p>
+          <!-- Connected state -->
+          <template v-else-if="status === 'CONNECTED'">
+            <div style="width:72px;height:72px;border-radius:50%;background:var(--ka-success-bg,#f0fdf4);display:flex;align-items:center;justify-content:center">
+              <MessageCircle class="h-8 w-8" style="color:var(--ka-success)" />
             </div>
-            <Button variant="secondary" :loading="loadingDiagnostics" @click="loadDiagnostics">
-              <Activity class="h-4 w-4" />
-              Diagnosticar
-            </Button>
-          </div>
+            <div style="text-align:center">
+              <p style="font-size:16px;font-weight:600;color:var(--ka-fg);margin-bottom:6px">Conectado</p>
+              <p style="font-size:13px;color:var(--ka-fg-muted)">O WhatsApp está ativo e recebendo mensagens.</p>
+            </div>
+          </template>
 
-          <div v-if="diagnostics" class="grid gap-3 text-sm md:grid-cols-3">
-            <div class="rounded-[--ka-r-md] border border-[--ka-border] p-3">
-              <span class="text-[--ka-fg-muted]">WhatsApp habilitado</span>
-              <strong class="mt-1 block text-[--ka-fg]">{{ diagnostics.enabled ? "Sim" : "Nao" }}</strong>
+          <!-- Idle state -->
+          <template v-else>
+            <div style="width:72px;height:72px;border-radius:50%;background:var(--ka-gray-100);display:flex;align-items:center;justify-content:center">
+              <QrCode class="h-8 w-8" style="color:var(--ka-fg-muted)" />
             </div>
-            <div class="rounded-[--ka-r-md] border border-[--ka-border] p-3">
-              <span class="text-[--ka-fg-muted]">Evolution configurada</span>
-              <strong class="mt-1 block text-[--ka-fg]">{{ diagnostics.hasEvolutionConfig ? "Sim" : "Nao" }}</strong>
+            <div style="text-align:center">
+              <p style="font-size:16px;font-weight:600;color:var(--ka-fg);margin-bottom:6px">Nenhum QR Code ativo</p>
+              <p style="font-size:13px;color:var(--ka-fg-muted)">Clique em <strong>Conectar</strong> para gerar o QR Code.</p>
             </div>
-            <div class="rounded-[--ka-r-md] border border-[--ka-border] p-3">
-              <span class="text-[--ka-fg-muted]">Evolution acessivel</span>
-              <strong class="mt-1 block text-[--ka-fg]">{{ diagnostics.evolutionReachable ? "Sim" : "Nao" }}</strong>
-            </div>
-          </div>
-        </Card>
+          </template>
+        </div>
       </div>
-    </section>
+
+      <!-- Diagnostics panel -->
+      <div v-if="!loading && !error" class="dashboard-panel" style="padding:24px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:20px">
+          <div>
+            <h2 style="font-size:16px;font-weight:700;color:var(--ka-fg);margin-bottom:4px">Diagnóstico da conexão</h2>
+            <p style="font-size:13px;color:var(--ka-fg-muted)">Dados da API para confirmar configuração, webhook e estado da Evolution.</p>
+          </div>
+          <Button variant="secondary" size="sm" :disabled="loadingDiagnostics" @click="loadDiagnostics">
+            <Activity class="h-4 w-4" :class="loadingDiagnostics ? 'animate-spin' : ''" />
+            Diagnosticar
+          </Button>
+        </div>
+
+        <div v-if="loadingDiagnostics" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+          <Skeleton v-for="i in 3" :key="i" height="72px" style="border-radius:10px" />
+        </div>
+
+        <div v-else-if="diagnostics" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+          <div
+            v-for="item in diagnosticItems"
+            :key="item.label"
+            style="padding:14px 16px;border-radius:10px;background:var(--ka-gray-50);border:1px solid var(--ka-border)"
+          >
+            <p style="font-size:12px;color:var(--ka-fg-muted);margin-bottom:6px">{{ item.label }}</p>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span
+                style="width:8px;height:8px;border-radius:50%;flex-shrink:0"
+                :style="item.ok ? 'background:var(--ka-success)' : 'background:var(--ka-danger)'"
+              />
+              <strong style="font-size:15px;color:var(--ka-fg)">{{ item.ok ? "Sim" : "Não" }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div v-else style="text-align:center;padding:24px;color:var(--ka-fg-muted);font-size:13px">
+          Clique em <strong>Diagnosticar</strong> para verificar o estado da conexão.
+        </div>
+      </div>
+
+    </div>
   </NuxtLayout>
 </template>
 
 <script setup lang="ts">
-import { Activity, AlertCircle, MessageCircle, QrCode, RefreshCw, Unplug } from "lucide-vue-next";
+import { Activity, AlertCircle, CheckCircle, Clock, MessageCircle, Phone, QrCode, RefreshCw, Server, Unplug } from "lucide-vue-next";
 
 definePageMeta({ layout: false, middleware: "auth" });
 
@@ -118,20 +206,63 @@ const connection = ref<any>(null);
 const qrCode = ref<string | null>(null);
 const diagnostics = ref<any>(null);
 
-const statusVariant = computed(() => {
-  if (status.value === "CONNECTED") return "success";
-  if (status.value === "CONNECTING") return "warning";
-  if (status.value === "ERROR") return "destructive";
-  return "neutral";
+// ── Computed ──────────────────────────────────────────────────────────────────
+
+const statusLabel = computed(() => {
+  const map: Record<string, string> = {
+    CONNECTED: "Conectado",
+    CONNECTING: "Conectando",
+    DISCONNECTED: "Desconectado",
+    ERROR: "Erro",
+  };
+  return map[status.value] ?? status.value;
+});
+
+const statusStyle = computed(() => {
+  if (status.value === "CONNECTED")   return "background:var(--ka-success-bg,#f0fdf4);color:var(--ka-success)";
+  if (status.value === "CONNECTING")  return "background:#fef3c7;color:#92400e";
+  if (status.value === "ERROR")       return "background:var(--ka-danger-bg);color:var(--ka-danger)";
+  return "background:var(--ka-gray-100);color:var(--ka-fg-muted)";
+});
+
+const statusDotStyle = computed(() => {
+  if (status.value === "CONNECTED")   return "background:var(--ka-success)";
+  if (status.value === "CONNECTING")  return "background:#f59e0b";
+  if (status.value === "ERROR")       return "background:var(--ka-danger)";
+  return "background:var(--ka-fg-muted)";
 });
 
 const qrImageSource = computed(() => {
   if (!qrCode.value) return null;
-  const value = String(qrCode.value);
-  if (value.startsWith("data:image/")) return value;
-  if (/^[A-Za-z0-9+/=]+$/.test(value) && value.length > 100) return `data:image/png;base64,${value}`;
+  const v = String(qrCode.value);
+  if (v.startsWith("data:image/")) return v;
+  if (/^[A-Za-z0-9+/=]+$/.test(v) && v.length > 100) return `data:image/png;base64,${v}`;
   return null;
 });
+
+const diagnosticItems = computed(() => {
+  if (!diagnostics.value) return [];
+  return [
+    { label: "WhatsApp habilitado",   ok: !!diagnostics.value.enabled },
+    { label: "Evolution configurada", ok: !!diagnostics.value.hasEvolutionConfig },
+    { label: "Evolution acessível",   ok: !!diagnostics.value.evolutionReachable },
+  ];
+});
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function formatDateTime(iso: string) {
+  try {
+    return new Intl.DateTimeFormat("pt-BR", {
+      day: "2-digit", month: "2-digit", year: "numeric",
+      hour: "2-digit", minute: "2-digit",
+    }).format(new Date(iso));
+  } catch {
+    return iso;
+  }
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
 
 async function load() {
   loading.value = true;
@@ -142,7 +273,7 @@ async function load() {
     connection.value = data.connection;
     qrCode.value = data.connection?.qrCode || null;
   } catch (err: any) {
-    error.value = err?.data?.message || "Nao foi possivel carregar o WhatsApp.";
+    error.value = err?.data?.message || "Não foi possível carregar o WhatsApp.";
   } finally {
     loading.value = false;
   }
@@ -154,10 +285,10 @@ async function connect() {
     const data = await api.fetch<any>("/whatsapp/connect", { method: "POST", body: JSON.stringify({}) });
     status.value = data.status || "CONNECTING";
     qrCode.value = data.qrCode || null;
-    toast.success(data.qrCode ? "QR Code gerado." : "Solicitacao enviada para o WhatsApp.");
+    toast.success(data.qrCode ? "QR Code gerado — escaneie pelo WhatsApp." : "Solicitação enviada ao WhatsApp.");
     await load();
   } catch (err: any) {
-    toast.error(err?.data?.message || "Nao foi possivel conectar o WhatsApp.");
+    toast.error(err?.data?.message || "Não foi possível conectar o WhatsApp.");
   } finally {
     connecting.value = false;
   }
@@ -170,7 +301,7 @@ async function disconnect() {
     toast.success("WhatsApp desconectado.");
     await load();
   } catch (err: any) {
-    toast.error(err?.data?.message || "Nao foi possivel desconectar o WhatsApp.");
+    toast.error(err?.data?.message || "Não foi possível desconectar o WhatsApp.");
   } finally {
     disconnecting.value = false;
   }
@@ -181,7 +312,7 @@ async function loadDiagnostics() {
   try {
     diagnostics.value = await api.fetch("/whatsapp/diagnostics");
   } catch (err: any) {
-    toast.error(err?.data?.message || "Nao foi possivel carregar o diagnostico.");
+    toast.error(err?.data?.message || "Não foi possível carregar o diagnóstico.");
   } finally {
     loadingDiagnostics.value = false;
   }

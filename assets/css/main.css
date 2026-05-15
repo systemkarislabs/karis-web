@@ -1133,21 +1133,35 @@ button {
     color: var(--ka-brand);
   }
 
-  .dashboard-sparkline {
+  .dashboard-kpi-sparkline {
     position: absolute;
-    right: 18px;
-    bottom: 16px;
-    left: 18px;
-    display: flex;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
     height: 42px;
-    align-items: end;
-    gap: 6px;
+    opacity: 0.85;
   }
 
-  .dashboard-sparkline i {
-    flex: 1;
-    border-radius: 999px 999px 0 0;
-    background: linear-gradient(180deg, var(--ka-brand), var(--ka-brand-100));
+  .dashboard-conv-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .dashboard-unread {
+    display: inline-flex;
+    min-width: 18px;
+    height: 18px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 99px;
+    background: var(--ka-brand);
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
   }
 
   .dashboard-content-grid {
@@ -1656,6 +1670,28 @@ button {
     margin-left: auto;
     color: var(--ka-fg-muted);
     font-size: 11px;
+  }
+
+  .crm-deal-menu {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: var(--ka-r-sm);
+    color: var(--ka-fg-muted);
+    opacity: 0;
+    transition: opacity 0.15s, background 0.15s;
+  }
+
+  .crm-deal:hover .crm-deal-menu {
+    opacity: 1;
+  }
+
+  .crm-deal-menu:hover {
+    background: var(--ka-gray-100);
+    color: var(--ka-fg);
   }
 
   .crm-add-deal {

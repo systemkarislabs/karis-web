@@ -4,8 +4,8 @@
       <section class="dashboard-hero">
         <div>
           <p class="dashboard-eyebrow">Dashboard</p>
-          <h1>Boa operação, {{ auth.user?.name?.split(" ")?.[0] || "time" }}</h1>
-          <p>A operação recebeu {{ kpis[0].value }} conversas hoje. Tudo abaixo usa dados reais da conta conectada.</p>
+          <h1>Boa {{ greeting }}, {{ auth.user?.name?.split(" ")?.[0] || "time" }} ✳</h1>
+          <p>Aqui tá tudo sob controle. Hoje seu time já resolveu {{ overview?.conversations?.resolved ?? 0 }} conversas.</p>
         </div>
         <div class="dashboard-actions">
           <Button variant="secondary" size="sm" @click="refresh">
@@ -23,17 +23,17 @@
         <button class="dashboard-shortcut" type="button" @click="navigateTo('/inbox')">
           <span><MessageSquare class="h-5 w-5" /></span>
           <strong>Nova conversa</strong>
-          <small>Abrir a caixa de atendimento</small>
+          <small>Abrir chat com novo contato</small>
         </button>
         <button class="dashboard-shortcut" type="button" @click="navigateTo('/crm')">
           <span><Kanban class="h-5 w-5" /></span>
           <strong>Ver pipeline</strong>
-          <small>{{ kpis[2].value }} leads nos últimos 7 dias</small>
+          <small>{{ overview?.contacts?.newLast7d ?? 0 }} leads em aberto</small>
         </button>
         <button class="dashboard-shortcut" type="button" @click="navigateTo('/agent')">
           <span><Sparkles class="h-5 w-5" /></span>
           <strong>Treinar a IA</strong>
-          <small>Atualizar instruções e conhecimento</small>
+          <small>Adicionar documentos</small>
         </button>
       </section>
 
@@ -45,7 +45,11 @@
           <p>{{ kpi.label }}</p>
           <Skeleton v-if="loading" class="mt-3" height="2.2rem" width="6rem" />
           <strong v-else>{{ kpi.value }}</strong>
-          <small :class="kpi.noteClass">{{ kpi.note }}</small>
+          <small v-if="kpi.trend" :class="kpi.trend > 0 ? 'is-positive' : kpi.trend < 0 ? 'is-negative' : ''">
+            {{ kpi.trend > 0 ? '↑' : '↓' }} {{ kpi.trendLabel }}
+          </small>
+          <small v-else :class="kpi.noteClass">{{ kpi.note }}</small>
+          <Sparkline v-if="!loading && kpi.sparkData.length > 1" :data="kpi.sparkData" :color="kpi.trend < 0 ? 'var(--ka-danger)' : 'var(--ka-brand)'" class="dashboard-kpi-sparkline" />
         </article>
       </section>
 
@@ -83,7 +87,7 @@
               </div>
             </div>
           </div>
-          <EmptyState v-else :icon="BarChart3" title="Sem mensagens no período" description="Quando houver conversas no backend, o volume aparece aqui sem dados simulados." />
+          <EmptyState v-else :icon="BarChart3" title="Sem mensagens no período" description="Quando houver conversas no backend, o volume aparece aqui." />
         </article>
 
         <article class="dashboard-panel dashboard-recent-panel">
@@ -110,10 +114,13 @@
                 <strong>{{ conv.contact?.name || conv.contact?.phone || "Contato" }}</strong>
                 <small>{{ conv.lastMessage?.content || "Sem mensagens ainda" }}</small>
               </span>
-              <em>{{ relativeTime(conv.updatedAt) }}</em>
+              <div class="dashboard-conv-meta">
+                <em>{{ relativeTime(conv.updatedAt) }}</em>
+                <b v-if="conv.unreadCount" class="dashboard-unread">{{ conv.unreadCount }}</b>
+              </div>
             </button>
           </div>
-          <EmptyState v-else :icon="MessageSquare" title="Nenhuma conversa aberta agora" description="Conecte o WhatsApp ou treine a IA para iniciar a operação." action-label="Treinar a IA" action-link="/agent" />
+          <EmptyState v-else :icon="MessageSquare" title="Nenhuma conversa aberta" description="Conecte o WhatsApp ou treine a IA para iniciar a operação." action-label="Treinar a IA" action-link="/agent" />
         </article>
       </section>
     </div>
@@ -133,26 +140,85 @@ const overview = ref<any>(null);
 const messageDays = ref<any[]>([]);
 const conversations = ref<any[]>([]);
 
-const kpis = computed(() => {
-  const successRate = Number(overview.value?.ai?.successRate ?? 0);
-  const newLeads = Number(overview.value?.contacts?.newLast7d ?? 0);
-  return [
-    { label: "Conversas hoje", value: String(overview.value?.conversations?.today ?? 0), note: "Criadas desde 00h", noteClass: "", icon: MessageSquare },
-    { label: "Contatos", value: String(stats.value?.stats?.contacts ?? 0), note: "Base total da empresa", noteClass: "", icon: Users },
-    { label: "Leads novos", value: String(newLeads), note: "Nos últimos 7 dias", noteClass: newLeads > 0 ? "is-positive" : "", icon: UserPlus },
-    { label: "Respostas IA", value: String(overview.value?.ai?.repliesLast30d ?? 0), note: `${successRate}% de sucesso`, noteClass: successRate >= 70 ? "is-positive" : successRate > 0 && successRate < 40 ? "is-negative" : "", icon: Bot },
-  ];
+const greeting = computed(() => {
+  const h = new Date().getHours();
+  if (h < 12) return "manhã";
+  if (h < 18) return "tarde";
+  return "noite";
 });
 
 const chartDays = computed(() => messageDays.value.slice(-7));
-const maxMessages = computed(() => Math.max(1, ...chartDays.value.map((d: any) => Math.max(Number(d.inbound || 0), Number(d.ai || 0), Number(d.human || 0), Number(d.total || 0)))));
-const hasChartData = computed(() => chartDays.value.some((d: any) => Number(d.inbound || 0) + Number(d.ai || 0) + Number(d.human || 0) + Number(d.total || 0) > 0));
-const chartSummary = computed(() => `Gráfico de mensagens dos últimos ${chartDays.value.length} dias. Pico de ${maxMessages.value} mensagens.`);
+const inboundSpark = computed(() => chartDays.value.map((d: any) => Number(d.inbound || 0)));
+const aiSpark      = computed(() => chartDays.value.map((d: any) => Number(d.ai || 0)));
+
+function trendPct(spark: number[]) {
+  if (spark.length < 2) return 0;
+  const prev = spark[spark.length - 2] || 0;
+  const curr = spark[spark.length - 1] || 0;
+  if (!prev) return curr > 0 ? 100 : 0;
+  return Math.round(((curr - prev) / prev) * 100);
+}
+
+const kpis = computed(() => {
+  const successRate  = Number(overview.value?.ai?.successRate ?? 0);
+  const newLeads     = Number(overview.value?.contacts?.newLast7d ?? 0);
+  const convToday    = Number(overview.value?.conversations?.today ?? 0);
+  const contacts     = Number(stats.value?.stats?.contacts ?? 0);
+  const convTrend    = trendPct(inboundSpark.value);
+  const aiTrend      = trendPct(aiSpark.value);
+
+  return [
+    {
+      label: "Conversas hoje",
+      value: String(convToday),
+      note: "Criadas desde 00h",
+      noteClass: "",
+      trend: convTrend,
+      trendLabel: `${Math.abs(convTrend)}%`,
+      sparkData: inboundSpark.value,
+      icon: MessageSquare,
+    },
+    {
+      label: "Contatos",
+      value: String(contacts),
+      note: "Base total",
+      noteClass: "",
+      trend: 0,
+      trendLabel: "",
+      sparkData: [] as number[],
+      icon: Users,
+    },
+    {
+      label: "Leads novos",
+      value: String(newLeads),
+      note: "Nos últimos 7 dias",
+      noteClass: newLeads > 0 ? "is-positive" : "",
+      trend: 0,
+      trendLabel: "",
+      sparkData: chartDays.value.map((d: any) => Number(d.total || 0)),
+      icon: UserPlus,
+    },
+    {
+      label: "Respostas IA",
+      value: String(overview.value?.ai?.repliesLast30d ?? 0),
+      note: `${successRate}% de sucesso`,
+      noteClass: successRate >= 70 ? "is-positive" : successRate > 0 && successRate < 40 ? "is-negative" : "",
+      trend: aiTrend,
+      trendLabel: `${Math.abs(aiTrend)}%`,
+      sparkData: aiSpark.value,
+      icon: Bot,
+    },
+  ];
+});
+
+const maxMessages = computed(() => Math.max(1, ...chartDays.value.map((d: any) => Math.max(Number(d.inbound || 0), Number(d.ai || 0), Number(d.human || 0)))));
+const hasChartData = computed(() => chartDays.value.some((d: any) => Number(d.inbound || 0) + Number(d.ai || 0) + Number(d.human || 0) > 0));
+const chartSummary = computed(() => `Gráfico dos últimos ${chartDays.value.length} dias. Pico de ${maxMessages.value} mensagens.`);
 
 function barHeight(value: number, max: number) {
-  const numeric = Number(value || 0);
-  if (!numeric) return "0px";
-  return `${Math.max(18, (numeric / max) * 214)}px`;
+  const n = Number(value || 0);
+  if (!n) return "0px";
+  return `${Math.max(18, (n / max) * 214)}px`;
 }
 
 function shortDay(day: string) {

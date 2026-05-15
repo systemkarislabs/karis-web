@@ -53,6 +53,9 @@
               <div class="crm-deal-footer">
                 <span v-for="tag in (deal.contact?.tags || []).slice(0, 2)" :key="tag" class="crm-deal-tag">{{ tag }}</span>
                 <span class="crm-deal-time">{{ relativeTime(deal.updatedAt) }}</span>
+                <button class="crm-deal-menu" type="button" @click.stop>
+                  <MoreHorizontal class="h-3.5 w-3.5" />
+                </button>
               </div>
             </button>
 
@@ -169,7 +172,7 @@
 </template>
 
 <script setup lang="ts">
-import { Kanban, LoaderCircle, Plus, RefreshCw } from "lucide-vue-next";
+import { Kanban, LoaderCircle, MoreHorizontal, Plus, RefreshCw } from "lucide-vue-next";
 
 definePageMeta({ layout: false, middleware: "auth" });
 

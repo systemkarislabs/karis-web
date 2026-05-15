@@ -2,7 +2,7 @@
   <NuxtLayout name="default">
     <section class="ka-page space-y-6">
       <PageHeader
-        eyebrow="Configuracoes"
+        eyebrow="Configurações"
         title="Empresa"
         description="Dados operacionais e recursos ativos nesta conta."
       >
@@ -44,7 +44,7 @@
               </label>
             </div>
             <div class="flex justify-end">
-              <Button type="submit" :loading="saving">Salvar alteracoes</Button>
+              <Button type="submit" :loading="saving">Salvar alterações</Button>
             </div>
           </form>
         </Card>
@@ -52,7 +52,7 @@
         <Card padding="lg" class="space-y-5">
           <div>
             <p class="text-sm font-semibold text-[--ka-fg]">Plano e uso</p>
-            <p class="text-sm text-[--ka-fg-muted]">Contadores vindos de `/companies/me`.</p>
+            <p class="text-sm text-[--ka-fg-muted]">Uso e limites do plano atual.</p>
           </div>
           <dl class="space-y-3 text-sm">
             <div class="flex justify-between gap-4">
@@ -98,11 +98,11 @@ const form = reactive({ name: "", aiEnabled: false, whatsappEnabled: false, kari
 const toggles = [
   { key: "aiEnabled" as const, label: "IA", description: "Assistente e playground ativos." },
   { key: "whatsappEnabled" as const, label: "WhatsApp", description: "Permite conectar o canal." },
-  { key: "karisLinkEnabled" as const, label: "Karis Link", description: "Habilita paginas de agenda." },
+  { key: "karisLinkEnabled" as const, label: "Karis Link", description: "Habilita páginas de agenda." },
 ];
 
 const metrics = computed(() => [
-  { label: "Usuarios", value: company.value?._count?.users ?? 0 },
+  { label: "Usuários", value: company.value?._count?.users ?? 0 },
   { label: "Contatos", value: company.value?._count?.contacts ?? 0 },
   { label: "Conversas", value: company.value?._count?.conversations ?? 0 },
 ]);
@@ -118,7 +118,7 @@ async function load() {
     form.whatsappEnabled = !!data.company.whatsappEnabled;
     form.karisLinkEnabled = !!data.company.karisLinkEnabled;
   } catch (err: any) {
-    error.value = err?.data?.message || "Nao foi possivel carregar os dados da empresa.";
+    error.value = err?.data?.message || "Não foi possível carregar os dados da empresa.";
   } finally {
     loading.value = false;
   }
@@ -134,7 +134,7 @@ async function save() {
     company.value = { ...company.value, ...data.company } as CompanyResponse["company"];
     toast.success("Empresa atualizada com sucesso.");
   } catch (err: any) {
-    toast.error(err?.data?.message || "Nao foi possivel salvar a empresa.");
+    toast.error(err?.data?.message || "Não foi possível salvar a empresa.");
   } finally {
     saving.value = false;
   }

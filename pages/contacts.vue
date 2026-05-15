@@ -121,7 +121,7 @@ const withEmailCount = computed(() => contacts.value.filter((contact) => contact
 async function loadContacts() {
   loading.value = true;
   try {
-    contacts.value = unwrapList(await api.fetch<any>("/contacts?limit=200"));
+    contacts.value = unwrapList(await api.fetch<any>("/contacts?limit=200"), ["contacts"]);
     selectedContact.value = contacts.value[0] || null;
   } finally {
     loading.value = false;

@@ -167,7 +167,7 @@ async function refresh() {
     stats.value = statsRes;
     overview.value = overviewRes;
     messageDays.value = daysRes.days || [];
-    conversations.value = unwrapList(convRes);
+    conversations.value = unwrapList(convRes, ["conversations"]);
   } finally {
     loading.value = false;
   }

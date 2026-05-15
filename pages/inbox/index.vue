@@ -213,7 +213,7 @@ async function loadConversations() {
   loadingConversations.value = true;
   try {
     const res = await api.fetch<any>("/conversations?limit=100");
-    conversations.value = unwrapList(res);
+    conversations.value = unwrapList(res, ["conversations"]);
     if (!selectedId.value && conversations.value[0]) selectedId.value = conversations.value[0].id;
     if (selectedId.value) await selectConversation(selectedId.value);
   } finally {

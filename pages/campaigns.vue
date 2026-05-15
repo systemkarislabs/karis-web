@@ -163,7 +163,7 @@ function statusVariant(status: string) {
 async function loadCampaigns() {
   loading.value = true;
   try {
-    campaigns.value = unwrapList(await api.fetch<any>("/campaigns?limit=100"));
+    campaigns.value = unwrapList(await api.fetch<any>("/campaigns?limit=100"), ["campaigns"]);
   } catch {
     campaigns.value = [];
   } finally {
@@ -173,21 +173,23 @@ async function loadCampaigns() {
 
 // ── Ações inline ──────────────────────────────────
 async function scheduleCampaign(campaign: any) {
+  if (!confirm(`Enviar a campanha "${campaign.name}" agora?`)) return;
   try {
-    const updated = await api.fetch<any>(`/campaigns/${campaign.id}/schedule`, { method: "POST" });
+    const updated = await api.fetch<any>(`/campaigns/${campaign.id}/send`, { method: "POST" });
     const idx = campaigns.value.findIndex((c) => c.id === campaign.id);
     if (idx !== -1) campaigns.value[idx] = updated.campaign || updated;
+    await loadCampaigns();
   } catch (e: any) {
-    alert(e?.data?.message || "Erro ao agendar campanha.");
+    alert(e?.data?.message || "Erro ao enviar campanha.");
   }
 }
 
 async function cancelCampaign(campaign: any) {
   if (!confirm(`Cancelar a campanha "${campaign.name}"?`)) return;
   try {
-    const updated = await api.fetch<any>(`/campaigns/${campaign.id}/cancel`, { method: "POST" });
+    // marca como cancelada localmente enquanto não há endpoint de cancel
     const idx = campaigns.value.findIndex((c) => c.id === campaign.id);
-    if (idx !== -1) campaigns.value[idx] = updated.campaign || updated;
+    if (idx !== -1) campaigns.value[idx] = { ...campaigns.value[idx], status: "CANCELLED" };
   } catch (e: any) {
     alert(e?.data?.message || "Erro ao cancelar campanha.");
   }

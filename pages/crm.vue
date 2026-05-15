@@ -199,7 +199,7 @@ async function loadCrm() {
       api.fetch<any>("/crm/deals?limit=200"),
     ]);
     stages.value = stagesRes.stages || [];
-    deals.value = unwrapList(dealsRes);
+    deals.value = unwrapList(dealsRes, ["deals"]);
   } finally {
     loading.value = false;
   }

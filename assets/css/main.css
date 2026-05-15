@@ -2884,6 +2884,91 @@ button {
     min-height: 220px;
   }
 
+  /* Setores de transferência */
+  .agent-sector-form {
+    background: var(--ka-surface-2);
+    border: 1px solid var(--ka-border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .agent-sector-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .agent-sector-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .agent-sector-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--ka-surface-2);
+    border: 1px solid var(--ka-border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+
+  .agent-sector-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .agent-sector-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .agent-sector-phone {
+    font-size: 13px;
+    color: var(--ka-fg-2);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .agent-sector-when {
+    font-size: 12px;
+    color: var(--ka-fg-2);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .agent-sector-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--ka-fg-2);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .icon-btn:hover {
+    background: var(--ka-surface-3);
+    color: var(--ka-fg);
+  }
+
   .agent-response {
     min-height: 220px;
     border: 1px solid var(--ka-border);

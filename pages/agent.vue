@@ -31,29 +31,26 @@
         </button>
       </nav>
 
+      <!-- Aba: Configuração -->
       <section v-if="activeTab === 'config'" class="agent-grid">
-        <article class="agent-card agent-editor-card">
-          <div class="agent-card-heading">
-            <h2>Instruções do agente</h2>
-            <p>Como sua IA deve se comportar e responder durante o atendimento.</p>
-          </div>
-          <textarea
-            v-model="form.instructions"
-            class="agent-textarea"
-            placeholder="Explique tom, regras de negócio, limites e quando transferir para humano."
-          />
-        </article>
-
-        <aside class="agent-side">
+        <div class="agent-main">
           <article class="agent-card">
-            <Input v-model="form.name" label="Nome do agente" />
-            <Select v-model="form.personality" class="mt-4" label="Personalidade" :options="personalityOptions" />
+            <div class="agent-card-heading">
+              <h2>Identidade</h2>
+              <p>Nome e instruções que definem como o agente se apresenta.</p>
+            </div>
+            <Input v-model="form.name" label="Nome do agente" placeholder="Assistente Karis" />
+            <label class="mt-4 block">
+              <span class="mb-1.5 block text-sm font-semibold text-[--ka-fg]">Instruções</span>
+              <textarea v-model="form.instructions" class="input-field min-h-36 py-3" placeholder="Você é um atendente da empresa X. Responda apenas sobre produtos e serviços da empresa..." />
+            </label>
           </article>
+        </div>
 
+        <aside class="agent-aside">
           <article class="agent-card">
-            <h3>Modelo</h3>
-            <p>Karis Pro · rápido e preciso</p>
-            <div class="agent-select-mock">Karis Pro · produção</div>
+            <h3>Personalidade</h3>
+            <Select v-model="form.personality" class="mt-4" label="Tom de voz" :options="personalityOptions" />
           </article>
 
           <article class="agent-card">
@@ -63,17 +60,80 @@
               <input v-model="form.isActive" type="checkbox" />
             </label>
           </article>
-
-          <article class="agent-card">
-            <Input v-model="form.transferPhone" label="Telefone de transferência" placeholder="5541999999999" />
-            <label class="mt-4 block">
-              <span class="mb-1.5 block text-sm font-semibold text-[--ka-fg]">Condições de transferência</span>
-              <textarea v-model="form.transferConditions" class="input-field min-h-28 py-3" placeholder="Quando o cliente pedir humano, reclamações, fechamento..." />
-            </label>
-          </article>
         </aside>
       </section>
 
+      <!-- Aba: Setores de Transferência -->
+      <section v-else-if="activeTab === 'sectors'" class="agent-card">
+        <div class="agent-card-heading agent-row-heading">
+          <div>
+            <h2>Setores de Transferência</h2>
+            <p>A IA detecta automaticamente quando transferir e envia um resumo da conversa para o responsável.</p>
+          </div>
+          <Button size="sm" @click="openSectorForm()">
+            <Plus class="h-4 w-4" />
+            Novo setor
+          </Button>
+        </div>
+
+        <!-- Formulário de criação/edição -->
+        <div v-if="sectorFormVisible" class="agent-sector-form">
+          <div class="agent-sector-form-grid">
+            <Input v-model="sectorForm.name" label="Nome do setor" placeholder="Suporte Técnico" />
+            <Input v-model="sectorForm.phone" label="WhatsApp do setor" placeholder="5541999999999" />
+          </div>
+          <label class="mt-3 block">
+            <span class="mb-1.5 block text-sm font-semibold text-[--ka-fg]">Quando transferir</span>
+            <textarea v-model="sectorForm.transferWhen" class="input-field min-h-20 py-3" placeholder="Quando o cliente tiver problema técnico, defeito no produto, precisar de instalação..." />
+          </label>
+          <label class="mt-3 block">
+            <span class="mb-1.5 block text-sm font-semibold text-[--ka-fg]">Descrição do setor (opcional)</span>
+            <textarea v-model="sectorForm.description" class="input-field min-h-16 py-3" placeholder="Equipe de suporte técnico especializado" />
+          </label>
+          <div class="mt-4 flex gap-2">
+            <Button size="sm" :loading="sectorSaving" @click="saveSector">Salvar setor</Button>
+            <Button size="sm" variant="secondary" @click="closeSectorForm">Cancelar</Button>
+          </div>
+        </div>
+
+        <!-- Lista de setores -->
+        <div v-if="sectorsLoading" class="space-y-2 mt-4">
+          <Skeleton v-for="i in 3" :key="i" height="4rem" />
+        </div>
+        <div v-else-if="sectors.length" class="agent-sector-list mt-4">
+          <div v-for="sector in sectors" :key="sector.id" class="agent-sector-item">
+            <div class="agent-sector-info">
+              <div class="agent-sector-header">
+                <ArrowRightLeft class="h-4 w-4 text-[--ka-accent]" />
+                <strong>{{ sector.name }}</strong>
+                <Badge :variant="sector.isActive ? 'success' : 'secondary'" size="sm">
+                  {{ sector.isActive ? 'Ativo' : 'Inativo' }}
+                </Badge>
+              </div>
+              <span class="agent-sector-phone">📱 {{ formatPhone(sector.phone) }}</span>
+              <p v-if="sector.transferWhen" class="agent-sector-when">
+                <em>Quando:</em> {{ sector.transferWhen }}
+              </p>
+            </div>
+            <div class="agent-sector-actions">
+              <button class="icon-btn" title="Editar" @click="openSectorForm(sector)">
+                <Pencil class="h-4 w-4" />
+              </button>
+              <button class="icon-btn text-red-500" title="Excluir" @click="deleteSector(sector.id)">
+                <Trash2 class="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+        <EmptyState
+          v-else-if="!sectorFormVisible"
+          :icon="ArrowRightLeft"
+          title="Nenhum setor configurado"
+          description="Adicione setores para que a IA transfira automaticamente quando necessário."
+        />
+      </section>
+
+      <!-- Aba: Conhecimento -->
       <section v-else-if="activeTab === 'knowledge'" class="agent-card">
         <div class="agent-card-heading agent-row-heading">
           <div>
@@ -107,6 +167,7 @@
         <EmptyState v-else :icon="FileText" title="Nenhum conhecimento adicionado" description="Adicione textos ou documentos para a IA responder com mais precisão." />
       </section>
 
+      <!-- Aba: Playground -->
       <section v-else class="agent-card">
         <div class="agent-card-heading">
           <h2>Playground</h2>
@@ -127,7 +188,7 @@
 </template>
 
 <script setup lang="ts">
-import { FileText, Play, Sparkles, Upload } from "lucide-vue-next";
+import { ArrowRightLeft, FileText, Pencil, Play, Plus, Sparkles, Trash2, Upload } from "lucide-vue-next";
 
 definePageMeta({ layout: false, middleware: "auth" });
 
@@ -139,31 +200,49 @@ const saving = ref(false);
 const playgroundLoading = ref(false);
 const assistant = ref<any>(null);
 const knowledge = ref<any[]>([]);
+const sectors = ref<any[]>([]);
+const sectorsLoading = ref(false);
+const sectorSaving = ref(false);
+const sectorFormVisible = ref(false);
+const editingSectorId = ref<string | null>(null);
+
 const form = reactive({ name: "Assistente Karis", instructions: "", isActive: true, personality: "", transferPhone: "", transferConditions: "" });
 const knowledgeForm = reactive({ title: "", content: "" });
+const sectorForm = reactive({ name: "", phone: "", description: "", transferWhen: "" });
 const playgroundMessage = ref("Como vocês podem me ajudar no atendimento?");
 const playgroundReply = ref("");
 
 const tabs = [
-  { key: "config", label: "Configuração" },
+  { key: "config",    label: "Configuração" },
+  { key: "sectors",   label: "Transferências" },
   { key: "knowledge", label: "Conhecimento" },
-  { key: "training", label: "Treinamento" },
-  { key: "playground", label: "Playground" },
+  { key: "playground",label: "Playground" },
 ];
 
 const personalityOptions = [
-  { value: "", label: "Padrão Karis" },
-  { value: "prestativo", label: "Prestativo" },
-  { value: "direto", label: "Direto" },
-  { value: "formal", label: "Formal" },
-  { value: "descontraido", label: "Descontraído" },
+  { value: "",            label: "Padrão (cordial e profissional)" },
+  { value: "descontraido",label: "Descontraído 😊 (usa emojis, tom próximo)" },
+  { value: "prestativo",  label: "Prestativo (detalhado, proativo)" },
+  { value: "formal",      label: "Formal (senhor/senhora, tom sério)" },
+  { value: "direto",      label: "Direto (respostas curtas e precisas)" },
 ];
 
 const assistantStatus = computed(() => assistant.value?.isActive ? "Ativa · pronta para responder conversas reais." : "Inativa · publique mudanças para retomar o atendimento.");
 
 watch(activeTab, (value) => {
-  if (value === "training") activeTab.value = "knowledge";
+  if (value === "sectors" && !sectors.value.length) loadSectors();
 });
+
+function formatPhone(phone: string) {
+  const p = String(phone || "").replace(/\D/g, "");
+  if (p.length === 13) return `+${p.slice(0,2)} (${p.slice(2,4)}) ${p.slice(4,9)}-${p.slice(9)}`;
+  if (p.length === 12) return `+${p.slice(0,2)} (${p.slice(2,4)}) ${p.slice(4,8)}-${p.slice(8)}`;
+  return phone;
+}
+
+function formatDate(d: string) {
+  return new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+}
 
 async function loadAgent() {
   loading.value = true;
@@ -187,6 +266,79 @@ async function loadAgent() {
   }
 }
 
+async function loadSectors() {
+  sectorsLoading.value = true;
+  try {
+    sectors.value = await api.fetch<any[]>("/assistant/transfer-sectors");
+  } catch {
+    sectors.value = [];
+  } finally {
+    sectorsLoading.value = false;
+  }
+}
+
+function openSectorForm(sector?: any) {
+  if (sector) {
+    editingSectorId.value = sector.id;
+    Object.assign(sectorForm, {
+      name: sector.name,
+      phone: sector.phone,
+      description: sector.description || "",
+      transferWhen: sector.transferWhen || "",
+    });
+  } else {
+    editingSectorId.value = null;
+    Object.assign(sectorForm, { name: "", phone: "", description: "", transferWhen: "" });
+  }
+  sectorFormVisible.value = true;
+}
+
+function closeSectorForm() {
+  sectorFormVisible.value = false;
+  editingSectorId.value = null;
+}
+
+async function saveSector() {
+  if (!sectorForm.name.trim() || !sectorForm.phone.trim()) {
+    toast.warning("Informe o nome e o WhatsApp do setor.");
+    return;
+  }
+  sectorSaving.value = true;
+  try {
+    if (editingSectorId.value) {
+      const updated = await api.fetch<any>(`/assistant/transfer-sectors/${editingSectorId.value}`, {
+        method: "PUT",
+        body: JSON.stringify(sectorForm),
+      });
+      const idx = sectors.value.findIndex(s => s.id === editingSectorId.value);
+      if (idx !== -1) sectors.value[idx] = updated;
+    } else {
+      const created = await api.fetch<any>("/assistant/transfer-sectors", {
+        method: "POST",
+        body: JSON.stringify(sectorForm),
+      });
+      sectors.value = [...sectors.value, created];
+    }
+    toast.success("Setor salvo.");
+    closeSectorForm();
+  } catch (err: any) {
+    toast.error(err?.data?.error || "Erro ao salvar setor.");
+  } finally {
+    sectorSaving.value = false;
+  }
+}
+
+async function deleteSector(id: string) {
+  if (!confirm("Excluir este setor de transferência?")) return;
+  try {
+    await api.fetch(`/assistant/transfer-sectors/${id}`, { method: "DELETE" });
+    sectors.value = sectors.value.filter(s => s.id !== id);
+    toast.success("Setor excluído.");
+  } catch {
+    toast.error("Erro ao excluir setor.");
+  }
+}
+
 async function saveAssistant() {
   saving.value = true;
   try {
@@ -205,7 +357,7 @@ async function saveAssistant() {
     });
     toast.success("Agente atualizado.");
   } catch (err: any) {
-    toast.error(err?.data?.message || err?.message || "Nao foi possivel publicar as mudancas.");
+    toast.error(err?.data?.message || err?.message || "Não foi possível publicar as mudanças.");
   } finally {
     saving.value = false;
   }

@@ -171,7 +171,24 @@
 
         <div class="inbox-tags">
           <span v-for="tag in selectedTags" :key="tag">{{ tag }}</span>
-          <span v-if="!selectedTags.length">Sem tags</span>
+          <span v-if="!selectedTags.length" class="inbox-no-tags">Sem tags</span>
+        </div>
+
+        <!-- Deal em andamento -->
+        <div class="inbox-deal-section">
+          <p class="inbox-section-mini-label">Deal em andamento</p>
+          <Skeleton v-if="dealLoading" height="3.5rem" rounded="md" />
+          <div v-else-if="contactDeal" class="inbox-contact-deal" @click="navigateTo('/crm')">
+            <div class="inbox-contact-deal-top">
+              <strong>{{ contactDeal.contact?.name || contactDeal.title }}</strong>
+              <span v-if="contactDeal.aiScore" class="inbox-deal-score">{{ contactDeal.aiScore }}</span>
+            </div>
+            <div class="inbox-contact-deal-meta">
+              <span class="inbox-deal-stage">{{ contactDeal.stage?.name || "—" }}</span>
+              <span v-if="contactDeal.valueCents" class="inbox-deal-value">{{ formatMoney(contactDeal.valueCents) }}</span>
+            </div>
+          </div>
+          <p v-else class="inbox-no-deal">Nenhum deal ativo</p>
         </div>
       </aside>
     </div>
@@ -246,6 +263,7 @@ async function loadConversations() {
 async function selectConversation(id: string) {
   selectedId.value = id;
   dismissedSuggestion.value = false;
+  contactDeal.value = null;
   loadingMessages.value = true;
   try {
     const [convRes, msgRes] = await Promise.all([
@@ -254,8 +272,24 @@ async function selectConversation(id: string) {
     ]);
     selectedConversation.value = convRes.conversation;
     messages.value = unwrapList(msgRes, ["messages"]);
+    // Load the active deal for this contact in background
+    const cid = convRes.conversation?.contactId || convRes.conversation?.contact?.id;
+    if (cid) loadContactDeal(cid);
   } finally {
     loadingMessages.value = false;
+  }
+}
+
+async function loadContactDeal(contactId: string) {
+  dealLoading.value = true;
+  try {
+    const res = await api.fetch<any>(`/crm/deals?contactId=${contactId}&limit=1`);
+    const list = unwrapList(res, ["deals"]);
+    contactDeal.value = list[0] || null;
+  } catch {
+    contactDeal.value = null;
+  } finally {
+    dealLoading.value = false;
   }
 }
 
@@ -264,6 +298,10 @@ async function markRead() {
   await api.fetch(`/conversations/${selectedId.value}/read`, { method: "POST" });
   await loadConversations();
 }
+
+// ── Active deal for selected contact ──────────────────
+const contactDeal = ref<any | null>(null);
+const dealLoading = ref(false);
 
 const resolving = ref(false);
 

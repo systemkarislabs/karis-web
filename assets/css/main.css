@@ -2720,6 +2720,7 @@ button {
     border-right: 0;
     padding: 26px 18px;
     text-align: center;
+    overflow-y: auto;
   }
 
   .inbox-detail-panel h2 {
@@ -2784,6 +2785,101 @@ button {
     font-size: 11px;
     font-weight: 800;
     padding: 5px 8px;
+  }
+
+  .inbox-no-tags {
+    font-size: 12px;
+    color: var(--ka-fg-muted);
+    background: none !important;
+    color: var(--ka-fg-muted) !important;
+    padding: 0 !important;
+  }
+
+  /* Deal em andamento */
+  .inbox-deal-section {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--ka-border);
+  }
+
+  .inbox-section-mini-label {
+    margin: 0 0 10px;
+    color: var(--ka-fg-muted);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .inbox-contact-deal {
+    padding: 10px 12px;
+    border: 1px solid var(--ka-border);
+    border-radius: var(--ka-r-md);
+    background: var(--ka-surface);
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .inbox-contact-deal:hover {
+    border-color: var(--ka-brand);
+    box-shadow: var(--ka-shadow-sm);
+  }
+
+  .inbox-contact-deal-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+
+  .inbox-contact-deal-top strong {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ka-fg);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .inbox-deal-score {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 99px;
+    background: var(--ka-brand-50);
+    color: var(--ka-brand);
+    font-size: 10px;
+    font-weight: 800;
+  }
+
+  .inbox-contact-deal-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .inbox-deal-stage {
+    font-size: 11px;
+    color: var(--ka-fg-2);
+    font-weight: 600;
+  }
+
+  .inbox-deal-value {
+    font-size: 11px;
+    color: var(--ka-success);
+    font-weight: 700;
+    margin-left: auto;
+  }
+
+  .inbox-no-deal {
+    font-size: 12px;
+    color: var(--ka-fg-muted);
+    text-align: center;
+    padding: 8px 0;
   }
 
   .agent-page {

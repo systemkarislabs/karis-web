@@ -5,11 +5,12 @@
     active-class="!bg-[--ka-brand-50] !text-[--ka-brand-dark] !font-semibold"
   >
     <component :is="icon" class="h-5 w-5 shrink-0" :stroke-width="1.75" />
-    <span class="truncate">{{ label }}</span>
+    <span class="truncate flex-1">{{ label }}</span>
+    <span v-if="badge" class="nav-badge">{{ badge > 99 ? '99+' : badge }}</span>
   </NuxtLink>
 </template>
 
 <script setup lang="ts">
 import type { Component } from "vue";
-defineProps<{ to: string; icon: Component; label: string }>();
+defineProps<{ to: string; icon: Component; label: string; badge?: number }>();
 </script>

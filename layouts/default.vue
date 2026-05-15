@@ -8,7 +8,7 @@
       <nav class="app-nav scrollbar-thin">
         <p class="app-nav-label">Operação</p>
         <NavItem to="/dashboard" :icon="LayoutDashboard" :label="$t('nav.dashboard')" />
-        <NavItem to="/inbox" :icon="MessageSquare" :label="$t('nav.inbox')" />
+        <NavItem to="/inbox" :icon="MessageSquare" :label="$t('nav.inbox')" :badge="unreadCount || undefined" />
         <NavItem to="/whatsapp" :icon="MessageCircle" :label="$t('nav.whatsapp')" />
         <NavItem to="/contacts" :icon="Users" :label="$t('nav.contacts')" />
         <NavItem to="/crm" :icon="Kanban" :label="$t('nav.crm')" />
@@ -98,6 +98,18 @@ const auth = useAuthStore();
 const { init: initTheme } = useTheme();
 const cmdK = useCmdK();
 const mobileMenuOpen = ref(false);
+const unreadCount = ref(0);
+
+async function refreshUnread() {
+  try {
+    const api = useApi();
+    const res = await api.fetch<any>("/conversations?limit=100");
+    const convs: any[] = res.conversations || res || [];
+    unreadCount.value = convs.reduce((sum: number, c: any) => sum + Number(c.unreadCount || 0), 0);
+  } catch {
+    // silently ignore
+  }
+}
 
 const mobileItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -115,6 +127,7 @@ const mobileItems = [
 onMounted(() => {
   initTheme();
   auth.fetchMe();
+  refreshUnread();
   cmdK.register({ key: "g d", label: "Ir para Dashboard", action: () => navigateTo("/dashboard") });
   cmdK.register({ key: "g i", label: "Ir para Inbox", action: () => navigateTo("/inbox") });
   cmdK.register({ key: "g w", label: "Ir para WhatsApp", action: () => navigateTo("/whatsapp") });

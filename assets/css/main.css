@@ -874,6 +874,20 @@ button {
     margin-top: 22px;
   }
 
+  .nav-badge {
+    display: inline-flex;
+    min-width: 18px;
+    height: 18px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 99px;
+    background: var(--ka-brand);
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 0 4px;
+  }
+
   .app-user-card {
     display: flex;
     align-items: center;

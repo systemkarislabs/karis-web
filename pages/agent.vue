@@ -227,15 +227,21 @@ async function createKnowledge() {
 }
 
 async function runPlayground() {
+  if (!playgroundMessage.value.trim()) {
+    toast.warning("Digite uma mensagem para testar.");
+    return;
+  }
   playgroundLoading.value = true;
   playgroundReply.value = "";
+  activeTab.value = "playground";
   try {
     const res = await api.fetch<any>("/assistant/playground", {
       method: "POST",
       body: JSON.stringify({ message: playgroundMessage.value }),
     });
-    playgroundReply.value = res.reply || "";
-    activeTab.value = "playground";
+    playgroundReply.value = res.reply || "Sem resposta do modelo.";
+  } catch (err: any) {
+    toast.error(err?.data?.message || "Não foi possível testar o agente. Verifique se o modelo está disponível.");
   } finally {
     playgroundLoading.value = false;
   }

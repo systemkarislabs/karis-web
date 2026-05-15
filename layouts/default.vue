@@ -15,7 +15,7 @@
         <NavItem to="/agent" :icon="Bot" :label="$t('nav.agent')" />
 
         <p class="app-nav-label app-nav-label-spaced">Crescimento</p>
-        <NavItem to="/queue" :icon="ListOrdered" :label="$t('nav.queue')" />
+        <NavItem to="/queue" :icon="ListOrdered" label="Fila" />
         <NavItem to="/campaigns" :icon="Megaphone" :label="$t('nav.campaigns')" />
         <NavItem to="/reports" :icon="BarChart3" :label="$t('nav.reports')" />
         <NavItem to="/settings" :icon="Settings" :label="$t('nav.settings')" />

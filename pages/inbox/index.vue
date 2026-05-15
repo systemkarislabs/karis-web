@@ -179,12 +179,13 @@
 </template>
 
 <script setup lang="ts">
-import { Check, CheckCheck, MessageSquare, MoreHorizontal, Phone, RefreshCw, RotateCcw, Send, Sparkles, UserRound } from "lucide-vue-next";
+import { CheckCheck, MessageSquare, MoreHorizontal, Phone, RefreshCw, RotateCcw, Send, Sparkles, UserRound } from "lucide-vue-next";
 
 definePageMeta({ layout: false, middleware: "auth" });
 
 const route = useRoute();
 const api = useApi();
+const toast = useToast();
 const search = ref("");
 const activeFilter = ref("all");
 const conversations = ref<any[]>([]);

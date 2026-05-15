@@ -46,15 +46,13 @@
                   <Avatar :name="deal.contact?.name || deal.title" size="sm" />
                   <strong>{{ deal.contact?.name || deal.title }}</strong>
                 </div>
-                <span class="crm-deal-score">+{{ deal.aiScore ?? 0 }}</span>
+                <span v-if="deal.aiScore" class="crm-deal-score">+{{ deal.aiScore }}</span>
               </div>
-              <b class="crm-deal-value">{{ deal.valueCents ? formatMoney(deal.valueCents) : "—" }}</b>
-              <p v-if="deal.aiNextAction" class="crm-deal-action">
-                → {{ deal.aiNextAction }}
-              </p>
+              <b v-if="deal.valueCents" class="crm-deal-value">{{ formatMoney(deal.valueCents) }}</b>
+              <p v-if="deal.aiNextAction" class="crm-deal-action">→ {{ deal.aiNextAction }}</p>
               <div class="crm-deal-footer">
                 <span v-for="tag in (deal.contact?.tags || []).slice(0, 2)" :key="tag" class="crm-deal-tag">{{ tag }}</span>
-                <span class="crm-deal-time">{{ deal.tasks?.[0]?.dueAt ? relativeTime(deal.tasks[0].dueAt) : relativeTime(deal.updatedAt) }}</span>
+                <span class="crm-deal-time">{{ relativeTime(deal.updatedAt) }}</span>
               </div>
             </button>
 

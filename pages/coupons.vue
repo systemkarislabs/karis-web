@@ -1,33 +1,32 @@
-﻿<template>
+<template>
   <NuxtLayout name="default">
-    <div class="ka-page">
-      <PageHeader title="Cupons" description="Cupons reais para campanhas, afiliados e conversas.">
-        <template #actions><Button variant="secondary" size="sm" @click="loadCoupons"><RefreshCw class="h-4 w-4" />Atualizar</Button></template>
-      </PageHeader>
-      <Table :columns="columns" :rows="rows" :loading="loading" empty-title="Nenhum cupom cadastrado">
-        <template #cell-isActive="{ row }"><Badge :variant="row.raw.isActive ? 'success' : 'neutral'" size="sm" dot>{{ row.isActive }}</Badge></template>
-      </Table>
+    <div class="ka-page" style="max-width:960px">
+      <div class="page-header">
+        <div>
+          <p class="page-header-eyebrow">Marketing</p>
+          <h1>Cupons</h1>
+          <p class="page-header-description">Cupons de desconto para campanhas, afiliados e conversas.</p>
+        </div>
+      </div>
+
+      <div class="dashboard-panel" style="padding:64px 32px;text-align:center">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--ka-gray-100);display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+          <Tag class="h-7 w-7" style="color:var(--ka-fg-muted)" />
+        </div>
+        <h2 style="font-size:18px;font-weight:700;color:var(--ka-fg);margin-bottom:8px">Em breve</h2>
+        <p style="font-size:14px;color:var(--ka-fg-muted);max-width:400px;margin:0 auto 24px">
+          O módulo de cupons está em desenvolvimento. Em breve você poderá criar e distribuir cupons de desconto vinculados a campanhas e afiliados.
+        </p>
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:99px;background:var(--ka-gray-100);color:var(--ka-fg-muted);font-size:13px;font-weight:500">
+          <Clock class="h-4 w-4" />
+          Em desenvolvimento
+        </span>
+      </div>
     </div>
   </NuxtLayout>
 </template>
 
 <script setup lang="ts">
-import { RefreshCw } from "lucide-vue-next";
+import { Clock, Tag } from "lucide-vue-next";
 definePageMeta({ layout: false, middleware: "auth" });
-const api = useApi();
-const loading = ref(true);
-const coupons = ref<any[]>([]);
-const columns = [
-  { key: "code", label: "CÃ³digo" },
-  { key: "type", label: "Tipo" },
-  { key: "value", label: "Valor" },
-  { key: "isActive", label: "Status" },
-  { key: "validUntil", label: "VÃ¡lido atÃ©" },
-];
-const rows = computed(() => coupons.value.map(c => ({ code: c.code, type: c.type, value: c.type === "PERCENT" ? `${c.value}%` : formatMoney(c.value), isActive: c.isActive ? "Ativo" : "Inativo", validUntil: formatDate(c.validUntil), raw: c })));
-async function loadCoupons() {
-  loading.value = true;
-  try { coupons.value = unwrapList(await api.fetch<any>("/coupons?limit=100")); } finally { loading.value = false; }
-}
-onMounted(loadCoupons);
 </script>

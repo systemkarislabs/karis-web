@@ -133,7 +133,7 @@
 <script setup lang="ts">
 import { BarChart3, Bot, MessageSquare, RefreshCw, Users } from "lucide-vue-next";
 
-definePageMeta({ layout: false, middleware: "auth" });
+definePageMeta({ middleware: "auth" });
 
 const api = useApi();
 const loading = ref(true);

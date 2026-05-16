@@ -1,24 +1,24 @@
-export function useTheme() {
-  const theme = ref<"light" | "dark">("light");
+const _isDark = ref(false)
 
+export function useTheme() {
   function init() {
-    if (!import.meta.client) return;
-    theme.value = "light";
-    localStorage.setItem("theme", "light");
-    apply();
+    if (!import.meta.client) return
+    const saved = localStorage.getItem('ka-theme')
+    _isDark.value = saved === 'dark'
+    apply()
   }
 
   function toggle() {
-    theme.value = theme.value === "light" ? "dark" : "light";
-    if (!import.meta.client) return;
-    localStorage.setItem("theme", theme.value);
-    apply();
+    _isDark.value = !_isDark.value
+    if (!import.meta.client) return
+    localStorage.setItem('ka-theme', _isDark.value ? 'dark' : 'light')
+    apply()
   }
 
   function apply() {
-    if (!import.meta.client) return;
-    document.documentElement.setAttribute("data-theme", theme.value);
+    if (!import.meta.client) return
+    document.documentElement.setAttribute('data-theme', _isDark.value ? 'dark' : 'light')
   }
 
-  return { theme, init, toggle };
+  return { isDark: readonly(_isDark), toggle, init }
 }

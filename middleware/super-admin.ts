@@ -3,7 +3,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   superAdmin.loadFromStorage();
 
   if (!superAdmin.token) {
-    return navigateTo(`/login?redirect=${encodeURIComponent(to.fullPath)}`);
+    return navigateTo(`/super-admin/login?redirect=${encodeURIComponent(to.fullPath)}`);
   }
 
   if (!superAdmin.platformUser) {
@@ -11,6 +11,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   if (!superAdmin.token) {
-    return navigateTo(`/login?redirect=${encodeURIComponent(to.fullPath)}`);
+    return navigateTo(`/super-admin/login?redirect=${encodeURIComponent(to.fullPath)}`);
   }
 });

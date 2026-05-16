@@ -51,7 +51,7 @@ export const useSuperAdminStore = defineStore("superAdmin", () => {
     const api = useAdminApi();
     try { await api.fetch("/auth/logout", { method: "POST" }); } catch {}
     clear();
-    navigateTo("/login");
+    navigateTo("/super-admin/login");
   }
 
   loadFromStorage();

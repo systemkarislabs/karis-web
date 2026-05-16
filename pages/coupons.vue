@@ -28,5 +28,5 @@
 
 <script setup lang="ts">
 import { Clock, Tag } from "lucide-vue-next";
-definePageMeta({ layout: false, middleware: "auth" });
+definePageMeta({ middleware: "auth" });
 </script>

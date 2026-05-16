@@ -192,7 +192,7 @@
 <script setup lang="ts">
 import { Activity, AlertCircle, CheckCircle, Clock, MessageCircle, Phone, QrCode, RefreshCw, Server, Unplug } from "lucide-vue-next";
 
-definePageMeta({ layout: false, middleware: "auth" });
+definePageMeta({ middleware: "auth" });
 
 const api = useApi();
 const toast = useToast();

@@ -9,6 +9,7 @@ export default defineNuxtConfig({
     "@vueuse/nuxt",
     "@nuxtjs/i18n",
   ],
+  css: ["~/assets/css/main.css"],
   i18n: {
     defaultLocale: "pt-BR",
     locales: [{ code: "pt-BR", name: "Português" }],
@@ -16,8 +17,8 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || "https://karis-atende-api-production.up.railway.app",
-      wsUrl: process.env.NUXT_PUBLIC_WS_URL || "https://karis-atende-api-production.up.railway.app",
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || "http://localhost:3000",
+      wsUrl: process.env.NUXT_PUBLIC_WS_URL || "http://localhost:3000",
     },
   },
   routeRules: {

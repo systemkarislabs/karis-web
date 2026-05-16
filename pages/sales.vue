@@ -81,7 +81,7 @@
 <script setup lang="ts">
 import { BarChart3, DollarSign, Kanban, RefreshCw, TrendingUp } from "lucide-vue-next";
 
-definePageMeta({ layout: false, middleware: "auth" });
+definePageMeta({ middleware: "auth" });
 
 const api = useApi();
 const loading = ref(true);

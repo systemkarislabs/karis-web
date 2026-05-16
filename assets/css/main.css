@@ -1418,8 +1418,7 @@ button {
 
   .contacts-stats article,
   .contacts-shell,
-  .contact-detail,
-  .crm-column {
+  .contact-detail {
     border: 1px solid var(--ka-border);
     border-radius: var(--ka-r-lg);
     background: var(--ka-surface);
@@ -1560,9 +1559,11 @@ button {
 
   .crm-board {
     display: flex;
-    min-height: 620px;
+    height: calc(100vh - 64px - 110px);
+    min-height: 520px;
     gap: 14px;
     overflow-x: auto;
+    overflow-y: hidden;
     padding-bottom: 10px;
   }
 
@@ -1628,12 +1629,14 @@ button {
     padding: 12px;
     text-align: left;
     box-shadow: var(--ka-shadow-xs);
-    transition: border-color 0.15s, box-shadow 0.15s;
+    cursor: grab;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
   }
 
   .crm-deal:hover {
     border-color: var(--ka-brand);
     box-shadow: var(--ka-shadow-md);
+    transform: translateY(-1px);
   }
 
   .crm-deal-head {
@@ -3069,7 +3072,8 @@ button {
     resize: vertical;
   }
 
-  .agent-side {
+  .agent-side,
+  .agent-aside {
     display: grid;
     align-content: start;
     gap: 14px;
@@ -3930,6 +3934,11 @@ button {
    DRAWER
 ═══════════════════════════════════════════════════════ */
 
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 .drawer-backdrop {
   position: fixed;
   inset: 0;
@@ -4012,7 +4021,7 @@ button {
 
 .contacts-stat-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 14px;
   margin-bottom: 20px;
 }

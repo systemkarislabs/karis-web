@@ -1,88 +1,163 @@
 <template>
-  <div class="app-shell">
-    <aside class="app-sidebar">
-      <div class="sidebar-brand">
-        <img class="brand-wordmark" src="/karis-atende-wordmark-blue.png" alt="Karis Atende" />
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="/karis-icon.png" alt="Karis" />
+        <div>
+          <div class="name">Karis</div>
+          <div class="sub">Atende</div>
+        </div>
       </div>
 
-      <nav class="sidebar-nav scrollbar-thin">
-        <p class="nav-section-label">Operação</p>
-        <NavItem to="/dashboard" icon="dashboard" :label="$t('nav.dashboard')" />
-        <NavItem to="/inbox" icon="message" :label="$t('nav.inbox')" :badge="unreadCount || undefined" />
-        <NavItem to="/contacts" icon="users" :label="$t('nav.contacts')" />
-        <NavItem to="/crm" icon="kanban" :label="$t('nav.crm')" />
-        <NavItem to="/agent" icon="bot" :label="$t('nav.agent')" />
+      <p class="nav-section-label">Operação</p>
+      <NuxtLink class="nav-item" to="/dashboard" @click="mobileOpen = false">
+        <Icon name="dashboard" :size="18" />
+        <span>Dashboard</span>
+      </NuxtLink>
+      <NuxtLink class="nav-item" to="/inbox" @click="mobileOpen = false">
+        <Icon name="message" :size="18" />
+        <span>Conversas</span>
+        <span v-if="unreadCount" class="nav-badge">{{ unreadCount }}</span>
+      </NuxtLink>
+      <NuxtLink class="nav-item" to="/contacts" @click="mobileOpen = false">
+        <Icon name="users" :size="18" />
+        <span>Contatos</span>
+      </NuxtLink>
+      <NuxtLink class="nav-item" to="/crm" @click="mobileOpen = false">
+        <Icon name="kanban" :size="18" />
+        <span>CRM</span>
+      </NuxtLink>
+      <NuxtLink class="nav-item" to="/agent" @click="mobileOpen = false">
+        <Icon name="bot" :size="18" />
+        <span>Agente IA</span>
+      </NuxtLink>
 
-        <p class="nav-section-label nav-section-label-spaced">Crescimento</p>
-        <NavItem to="/campaigns" icon="megaphone" :label="$t('nav.campaigns')" />
-        <NavItem to="/settings" icon="settings" :label="$t('nav.settings')" />
-      </nav>
+      <p class="nav-section-label" style="margin-top: 8px;">Crescimento</p>
+      <NuxtLink class="nav-item" to="/campaigns" @click="mobileOpen = false">
+        <Icon name="megaphone" :size="18" />
+        <span>Campanhas</span>
+      </NuxtLink>
+      <NuxtLink class="nav-item" to="/settings" @click="mobileOpen = false">
+        <Icon name="settings" :size="18" />
+        <span>Configurações</span>
+      </NuxtLink>
 
-      <div class="sidebar-footer">
-        <Avatar :name="auth.user?.name || 'Usuário'" size="sm" />
-        <div class="min-w-0 flex-1">
-          <p class="truncate text-sm font-semibold text-[--ka-fg]">{{ auth.user?.name || "Usuário" }}</p>
-          <p class="truncate text-xs text-[--ka-fg-3]">{{ auth.company?.name || "" }}</p>
+      <!-- User card -->
+      <div class="user-card">
+        <div class="uc-avatar">{{ initials }}</div>
+        <div style="flex: 1; min-width: 0;">
+          <p style="font-size: 13px; font-weight: 600; color: var(--ka-fg); margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            {{ auth.user?.name || 'Usuário' }}
+          </p>
+          <p style="font-size: 11px; color: var(--ka-fg-muted); margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            {{ auth.company?.name || '' }}
+          </p>
         </div>
+        <button
+          class="ts-icon-btn"
+          style="width: 28px; height: 28px; border: 0; background: transparent;"
+          title="Sair"
+          @click="auth.clear(); navigateTo('/login')"
+        >
+          <Icon name="logout" :size="15" />
+        </button>
       </div>
     </aside>
 
-    <header class="app-header">
-      <div class="header-left">
-        <Button class="header-menu-btn" variant="ghost" size="icon" aria-label="Abrir menu" @click="mobileMenuOpen = true">
-          <Icon name="menu" :size="20" />
-        </Button>
-        <div class="header-search">
-          <Icon name="search" :size="16" class="header-search-icon" />
-          <input class="header-search-input" placeholder="Buscar conversas, contatos e comandos" @focus="cmdK.isOpen.value = true" />
-        </div>
+    <!-- Topbar -->
+    <header class="topbar">
+      <!-- Mobile menu button -->
+      <button
+        class="ts-icon-btn ts-menu-btn"
+        style="display: none;"
+        aria-label="Abrir menu"
+        @click="mobileOpen = true"
+      >
+        <Icon name="menu" :size="20" />
+      </button>
+
+      <!-- Search -->
+      <div class="ts-search">
+        <Icon name="search" :size="16" class="ts-icon" />
+        <input
+          placeholder="Buscar conversas, contatos e comandos"
+          @focus="cmdK.isOpen.value = true"
+          readonly
+        />
       </div>
-      <div class="header-right">
-        <Button variant="ghost" size="icon" aria-label="Tweaks" @click="tweaksOpen = !tweaksOpen">
-          <Icon name="sparkles" :size="18" />
-        </Button>
-        <Button variant="ghost" size="icon" aria-label="Notificações">
+
+      <!-- Actions -->
+      <div class="ts-actions">
+        <button class="ts-icon-btn" title="Tema" @click="toggleTheme">
+          <Icon :name="isDark ? 'sun' : 'moon'" :size="18" />
+        </button>
+        <button class="ts-icon-btn" title="Notificações">
           <Icon name="bell" :size="18" />
-        </Button>
-        <Button variant="ghost" size="icon" aria-label="Sair" @click="auth.clear(); navigateTo('/login')">
-          <Icon name="logout" :size="18" />
-        </Button>
+        </button>
       </div>
     </header>
 
-    <main class="app-main">
+    <!-- Content -->
+    <main class="content">
       <AdminImpersonationBanner />
       <slot />
     </main>
 
-    <TweaksPanel />
     <ToastHost />
 
+    <!-- Mobile drawer overlay -->
     <Teleport to="body">
-      <div v-if="mobileMenuOpen" class="mobile-overlay">
-        <button class="mobile-backdrop" aria-label="Fechar menu" @click="mobileMenuOpen = false" />
-        <aside class="mobile-drawer">
-          <div class="mobile-drawer-brand">
-            <img class="brand-wordmark" src="/karis-atende-wordmark-blue.png" alt="Karis Atende" />
-            <Button variant="ghost" size="icon" aria-label="Fechar menu" @click="mobileMenuOpen = false">
-              <Icon name="x" :size="20" />
-            </Button>
+      <div v-if="mobileOpen" style="position: fixed; inset: 0; z-index: 50; display: flex;">
+        <button
+          style="position: absolute; inset: 0; background: rgba(0,0,0,0.4); border: none; cursor: pointer;"
+          aria-label="Fechar menu"
+          @click="mobileOpen = false"
+        />
+        <aside class="sidebar" style="position: relative; width: 260px; height: 100vh; box-shadow: var(--ka-shadow-lg);">
+          <div class="brand">
+            <img src="/karis-icon.png" alt="Karis" />
+            <div>
+              <div class="name">Karis</div>
+              <div class="sub">Atende</div>
+            </div>
+            <button
+              class="ts-icon-btn"
+              style="margin-left: auto; border: 0; background: transparent;"
+              @click="mobileOpen = false"
+            >
+              <Icon name="x" :size="18" />
+            </button>
           </div>
-          <nav class="mobile-drawer-nav">
-            <NavItem v-for="item in mobileItems" :key="item.to" :to="item.to" :icon="item.icon" :label="item.label" @click="mobileMenuOpen = false" />
-          </nav>
+          <NuxtLink class="nav-item" to="/dashboard" @click="mobileOpen = false"><Icon name="dashboard" :size="18" /><span>Dashboard</span></NuxtLink>
+          <NuxtLink class="nav-item" to="/inbox" @click="mobileOpen = false"><Icon name="message" :size="18" /><span>Conversas</span></NuxtLink>
+          <NuxtLink class="nav-item" to="/contacts" @click="mobileOpen = false"><Icon name="users" :size="18" /><span>Contatos</span></NuxtLink>
+          <NuxtLink class="nav-item" to="/crm" @click="mobileOpen = false"><Icon name="kanban" :size="18" /><span>CRM</span></NuxtLink>
+          <NuxtLink class="nav-item" to="/agent" @click="mobileOpen = false"><Icon name="bot" :size="18" /><span>Agente IA</span></NuxtLink>
+          <NuxtLink class="nav-item" to="/campaigns" @click="mobileOpen = false"><Icon name="megaphone" :size="18" /><span>Campanhas</span></NuxtLink>
+          <NuxtLink class="nav-item" to="/settings" @click="mobileOpen = false"><Icon name="settings" :size="18" /><span>Configurações</span></NuxtLink>
         </aside>
       </div>
 
-      <div v-if="cmdK.isOpen.value" class="cmdk-overlay">
-        <button class="cmdk-backdrop" aria-label="Fechar comandos" @click="cmdK.isOpen.value = false" />
-        <div class="cmdk-panel">
+      <!-- Command palette -->
+      <div v-if="cmdK.isOpen.value" style="position: fixed; inset: 0; z-index: 100; display: flex; align-items: flex-start; justify-content: center; padding-top: 20vh;">
+        <button
+          style="position: absolute; inset: 0; background: rgba(0,0,0,0.4); border: none; cursor: pointer;"
+          aria-label="Fechar"
+          @click="cmdK.isOpen.value = false"
+        />
+        <div class="cmdk-panel" style="position: relative;">
           <div class="cmdk-search">
             <Icon name="search" :size="18" class="cmdk-search-icon" />
             <input v-model="cmdK.query.value" class="cmdk-input" placeholder="Buscar comandos..." autofocus />
           </div>
           <div class="cmdk-results">
-            <button v-for="cmd in cmdK.filtered.value" :key="cmd.key" class="cmdk-item" @click="cmdK.execute(cmd)">
+            <button
+              v-for="cmd in cmdK.filtered.value"
+              :key="cmd.key"
+              class="cmdk-item"
+              @click="cmdK.execute(cmd)"
+            >
               <span class="cmdk-key">{{ cmd.key }}</span>
               <span>{{ cmd.label }}</span>
             </button>
@@ -95,51 +170,38 @@
 </template>
 
 <script setup lang="ts">
-import { useCmdK } from "~/composables/useCmdK";
+import { useCmdK } from '~/composables/useCmdK'
 
-const auth = useAuthStore();
-const { init: initTheme } = useTheme();
-const cmdK = useCmdK();
-const mobileMenuOpen = ref(false);
-const unreadCount = ref(0);
-const tweaksOpen = ref(false);
+const auth = useAuthStore()
+const { isDark, toggle: toggleTheme, init: initTheme } = useTheme()
+const cmdK = useCmdK()
+const mobileOpen = ref(false)
+const unreadCount = ref(0)
+
+const initials = computed(() => {
+  const name = auth.user?.name || ''
+  return name.split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase() || 'KA'
+})
 
 async function refreshUnread() {
   try {
-    const api = useApi();
-    const res = await api.fetch<any>("/conversations?limit=100");
-    const convs: any[] = res.conversations || res || [];
-    unreadCount.value = convs.reduce((sum: number, c: any) => sum + Number(c.unreadCount || 0), 0);
+    const api = useApi()
+    const res = await api.fetch<any>('/conversations?limit=100')
+    const convs: any[] = res.conversations || res || []
+    unreadCount.value = convs.reduce((sum: number, c: any) => sum + Number(c.unreadCount || 0), 0)
   } catch {
-    // silently ignore
+    // ignore
   }
 }
 
-const mobileItems = [
-  { to: "/dashboard", icon: "dashboard", label: "Dashboard" },
-  { to: "/inbox", icon: "message", label: "Inbox" },
-  { to: "/contacts", icon: "users", label: "Contatos" },
-  { to: "/crm", icon: "kanban", label: "CRM" },
-  { to: "/agent", icon: "bot", label: "Agente IA" },
-  { to: "/campaigns", icon: "megaphone", label: "Campanhas" },
-  { to: "/settings", icon: "settings", label: "Configurações" },
-];
-
-watch(tweaksOpen, (v) => {
-  const { open } = useTweaks();
-  open.value = v;
-});
-
 onMounted(() => {
-  initTheme();
-  auth.fetchMe();
-  refreshUnread();
-  cmdK.register({ key: "g d", label: "Ir para Dashboard", action: () => navigateTo("/dashboard") });
-  cmdK.register({ key: "g i", label: "Ir para Inbox", action: () => navigateTo("/inbox") });
-  cmdK.register({ key: "g c", label: "Ir para CRM", action: () => navigateTo("/crm") });
-  cmdK.register({ key: "g a", label: "Agente IA", action: () => navigateTo("/agent") });
-  cmdK.register({ key: "g s", label: "Configurações", action: () => navigateTo("/settings") });
-});
+  initTheme()
+  auth.fetchMe()
+  refreshUnread()
+  cmdK.register({ key: 'g d', label: 'Ir para Dashboard', action: () => navigateTo('/dashboard') })
+  cmdK.register({ key: 'g i', label: 'Ir para Conversas', action: () => navigateTo('/inbox') })
+  cmdK.register({ key: 'g c', label: 'Ir para CRM', action: () => navigateTo('/crm') })
+  cmdK.register({ key: 'g a', label: 'Agente IA', action: () => navigateTo('/agent') })
+  cmdK.register({ key: 'g s', label: 'Configurações', action: () => navigateTo('/settings') })
+})
 </script>
-
-

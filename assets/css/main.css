@@ -1571,7 +1571,9 @@ button {
     width: 280px;
     min-width: 280px;
     flex-direction: column;
-    background: var(--ka-surface-2);
+    background: var(--ka-gray-50);
+    border: 1px solid var(--ka-border);
+    border-radius: 14px;
     padding: 12px;
     min-height: 200px;
   }
@@ -1599,15 +1601,17 @@ button {
   .crm-column header em {
     display: flex;
     min-width: 24px;
-    height: 24px;
+    height: 22px;
+    padding: 0 8px;
     align-items: center;
     justify-content: center;
     border-radius: 99px;
+    border: 1px solid var(--ka-border);
     background: var(--ka-surface);
     color: var(--ka-fg-2);
     font-size: 11px;
     font-style: normal;
-    font-weight: 800;
+    font-weight: 700;
   }
 
   .crm-deals {
@@ -1661,29 +1665,37 @@ button {
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
-    height: 20px;
-    padding: 0 7px;
+    gap: 4px;
+    height: 22px;
+    padding: 0 8px;
     border-radius: 99px;
-    background: var(--ka-brand-50);
-    color: var(--ka-brand);
+    background: var(--ka-bot-bg);
+    color: var(--ka-bot);
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 700;
   }
 
   .crm-deal-value {
     display: block;
     margin-top: 10px;
     color: var(--ka-fg);
-    font-size: 17px;
+    font-size: 18px;
     font-weight: 700;
+    font-family: var(--ka-font-display);
+    letter-spacing: -0.01em;
     line-height: 1;
   }
 
   .crm-deal-action {
-    margin: 7px 0 0;
-    color: var(--ka-brand);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 8px 0 0;
+    padding: 6px 8px;
+    background: var(--ka-gray-50);
+    border-radius: 8px;
+    color: var(--ka-fg-2);
     font-size: 12px;
-    font-weight: 600;
     line-height: 1.35;
     overflow: hidden;
     display: -webkit-box;
@@ -1748,15 +1760,18 @@ button {
     margin-top: 10px;
     padding: 7px;
     border-radius: var(--ka-r-md);
+    border: 1px dashed var(--ka-border);
     color: var(--ka-fg-muted);
     font-size: 12px;
     font-weight: 600;
-    transition: background 0.15s, color 0.15s;
+    background: transparent;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
   }
 
   .crm-add-deal:hover {
     background: var(--ka-brand-50);
     color: var(--ka-brand);
+    border-color: var(--ka-brand-100);
   }
 
   .crm-empty {

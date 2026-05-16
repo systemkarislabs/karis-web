@@ -34,7 +34,7 @@ withDefaults(
 );
 
 const variantClasses: Record<string, string> = {
-  primary:     "bg-[--ka-brand] text-white shadow-[--ka-shadow-brand] hover:bg-[--ka-brand-dark] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[--ka-brand]",
+  primary:     "bg-[--ka-brand] text-white hover:bg-[--ka-brand-dark] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[--ka-brand]",
   secondary:   "border border-[--ka-border] bg-[--ka-surface] text-[--ka-fg] hover:bg-[--ka-gray-50] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[--ka-brand]",
   ghost:       "text-[--ka-fg-2] hover:bg-[--ka-gray-100] hover:text-[--ka-fg]",
   destructive: "bg-[--ka-danger] text-white hover:brightness-95",

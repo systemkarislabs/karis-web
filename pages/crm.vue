@@ -46,13 +46,20 @@
                   <Avatar :name="deal.contact?.name || deal.title" size="sm" />
                   <strong>{{ deal.contact?.name || deal.title }}</strong>
                 </div>
-                <span v-if="deal.aiScore" class="crm-deal-score">+{{ deal.aiScore }}</span>
+                <span v-if="deal.aiScore" class="crm-deal-score">
+                  <Sparkles class="h-2.5 w-2.5" />{{ deal.aiScore }}
+                </span>
               </div>
               <b v-if="deal.valueCents" class="crm-deal-value">{{ formatMoney(deal.valueCents) }}</b>
-              <p v-if="deal.aiNextAction" class="crm-deal-action">→ {{ deal.aiNextAction }}</p>
+              <p v-if="deal.aiNextAction" class="crm-deal-action">
+                <Sparkles class="h-3 w-3" style="color:var(--ka-brand);flex-shrink:0;" />
+                {{ deal.aiNextAction }}
+              </p>
               <div class="crm-deal-footer">
                 <span v-for="tag in (deal.contact?.tags || []).slice(0, 2)" :key="tag" class="crm-deal-tag">{{ tag }}</span>
-                <span class="crm-deal-time">{{ relativeTime(deal.updatedAt) }}</span>
+                <span class="crm-deal-time" style="display:flex;align-items:center;gap:4px;">
+                  <Clock class="h-3 w-3" />{{ relativeTime(deal.updatedAt) }}
+                </span>
                 <button class="crm-deal-menu" type="button" @click.stop>
                   <MoreHorizontal class="h-3.5 w-3.5" />
                 </button>
@@ -172,7 +179,7 @@
 </template>
 
 <script setup lang="ts">
-import { Kanban, LoaderCircle, MoreHorizontal, Plus, RefreshCw } from "lucide-vue-next";
+import { Clock, Kanban, LoaderCircle, MoreHorizontal, Plus, RefreshCw, Sparkles } from "lucide-vue-next";
 
 definePageMeta({ layout: false, middleware: "auth" });
 

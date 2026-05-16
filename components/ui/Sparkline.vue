@@ -1,5 +1,5 @@
 <template>
-  <svg :width="width" :height="height" :viewBox="`0 0 ${width} ${height}`" preserveAspectRatio="none" aria-hidden="true">
+  <svg width="100%" height="100%" :viewBox="`0 0 ${width} ${height}`" preserveAspectRatio="none" aria-hidden="true">
     <defs>
       <linearGradient :id="gradId" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" :stop-color="color" stop-opacity="0.18" />

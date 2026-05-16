@@ -2281,16 +2281,6 @@ button {
     gap: 16px;
   }
 
-  .dashboard-kpi {
-    min-height: 132px;
-    padding: 18px 18px 16px;
-  }
-
-  .dashboard-kpi strong {
-    margin-top: 10px;
-    font-size: 31px;
-  }
-
   .dashboard-content-grid {
     grid-template-columns: minmax(0, 1.65fr) minmax(330px, 0.95fr);
   }

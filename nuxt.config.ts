@@ -9,7 +9,6 @@ export default defineNuxtConfig({
     "@vueuse/nuxt",
     "@nuxtjs/i18n",
   ],
-  css: ["~/assets/css/main.css"],
   i18n: {
     defaultLocale: "pt-BR",
     locales: [{ code: "pt-BR", name: "Português" }],

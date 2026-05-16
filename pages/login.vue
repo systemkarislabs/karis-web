@@ -280,8 +280,9 @@ async function loginAdmin(with2FA: boolean): Promise<boolean> {
 .login-left {
   display: flex;
   flex-direction: column;
-  padding: 32px;
-  background: var(--ka-surface);
+  padding: 40px 48px;
+  background: #ffffff;
+  color: #1a1a2e;
 }
 
 .login-brand {

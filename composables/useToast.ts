@@ -1,29 +1,48 @@
-import { ref } from "vue";
+import { ref } from 'vue';
 
-interface Toast {
+export interface Toast {
   id: number;
-  type: "success" | "error" | "warning" | "info";
+  type: 'success' | 'error' | 'warning' | 'info';
+  title?: string;
   message: string;
+  duration?: number;
 }
 
-let nextId = 0;
 const toasts = ref<Toast[]>([]);
+let nextId = 0;
 
-export function useToast() {
-  function add(type: Toast["type"], message: string) {
-    const id = nextId++;
-    toasts.value = [...toasts.value, { id, type, message }];
+function add(toast: Omit<Toast, 'id'>) {
+  const id = nextId++;
+  const duration = toast.duration ?? 4000;
+  toasts.value.push({ ...toast, id } as Toast);
 
-    setTimeout(() => {
-      toasts.value = toasts.value.filter((t) => t.id !== id);
-    }, 4000);
+  if (duration > 0) {
+    setTimeout(() => remove(id), duration);
   }
 
-  return {
-    toasts,
-    success: (message: string) => add("success", message),
-    error: (message: string) => add("error", message),
-    warning: (message: string) => add("warning", message),
-    info: (message: string) => add("info", message),
-  };
+  return id;
+}
+
+function remove(id: number) {
+  toasts.value = toasts.value.filter(t => t.id !== id);
+}
+
+function success(message: string, title?: string) {
+  return add({ type: 'success', message, title });
+}
+
+function error(message: string, title?: string) {
+  return add({ type: 'error', message, title });
+}
+
+function warning(message: string, title?: string) {
+  return add({ type: 'warning', message, title });
+}
+
+function info(message: string, title?: string) {
+  return add({ type: 'info', message, title });
+}
+
+export function useToast() {
+  return { toasts, add, remove, success, error, warning, info };
 }

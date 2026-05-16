@@ -1,107 +1,137 @@
 <template>
-  <NuxtLayout name="auth">
-    <!-- Step: credentials -->
-    <template v-if="step === 'credentials'">
-      <h2>Entrar na sua conta</h2>
-      <div class="sub">Bem-vindo de volta. Continue de onde parou.</div>
-
-      <form @submit.prevent="handleLogin">
-        <div class="row">
-          <label class="field-label" for="email">Email</label>
-          <input
-            id="email"
-            v-model="email"
-            class="input"
-            type="email"
-            autocomplete="email"
-            required
-          />
-        </div>
-
-        <div class="row">
-          <label class="field-label" for="password">Senha</label>
-          <input
-            id="password"
-            v-model="password"
-            class="input"
-            type="password"
-            autocomplete="current-password"
-            required
-          />
-        </div>
-
-        <div class="options">
-          <label>
-            <input v-model="remember" type="checkbox" />
-            Lembrar de mim
-          </label>
-          <NuxtLink to="/forgot-password">Esqueci a senha</NuxtLink>
-        </div>
-
-        <p v-if="error" class="form-alert" role="alert">{{ error }}</p>
-
-        <button class="btn primary lg" type="submit" :disabled="loading">
-          <span>{{ loading ? "Identificando..." : "Entrar" }}</span>
-          <ArrowRight v-if="!loading" :size="16" />
-          <LoaderCircle v-else class="spin" :size="16" />
-        </button>
-      </form>
-
-      <p class="terms">
-        Ao entrar, você aceita nossos
-        <a href="#">termos de uso</a>
-        e
-        <a href="#">política de privacidade</a>.
-      </p>
-    </template>
-
-    <!-- Step: 2FA -->
-    <template v-else-if="step === '2fa'">
-      <h2>Verificação em duas etapas</h2>
-      <div class="sub">
-        {{ authType === 'admin' ? 'Acesso Super Admin — d' : 'D' }}igite o código do seu aplicativo autenticador.
+  <div class="login-shell">
+    <div class="login-left">
+      <div class="login-brand">
+        <img src="/karis-atende-wordmark-blue.png" alt="Karis Atende" class="login-wordmark" />
       </div>
 
-      <form @submit.prevent="handleLogin">
-        <div class="row">
-          <label class="field-label" for="totp">Código 2FA</label>
-          <input
-            id="totp"
-            v-model="totpCode"
-            class="input"
-            type="text"
-            inputmode="numeric"
-            maxlength="6"
-            placeholder="000000"
-            autocomplete="one-time-code"
-            required
-          />
+      <div class="login-form-wrap">
+        <template v-if="step === 'credentials'">
+          <h1 class="login-title">Entrar na sua conta</h1>
+          <p class="login-sub">Bem-vindo de volta. Continue de onde parou.</p>
+
+          <form class="login-form" @submit.prevent="handleLogin">
+            <div class="form-group">
+              <label class="form-label" for="email">Email</label>
+              <input
+                id="email"
+                v-model="email"
+                class="form-input"
+                type="email"
+                autocomplete="email"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="password">Senha</label>
+              <input
+                id="password"
+                v-model="password"
+                class="form-input"
+                type="password"
+                autocomplete="current-password"
+                required
+              />
+            </div>
+
+            <div class="form-options">
+              <label class="checkbox-label">
+                <input v-model="remember" type="checkbox" />
+                <span>Lembrar de mim</span>
+              </label>
+              <NuxtLink to="/forgot-password" class="form-link">Esqueci a senha</NuxtLink>
+            </div>
+
+            <p v-if="error" class="form-alert" role="alert">{{ error }}</p>
+
+            <button class="btn-login" type="submit" :disabled="loading">
+              <span>{{ loading ? "Identificando..." : "Entrar" }}</span>
+              <Icon v-if="!loading" name="arrowRight" :size="16" />
+              <Icon v-else name="loader" :size="16" className="spin" />
+            </button>
+          </form>
+
+          <p class="login-terms">
+            Ao entrar, você aceita nossos
+            <a href="#">termos de uso</a>
+            e
+            <a href="#">política de privacidade</a>.
+          </p>
+        </template>
+
+        <template v-else-if="step === '2fa'">
+          <h1 class="login-title">Verificação em duas etapas</h1>
+          <p class="login-sub">
+            {{ authType === 'admin' ? 'Acesso Super Admin — ' : '' }}Digite o código do seu aplicativo autenticador.
+          </p>
+
+          <form class="login-form" @submit.prevent="handleLogin">
+            <div class="form-group">
+              <label class="form-label" for="totp">Código 2FA</label>
+              <input
+                id="totp"
+                v-model="totpCode"
+                class="form-input"
+                type="text"
+                inputmode="numeric"
+                maxlength="6"
+                placeholder="000000"
+                autocomplete="one-time-code"
+                required
+              />
+            </div>
+
+            <p v-if="error" class="form-alert" role="alert">{{ error }}</p>
+
+            <button class="btn-login" type="submit" :disabled="loading">
+              <span>{{ loading ? "Verificando..." : "Verificar" }}</span>
+              <Icon v-if="!loading" name="shield" :size="16" />
+              <Icon v-else name="loader" :size="16" className="spin" />
+            </button>
+
+            <button
+              type="button"
+              class="btn-login-ghost"
+              @click="resetToCredentials"
+            >
+              Voltar
+            </button>
+          </form>
+        </template>
+      </div>
+    </div>
+
+    <div class="login-right">
+      <div class="login-right-content">
+        <div class="login-right-badge">
+          <Icon name="zap" :size="16" />
+          <span>Atendimento inteligente com IA</span>
         </div>
-
-        <p v-if="error" class="form-alert" role="alert">{{ error }}</p>
-
-        <button class="btn primary lg" type="submit" :disabled="loading">
-          <span>{{ loading ? "Verificando..." : "Verificar" }}</span>
-          <ShieldCheck v-if="!loading" :size="16" />
-          <LoaderCircle v-else class="spin" :size="16" />
-        </button>
-
-        <button
-          type="button"
-          class="btn ghost lg"
-          style="margin-top: 0.5rem; width: 100%"
-          @click="resetToCredentials"
-        >
-          Voltar
-        </button>
-      </form>
-    </template>
-  </NuxtLayout>
+        <h2 class="login-right-title">Transforme seu atendimento com automação e inteligência artificial</h2>
+        <p class="login-right-desc">
+          Conecte seu WhatsApp, configure seu agente IA e acompanhe tudo em um só lugar.
+        </p>
+        <div class="login-right-stats">
+          <div class="login-stat">
+            <div class="login-stat-value">98%</div>
+            <div class="login-stat-label">Satisfação dos clientes</div>
+          </div>
+          <div class="login-stat">
+            <div class="login-stat-value">3x</div>
+            <div class="login-stat-label">Mais rápido que atendimento manual</div>
+          </div>
+          <div class="login-stat">
+            <div class="login-stat-value">24/7</div>
+            <div class="login-stat-label">Disponibilidade do agente IA</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ArrowRight, LoaderCircle, ShieldCheck } from "lucide-vue-next";
-
 definePageMeta({ layout: false, middleware: undefined });
 
 const route = useRoute();
@@ -110,13 +140,11 @@ const adminApi = useAdminApi();
 const auth = useAuthStore();
 const superAdmin = useSuperAdminStore();
 
-// Form state
 const email = ref("");
 const password = ref("");
 const remember = ref(true);
 const totpCode = ref("");
 
-// UI state
 const loading = ref(false);
 const error = ref("");
 const step = ref<"credentials" | "2fa">("credentials");
@@ -141,7 +169,6 @@ async function handleLogin() {
         await loginAdmin(true);
       }
     } else {
-      // Try tenant first, then admin on failure
       const tenantOk = await loginTenant(false);
       if (!tenantOk) {
         await loginAdmin(false);
@@ -152,7 +179,6 @@ async function handleLogin() {
   }
 }
 
-/** Attempt tenant login. Returns true if login succeeded or 2FA step was entered. */
 async function loginTenant(with2FA: boolean): Promise<boolean> {
   try {
     const body: Record<string, string> = {
@@ -186,17 +212,14 @@ async function loginTenant(with2FA: boolean): Promise<boolean> {
 
     return false;
   } catch (e: any) {
-    // If we're in 2FA mode for tenant, show the error directly
     if (with2FA) {
       error.value = e?.data?.message || "Código inválido. Tente novamente.";
       return false;
     }
-    // Otherwise, let caller try admin
     return false;
   }
 }
 
-/** Attempt admin (Super Admin) login. Shows final error if this also fails. */
 async function loginAdmin(with2FA: boolean): Promise<boolean> {
   try {
     const body: Record<string, string> = {
@@ -237,3 +260,251 @@ async function loginAdmin(with2FA: boolean): Promise<boolean> {
   }
 }
 </script>
+
+<style scoped>
+.login-shell {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+}
+
+@media (max-width: 900px) {
+  .login-shell {
+    grid-template-columns: 1fr;
+  }
+  .login-right {
+    display: none;
+  }
+}
+
+.login-left {
+  display: flex;
+  flex-direction: column;
+  padding: 32px;
+  background: var(--ka-surface);
+}
+
+.login-brand {
+  margin-bottom: 40px;
+}
+
+.login-wordmark {
+  height: 32px;
+  width: auto;
+}
+
+.login-form-wrap {
+  max-width: 400px;
+  width: 100%;
+}
+
+.login-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ka-fg);
+  margin: 0 0 8px;
+}
+
+.login-sub {
+  font-size: 15px;
+  color: var(--ka-fg-2);
+  margin: 0 0 32px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ka-fg-2);
+}
+
+.form-input {
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--ka-border);
+  border-radius: var(--ka-r-md);
+  background: var(--ka-surface);
+  font-size: 15px;
+  color: var(--ka-fg);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-input:focus {
+  border-color: var(--ka-brand);
+  box-shadow: 0 0 0 3px var(--ka-brand-alpha);
+}
+
+.form-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ka-fg-2);
+  cursor: pointer;
+}
+
+.form-link {
+  color: var(--ka-brand);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.form-link:hover {
+  text-decoration: underline;
+}
+
+.form-alert {
+  padding: 12px 14px;
+  border: 1px solid var(--ka-danger);
+  border-radius: var(--ka-r-md);
+  background: var(--ka-danger-alpha);
+  color: var(--ka-danger);
+  font-size: 13px;
+  margin: 0;
+}
+
+.btn-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 24px;
+  border: none;
+  border-radius: var(--ka-r-md);
+  background: var(--ka-brand);
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-login:hover:not(:disabled) {
+  background: var(--ka-brand-dark);
+}
+
+.btn-login:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-login-ghost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 24px;
+  border: 1px solid var(--ka-border);
+  border-radius: var(--ka-r-md);
+  background: transparent;
+  color: var(--ka-fg-2);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.btn-login-ghost:hover {
+  background: var(--ka-gray-50);
+  color: var(--ka-fg);
+}
+
+.login-terms {
+  font-size: 12px;
+  color: var(--ka-fg-3);
+  margin-top: 24px;
+}
+
+.login-terms a {
+  color: var(--ka-brand);
+  text-decoration: none;
+}
+
+.login-terms a:hover {
+  text-decoration: underline;
+}
+
+.login-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  background: linear-gradient(135deg, var(--ka-brand) 0%, var(--ka-brand-dark) 100%);
+  color: white;
+}
+
+.login-right-content {
+  max-width: 480px;
+}
+
+.login-right-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 24px;
+}
+
+.login-right-title {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 16px;
+}
+
+.login-right-desc {
+  font-size: 16px;
+  line-height: 1.5;
+  opacity: 0.85;
+  margin: 0 0 40px;
+}
+
+.login-right-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.login-stat-value {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.login-stat-label {
+  font-size: 13px;
+  opacity: 0.75;
+  margin-top: 4px;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+</style>

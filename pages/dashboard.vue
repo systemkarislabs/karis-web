@@ -56,15 +56,15 @@
           </span>
           <span v-else class="kpi-note" :class="kpi.noteClass">{{ kpi.note }}</span>
         </div>
-        <svg v-if="kpi.sparkData.length > 1" class="kpi-spark" viewBox="0 0 100 40" preserveAspectRatio="none">
+        <svg v-if="kpi.sparkData.length > 1 && kpi.sparkData.some(v => v > 0)" class="kpi-spark" viewBox="0 0 100 40" preserveAspectRatio="none">
           <defs>
             <linearGradient :id="`sg-${kpi.label}`" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stop-color="var(--ka-brand)" stop-opacity="0.18" />
-              <stop offset="100%" stop-color="var(--ka-brand)" stop-opacity="0" />
+              <stop offset="0%" stop-color="#2D5BFF" stop-opacity="0.15" />
+              <stop offset="100%" stop-color="#2D5BFF" stop-opacity="0" />
             </linearGradient>
           </defs>
           <polygon :points="sparkArea(kpi.sparkData)" :fill="`url(#sg-${kpi.label})`" />
-          <polyline fill="none" stroke="var(--ka-brand)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+          <polyline fill="none" stroke="#2D5BFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
             :points="sparkLine(kpi.sparkData)" />
         </svg>
       </div>
@@ -89,22 +89,19 @@
           <div v-for="i in 7" :key="i" :style="`flex:1;height:${30+i*20}px;background:var(--ka-gray-100);border-radius:6px 6px 2px 2px;animation:pulse 1.5s infinite;`" />
         </div>
 
-        <div v-else-if="hasChartData" style="display:flex;align-items:flex-end;gap:6px;height:214px;padding-bottom:24px;position:relative;">
-          <div v-for="day in chartDays" :key="day.day" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <div v-else-if="hasChartData" style="display:flex;align-items:flex-end;gap:6px;height:200px;padding-bottom:20px;position:relative;">
+          <div v-for="day in chartDays" :key="day.day" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
             <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;flex:1;gap:2px;width:100%;">
               <div
-                :style="`width:100%;background:var(--ka-brand);border-radius:6px 6px 2px 2px;transition:height 300ms;`"
+                :style="`width:100%;background:var(--ka-brand);border-radius:4px 4px 2px 2px;height:${barH(day.inbound)};transition:height 300ms;`"
                 :title="`${day.inbound} recebidas`"
-                :class="{ 'h-0': !day.inbound }"
-                :style2="barH(day.inbound)"
-                v-bind="{ style: `width:100%;background:var(--ka-brand);border-radius:6px 6px 2px 2px;height:${barH(day.inbound)};` }"
               />
               <div
                 :style="`width:100%;background:var(--ka-bot);border-radius:2px;height:${barH(day.ai)};`"
                 :title="`${day.ai} IA`"
               />
             </div>
-            <small style="font-size:10px;color:var(--ka-fg-muted);">{{ shortDay(day.day) }}</small>
+            <small style="font-size:10px;color:var(--ka-fg-muted);margin-top:4px;">{{ shortDay(day.day) }}</small>
           </div>
         </div>
 

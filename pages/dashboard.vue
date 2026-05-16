@@ -21,35 +21,41 @@
 
       <section class="dashboard-shortcuts">
         <button class="dashboard-shortcut" type="button" @click="navigateTo('/inbox')">
-          <span><MessageSquare class="h-5 w-5" /></span>
-          <strong>Nova conversa</strong>
-          <small>Abrir chat com novo contato</small>
+          <span class="dashboard-shortcut-ico"><MessageSquare class="h-5 w-5" /></span>
+          <span class="dashboard-shortcut-text">
+            <strong>Nova conversa</strong>
+            <small>Abrir chat com novo contato</small>
+          </span>
         </button>
         <button class="dashboard-shortcut" type="button" @click="navigateTo('/crm')">
-          <span><Kanban class="h-5 w-5" /></span>
-          <strong>Ver pipeline</strong>
-          <small>{{ overview?.contacts?.newLast7d ?? 0 }} leads em aberto</small>
+          <span class="dashboard-shortcut-ico"><Kanban class="h-5 w-5" /></span>
+          <span class="dashboard-shortcut-text">
+            <strong>Ver pipeline</strong>
+            <small>{{ overview?.contacts?.newLast7d ?? 0 }} leads em aberto</small>
+          </span>
         </button>
         <button class="dashboard-shortcut" type="button" @click="navigateTo('/agent')">
-          <span><Sparkles class="h-5 w-5" /></span>
-          <strong>Treinar a IA</strong>
-          <small>Adicionar documentos</small>
+          <span class="dashboard-shortcut-ico"><Sparkles class="h-5 w-5" /></span>
+          <span class="dashboard-shortcut-text">
+            <strong>Treinar a IA</strong>
+            <small>Adicionar documentos</small>
+          </span>
         </button>
       </section>
 
       <section class="dashboard-kpis">
         <article v-for="kpi in kpis" :key="kpi.label" class="dashboard-kpi">
-          <span class="dashboard-kpi-icon">
-            <component :is="kpi.icon" class="h-5 w-5" :stroke-width="1.9" />
-          </span>
-          <p>{{ kpi.label }}</p>
-          <Skeleton v-if="loading" class="mt-3" height="2.2rem" width="6rem" />
-          <strong v-else>{{ kpi.value }}</strong>
-          <small v-if="kpi.trend" :class="kpi.trend > 0 ? 'is-positive' : kpi.trend < 0 ? 'is-negative' : ''">
-            {{ kpi.trend > 0 ? '↑' : '↓' }} {{ kpi.trendLabel }}
-          </small>
-          <small v-else :class="kpi.noteClass">{{ kpi.note }}</small>
-          <Sparkline v-if="!loading && kpi.sparkData.length > 1" :data="kpi.sparkData" :color="kpi.trend < 0 ? 'var(--ka-danger)' : 'var(--ka-brand)'" class="dashboard-kpi-sparkline" />
+          <p class="dashboard-kpi-label">{{ kpi.label }}</p>
+          <Skeleton v-if="loading" class="mt-3" height="2rem" width="7rem" />
+          <strong v-else class="dashboard-kpi-value">{{ kpi.value }}</strong>
+          <div class="dashboard-kpi-delta">
+            <span v-if="kpi.trend" class="kpi-badge" :class="kpi.trend > 0 ? 'is-success' : 'is-danger'">
+              <component :is="kpi.trend > 0 ? TrendingUp : TrendingDown" class="h-3 w-3" />
+              {{ kpi.trendLabel }}
+            </span>
+            <span v-else class="kpi-note" :class="kpi.noteClass">{{ kpi.note }}</span>
+          </div>
+          <Sparkline v-if="!loading && kpi.sparkData.length > 1" :data="kpi.sparkData" :color="kpi.trend < 0 ? 'var(--ka-danger)' : 'var(--ka-brand)'" class="dashboard-kpi-spark" />
         </article>
       </section>
 
@@ -128,7 +134,7 @@
 </template>
 
 <script setup lang="ts">
-import { BarChart3, Bot, Kanban, MessageSquare, Plus, RefreshCw, Sparkles, UserPlus, Users } from "lucide-vue-next";
+import { BarChart3, Bot, Kanban, MessageSquare, Plus, RefreshCw, Sparkles, TrendingDown, TrendingUp, UserPlus, Users } from "lucide-vue-next";
 
 definePageMeta({ layout: false, middleware: "auth" });
 

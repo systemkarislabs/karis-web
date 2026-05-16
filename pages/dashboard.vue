@@ -5,7 +5,7 @@
         <div>
           <p class="dashboard-eyebrow">Dashboard</p>
           <h1>Boa {{ greeting }}, {{ auth.user?.name?.split(" ")?.[0] || "time" }} ✳</h1>
-          <p>Aqui tá tudo sob controle. Hoje seu time já resolveu {{ overview?.conversations?.resolved ?? 0 }} conversas.</p>
+          <p>Aqui tá tudo sob controle. Hoje seu time já resolveu {{ overview?.conversations?.closed ?? 0 }} conversas.</p>
         </div>
         <div class="dashboard-actions">
           <Button variant="secondary" size="sm" @click="refresh">
@@ -163,6 +163,7 @@ const kpis = computed(() => {
   const successRate  = Number(overview.value?.ai?.successRate ?? 0);
   const newLeads     = Number(overview.value?.contacts?.newLast7d ?? 0);
   const convToday    = Number(overview.value?.conversations?.today ?? 0);
+  const convOpen     = Number(overview.value?.conversations?.open ?? 0);
   const contacts     = Number(stats.value?.stats?.contacts ?? 0);
   const convTrend    = trendPct(inboundSpark.value);
   const aiTrend      = trendPct(aiSpark.value);
@@ -171,8 +172,8 @@ const kpis = computed(() => {
     {
       label: "Conversas hoje",
       value: String(convToday),
-      note: "Criadas desde 00h",
-      noteClass: "",
+      note: convOpen > 0 ? `${convOpen} em aberto agora` : "Nenhuma em aberto",
+      noteClass: convOpen > 0 ? "is-positive" : "",
       trend: convTrend,
       trendLabel: `${Math.abs(convTrend)}%`,
       sparkData: inboundSpark.value,
@@ -181,8 +182,8 @@ const kpis = computed(() => {
     {
       label: "Contatos",
       value: String(contacts),
-      note: "Base total",
-      noteClass: "",
+      note: newLeads > 0 ? `+${newLeads} nos últimos 7 dias` : "Base total",
+      noteClass: newLeads > 0 ? "is-positive" : "",
       trend: 0,
       trendLabel: "",
       sparkData: [] as number[],
@@ -201,7 +202,7 @@ const kpis = computed(() => {
     {
       label: "Respostas IA",
       value: String(overview.value?.ai?.repliesLast30d ?? 0),
-      note: `${successRate}% de sucesso`,
+      note: successRate > 0 ? `${successRate}% sem intervenção humana` : "Últimos 30 dias",
       noteClass: successRate >= 70 ? "is-positive" : successRate > 0 && successRate < 40 ? "is-negative" : "",
       trend: aiTrend,
       trendLabel: `${Math.abs(aiTrend)}%`,

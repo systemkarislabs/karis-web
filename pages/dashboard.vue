@@ -1,13 +1,13 @@
 <template>
   <NuxtLayout name="default">
-    <div class="dashboard-page">
-      <section class="dashboard-hero">
+    <div class="page">
+      <!-- Header -->
+      <div class="page-header">
         <div>
-          <p class="dashboard-eyebrow">Dashboard</p>
           <h1>Boa {{ greeting }}, {{ auth.user?.name?.split(" ")?.[0] || "time" }} ✳</h1>
-          <p>Aqui tá tudo sob controle. Hoje seu time já resolveu {{ overview?.conversations?.closed ?? 0 }} conversas.</p>
+          <div class="sub">Aqui tá tudo sob controle. Hoje seu time já resolveu {{ overview?.conversations?.closed ?? 0 }} conversas.</div>
         </div>
-        <div class="dashboard-actions">
+        <div style="display:flex;gap:8px;">
           <Button variant="secondary" size="sm" @click="refresh">
             <RefreshCw class="h-4 w-4" />
             Atualizar
@@ -17,38 +17,40 @@
             Nova conversa
           </Button>
         </div>
-      </section>
+      </div>
 
-      <section class="dashboard-shortcuts">
-        <button class="dashboard-shortcut" type="button" @click="navigateTo('/inbox')">
-          <span class="dashboard-shortcut-ico"><MessageSquare class="h-5 w-5" /></span>
-          <span class="dashboard-shortcut-text">
-            <strong>Nova conversa</strong>
-            <small>Abrir chat com novo contato</small>
-          </span>
+      <!-- Quick actions -->
+      <div class="quick-actions">
+        <button class="quick" type="button" @click="navigateTo('/inbox')">
+          <div class="ico"><MessageSquare class="h-5 w-5" /></div>
+          <div>
+            <div class="title">Nova conversa</div>
+            <div class="desc">Abrir chat com novo contato</div>
+          </div>
         </button>
-        <button class="dashboard-shortcut" type="button" @click="navigateTo('/crm')">
-          <span class="dashboard-shortcut-ico"><Kanban class="h-5 w-5" /></span>
-          <span class="dashboard-shortcut-text">
-            <strong>Ver pipeline</strong>
-            <small>{{ overview?.contacts?.newLast7d ?? 0 }} leads em aberto</small>
-          </span>
+        <button class="quick" type="button" @click="navigateTo('/crm')">
+          <div class="ico"><Kanban class="h-5 w-5" /></div>
+          <div>
+            <div class="title">Ver pipeline</div>
+            <div class="desc">{{ overview?.contacts?.newLast7d ?? 0 }} leads em aberto</div>
+          </div>
         </button>
-        <button class="dashboard-shortcut" type="button" @click="navigateTo('/agent')">
-          <span class="dashboard-shortcut-ico"><Sparkles class="h-5 w-5" /></span>
-          <span class="dashboard-shortcut-text">
-            <strong>Treinar a IA</strong>
-            <small>Adicionar documentos</small>
-          </span>
+        <button class="quick" type="button" @click="navigateTo('/agent')">
+          <div class="ico"><Sparkles class="h-5 w-5" /></div>
+          <div>
+            <div class="title">Treinar a IA</div>
+            <div class="desc">Adicionar documentos</div>
+          </div>
         </button>
-      </section>
+      </div>
 
-      <section class="dashboard-kpis">
-        <article v-for="kpi in kpis" :key="kpi.label" class="dashboard-kpi">
-          <p class="dashboard-kpi-label">{{ kpi.label }}</p>
+      <!-- KPIs -->
+      <div class="kpi-grid">
+        <div v-for="kpi in kpis" :key="kpi.label" class="kpi">
+          <div class="label">{{ kpi.label }}</div>
           <Skeleton v-if="loading" class="mt-3" height="2rem" width="7rem" />
-          <strong v-else class="dashboard-kpi-value">{{ kpi.value }}</strong>
-          <div class="dashboard-kpi-delta">
+          <div v-else class="value">{{ kpi.value }}</div>
+          <div class="delta">
             <span v-if="kpi.trend" class="kpi-badge" :class="kpi.trend > 0 ? 'is-success' : 'is-danger'">
               <component :is="kpi.trend > 0 ? TrendingUp : TrendingDown" class="h-3 w-3" />
               {{ kpi.trendLabel }}
@@ -56,23 +58,22 @@
             <span v-else class="kpi-note" :class="kpi.noteClass">{{ kpi.note }}</span>
           </div>
           <Sparkline v-if="!loading && kpi.sparkData.length > 1" :data="kpi.sparkData" :color="kpi.trend < 0 ? 'var(--ka-danger)' : 'var(--ka-brand)'" class="dashboard-kpi-spark" />
-        </article>
-      </section>
+        </div>
+      </div>
 
-      <section class="dashboard-content-grid">
-        <article class="dashboard-panel dashboard-chart-panel">
-          <div class="dashboard-panel-header">
+      <!-- Chart + Recent -->
+      <div class="dashboard-row">
+        <div class="card chart-card">
+          <div class="header">
             <div>
-              <h2>Mensagens por dia</h2>
-              <p>Entrada, IA e atendimento humano nos últimos 7 dias.</p>
+              <h3>Mensagens por dia</h3>
+              <div style="font-size:12px;color:var(--ka-fg-muted);margin-top:2px;">Entrada, IA e atendimento humano nos últimos 7 dias.</div>
             </div>
-            <div class="dashboard-legend" aria-label="Legenda do gráfico">
-              <span><i class="is-inbound" /> Recebidas</span>
-              <span><i class="is-ai" /> IA</span>
-              <span><i class="is-human" /> Humano</span>
+            <div class="switch">
+              <span>Semana</span>
+              <span class="on">Mês</span>
             </div>
           </div>
-
           <div v-if="loading" class="space-y-3">
             <Skeleton v-for="i in 6" :key="i" height="2.5rem" />
           </div>
@@ -94,41 +95,38 @@
             </div>
           </div>
           <EmptyState v-else :icon="BarChart3" title="Sem mensagens no período" description="Quando houver conversas no backend, o volume aparece aqui." />
-        </article>
+        </div>
 
-        <article class="dashboard-panel dashboard-recent-panel">
-          <div class="dashboard-panel-header">
-            <div>
-              <h2>Conversas recentes</h2>
-              <p>Últimos atendimentos atualizados.</p>
-            </div>
+        <div class="card recent-list">
+          <div class="header">
+            <h3>Conversas recentes</h3>
             <Button variant="ghost" size="sm" @click="navigateTo('/inbox')">Ver todas</Button>
           </div>
-          <div v-if="loading" class="space-y-3">
+          <div v-if="loading" class="space-y-3" style="padding:16px;">
             <Skeleton v-for="i in 5" :key="i" height="3.5rem" />
           </div>
-          <div v-else-if="conversations.length" class="dashboard-conversation-list">
-            <button
+          <template v-else-if="conversations.length">
+            <div
               v-for="conv in conversations.slice(0, 6)"
               :key="conv.id"
-              class="dashboard-conversation"
-              type="button"
+              class="row"
+              style="cursor:pointer;"
               @click="navigateTo(`/inbox?conversation=${conv.id}`)"
             >
               <Avatar :name="conv.contact?.name || conv.contact?.phone" size="sm" />
-              <span>
-                <strong>{{ conv.contact?.name || conv.contact?.phone || "Contato" }}</strong>
-                <small>{{ conv.lastMessage?.content || "Sem mensagens ainda" }}</small>
-              </span>
-              <div class="dashboard-conv-meta">
-                <em>{{ relativeTime(conv.updatedAt) }}</em>
-                <b v-if="conv.unreadCount" class="dashboard-unread">{{ conv.unreadCount }}</b>
+              <div style="flex:1;min-width:0;">
+                <div class="name">{{ conv.contact?.name || conv.contact?.phone || "Contato" }}</div>
+                <div class="preview">{{ conv.lastMessage?.content || "Sem mensagens ainda" }}</div>
               </div>
-            </button>
-          </div>
-          <EmptyState v-else :icon="MessageSquare" title="Nenhuma conversa aberta" description="Conecte o WhatsApp ou treine a IA para iniciar a operação." action-label="Treinar a IA" action-link="/agent" />
-        </article>
-      </section>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+                <span class="when">{{ relativeTime(conv.updatedAt) }}</span>
+                <span v-if="conv.unreadCount" style="font-size:10px;font-weight:700;background:var(--ka-brand);color:#fff;border-radius:999px;padding:2px 7px;">{{ conv.unreadCount }}</span>
+              </div>
+            </div>
+          </template>
+          <EmptyState v-else :icon="MessageSquare" title="Nenhuma conversa aberta" description="Conecte o WhatsApp ou treine a IA para iniciar a operação." action-label="Treinar a IA" action-link="/agent" style="padding:2rem;" />
+        </div>
+      </div>
     </div>
   </NuxtLayout>
 </template>
@@ -183,7 +181,6 @@ const kpis = computed(() => {
       trend: convTrend,
       trendLabel: `${Math.abs(convTrend)}%`,
       sparkData: inboundSpark.value,
-      icon: MessageSquare,
     },
     {
       label: "Contatos",
@@ -193,7 +190,6 @@ const kpis = computed(() => {
       trend: 0,
       trendLabel: "",
       sparkData: [] as number[],
-      icon: Users,
     },
     {
       label: "Leads novos",
@@ -203,7 +199,6 @@ const kpis = computed(() => {
       trend: 0,
       trendLabel: "",
       sparkData: chartDays.value.map((d: any) => Number(d.total || 0)),
-      icon: UserPlus,
     },
     {
       label: "Respostas IA",
@@ -213,7 +208,6 @@ const kpis = computed(() => {
       trend: aiTrend,
       trendLabel: `${Math.abs(aiTrend)}%`,
       sparkData: aiSpark.value,
-      icon: Bot,
     },
   ];
 });

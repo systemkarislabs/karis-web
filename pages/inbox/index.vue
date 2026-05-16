@@ -1,980 +1,562 @@
 <template>
-  <div class="inbox-shell">
+  <div class="inbox-page">
+    <!-- Filters column -->
     <aside class="inbox-filters">
-      <div class="inbox-filters-header">
-        <h2 class="inbox-filters-title">Filtros</h2>
-        <Button variant="ghost" size="icon" @click="showFilters = !showFilters">
-          <Icon name="filter" :size="16" />
-        </Button>
+      <h4>Caixa</h4>
+      <div
+        v-for="f in filters"
+        :key="f.key"
+        class="item"
+        :class="{ active: activeFilter === f.key }"
+        @click="activeFilter = f.key"
+      >
+        <span style="flex:1;">{{ f.label }}</span>
+        <span class="count">{{ f.count }}</span>
       </div>
-      <div class="inbox-filter-group">
-        <p class="inbox-filter-label">Caixa</p>
-        <button v-for="filter in filters" :key="filter.key" class="inbox-filter-btn" :class="{ 'inbox-filter-btn-active': activeFilter === filter.key }" type="button" @click="activeFilter = filter.key">
-          <span>{{ filter.label }}</span>
-          <span class="inbox-filter-count">{{ filter.count }}</span>
-        </button>
-      </div>
-      <div class="inbox-filter-group">
-        <p class="inbox-filter-label">Status</p>
-        <button v-for="status in statusFilters" :key="status.key" class="inbox-filter-btn" :class="{ 'inbox-filter-btn-active': activeFilter === status.key }" type="button" @click="activeFilter = status.key">
-          <span>{{ status.label }}</span>
-          <span class="inbox-filter-count">{{ status.count }}</span>
-        </button>
+
+      <h4>Status</h4>
+      <div
+        v-for="f in statusFilters"
+        :key="f.key"
+        class="item"
+        :class="{ active: activeFilter === f.key }"
+        @click="activeFilter = f.key"
+      >
+        <span style="flex:1;">{{ f.label }}</span>
+        <span class="count">{{ f.count }}</span>
       </div>
     </aside>
 
-    <section class="inbox-list">
-      <div class="inbox-list-header">
-        <div>
-          <h2>Conversas</h2>
-          <p>{{ filteredConversations.length }} de {{ conversations.length }} atendimentos</p>
+    <!-- Conversation list -->
+    <div class="inbox-list">
+      <div class="list-header">
+        <h3>Conversas</h3>
+        <div style="display:flex;gap:4px;">
+          <button class="icon-btn" style="width:30px;height:30px;border:0;background:transparent;" title="Buscar" @click="searchOpen = !searchOpen">
+            <Icon name="search" :size="15" />
+          </button>
+          <button class="icon-btn" style="width:30px;height:30px;border:0;background:transparent;" title="Atualizar" @click="loadConversations">
+            <Icon name="refresh" :size="15" />
+          </button>
         </div>
-        <Button variant="ghost" size="icon" @click="loadConversations">
-          <Icon name="refresh" :size="16" />
-        </Button>
-      </div>
-      <div class="inbox-search-wrap">
-        <Icon name="search" :size="16" class="inbox-search-icon" />
-        <input v-model="search" class="inbox-search-input" placeholder="Buscar contato ou mensagem" />
       </div>
 
-      <div class="inbox-list-scroll">
-        <div v-if="loadingConversations" class="inbox-list-skeletons">
-          <Skeleton v-for="i in 8" :key="i" height="76px" />
+      <!-- Search bar (toggleable) -->
+      <div v-if="searchOpen" style="padding:8px 12px;border-bottom:1px solid var(--ka-border);">
+        <input
+          v-model="search"
+          style="width:100%;height:34px;padding:0 12px;border:1px solid var(--ka-border);border-radius:8px;background:var(--ka-gray-50);font-size:13px;color:var(--ka-fg);outline:none;"
+          placeholder="Buscar contato ou mensagem"
+          autofocus
+        />
+      </div>
+
+      <!-- Skeletons -->
+      <template v-if="loadingConversations">
+        <div v-for="i in 8" :key="i" style="display:flex;gap:10px;padding:14px 16px;border-bottom:1px solid var(--ka-divider);">
+          <div style="width:36px;height:36px;border-radius:9999px;background:var(--ka-gray-100);flex-shrink:0;animation:ib-pulse 1.5s infinite;" />
+          <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+            <div style="height:13px;background:var(--ka-gray-100);border-radius:4px;width:55%;animation:ib-pulse 1.5s infinite;" />
+            <div style="height:11px;background:var(--ka-gray-100);border-radius:4px;width:80%;animation:ib-pulse 1.5s infinite;" />
+          </div>
         </div>
-        <button
-          v-for="conv in filteredConversations"
-          v-else
-          :key="conv.id"
-          class="inbox-thread"
-          :class="{ 'inbox-thread-active': selectedId === conv.id }"
-          type="button"
-          @click="selectConversation(conv.id)"
-        >
-          <Avatar :name="conv.contact?.name || conv.contact?.phone" size="sm" />
-          <div class="inbox-thread-body">
-            <div class="inbox-thread-top">
-              <strong>{{ conv.contact?.name || conv.contact?.phone || "Contato" }}</strong>
-              <time>{{ relativeTime(conv.updatedAt) }}</time>
-            </div>
-            <p class="inbox-thread-preview">{{ conv.lastMessage?.content || "Sem mensagens ainda" }}</p>
-            <div class="inbox-thread-bottom">
-              <span class="inbox-status-badge" :class="`is-${(conv.status || 'open').toLowerCase()}`">{{ statusLabel(conv.status) }}</span>
-              <span v-if="conv.unreadCount" class="inbox-unread-badge">{{ conv.unreadCount }}</span>
-            </div>
-          </div>
-        </button>
-        <EmptyState v-if="!loadingConversations && !filteredConversations.length" icon="message" title="Sem conversas" description="Nenhum atendimento encontrado para este filtro." />
-      </div>
-    </section>
-
-    <section class="inbox-chat">
-      <template v-if="selectedConversation">
-        <header class="inbox-chat-header">
-          <Avatar :name="selectedContact?.name || selectedContact?.phone" size="md" />
-          <div class="inbox-chat-header-info">
-            <h3>{{ selectedContact?.name || selectedContact?.phone || "Contato" }}</h3>
-            <p>{{ selectedContact?.phone || "Telefone não informado" }} · {{ statusLabel(selectedConversation.status) }}</p>
-          </div>
-          <div class="inbox-chat-actions">
-            <Button
-              v-if="selectedConversation.status === 'OPEN'"
-              variant="success"
-              size="sm"
-              :loading="resolving"
-              @click="resolveConversation"
-            >
-              <Icon name="check" :size="16" />
-              Resolver
-            </Button>
-            <Button v-else variant="secondary" size="sm" @click="reopenConversation">
-              <Icon name="refresh" :size="16" />
-              Reabrir
-            </Button>
-            <Button variant="ghost" size="icon" @click="showContactPanel = !showContactPanel">
-              <Icon name="user" :size="18" />
-            </Button>
-          </div>
-        </header>
-
-        <div class="inbox-messages">
-          <div v-if="loadingMessages" class="inbox-messages-skeletons">
-            <Skeleton v-for="i in 7" :key="i" height="52px" />
-          </div>
-          <template v-else>
-            <div
-              v-for="msg in messages"
-              :key="msg.id"
-              class="inbox-msg"
-              :class="msg.direction === 'INBOUND' ? 'inbox-msg-inbound' : msg.senderType === 'AI' ? 'inbox-msg-ai' : 'inbox-msg-outbound'"
-            >
-              <p v-if="msg.senderType === 'AI'" class="inbox-msg-agent">
-                <Icon name="sparkles" :size="14" />
-                IA Karis
-              </p>
-              <p>{{ msg.content }}</p>
-              <time>{{ formatDateTime(msg.createdAt) }}</time>
-            </div>
-
-            <article v-if="lastAiMessage && !dismissedSuggestion" class="inbox-ai-suggestion">
-              <p><Icon name="sparkles" :size="16" /> Sugestão da IA</p>
-              <strong>{{ lastAiMessage.content }}</strong>
-              <div class="inbox-ai-actions">
-                <Button size="sm" @click="draft = lastAiMessage.content; sendMessage()">Aceitar e enviar</Button>
-                <Button variant="secondary" size="sm" @click="draft = lastAiMessage.content">Editar antes</Button>
-                <Button variant="ghost" size="sm" @click="dismissedSuggestion = true">Descartar</Button>
-              </div>
-            </article>
-
-            <EmptyState v-if="!messages.length" icon="message" title="Conversa sem mensagens" description="As mensagens deste atendimento aparecerão aqui." />
-          </template>
-        </div>
-
-        <form class="inbox-composer" @submit.prevent="sendMessage">
-          <div class="inbox-composer-tools">
-            <Button type="button" variant="ghost" size="icon">
-              <Icon name="paperclip" :size="18" />
-            </Button>
-            <Button type="button" variant="ghost" size="icon">
-              <Icon name="smile" :size="18" />
-            </Button>
-            <Button type="button" variant="ghost" size="icon">
-              <Icon name="mic" :size="18" />
-            </Button>
-          </div>
-          <textarea v-model="draft" class="inbox-composer-input" rows="1" placeholder="Digite uma mensagem para o cliente" />
-          <Button type="submit" size="icon" :loading="sending" :disabled="!draft.trim() || sending">
-            <Icon name="send" :size="18" />
-          </Button>
-        </form>
       </template>
 
-      <EmptyState v-else class="inbox-empty" icon="message" title="Selecione uma conversa" description="Escolha um atendimento para ver mensagens e dados do contato." />
-    </section>
-
-    <aside v-if="selectedConversation && showContactPanel" class="inbox-contact-panel">
-      <div class="inbox-contact-panel-header">
-        <h3>Contato</h3>
-        <Button variant="ghost" size="icon" @click="showContactPanel = false">
-          <Icon name="x" :size="16" />
-        </Button>
-      </div>
-
-      <div class="inbox-contact-profile">
-        <Avatar :name="selectedContact?.name || selectedContact?.phone" size="lg" />
-        <h4>{{ selectedContact?.name || "Contato" }}</h4>
-        <p>{{ selectedContact?.phone || "Sem telefone" }}</p>
-      </div>
-
-      <div class="inbox-contact-actions">
-        <Button variant="secondary" size="sm">
-          <Icon name="phone" :size="16" />
-          Ligar
-        </Button>
-        <Button variant="secondary" size="sm">
-          <Icon name="mail" :size="16" />
-          Email
-        </Button>
-      </div>
-
-      <dl class="inbox-contact-details">
-        <div>
-          <dt>Email</dt>
-          <dd>{{ selectedContact?.email || "Não informado" }}</dd>
+      <div
+        v-for="conv in filteredConversations"
+        v-else
+        :key="conv.id"
+        class="conv"
+        :class="{ active: selectedId === conv.id }"
+        @click="selectConversation(conv.id)"
+      >
+        <div class="avatar" :style="`background:${avatarColor(conv.contact?.name || conv.contact?.phone)};width:36px;height:36px;font-size:13px;`">
+          {{ initials(conv.contact?.name || conv.contact?.phone) }}
         </div>
-        <div v-if="selectedContact?.city || selectedContact?.state">
-          <dt>Cidade</dt>
-          <dd>{{ [selectedContact?.city, selectedContact?.state].filter(Boolean).join(", ") }}</dd>
-        </div>
-        <div>
-          <dt>1º contato</dt>
-          <dd>{{ selectedContact?.createdAt ? relativeTime(selectedContact.createdAt) : "Não informado" }}</dd>
-        </div>
-        <div>
-          <dt>Última compra</dt>
-          <dd>{{ selectedContact?.lastPurchaseAt ? formatDate(selectedContact.lastPurchaseAt) : "Sem registro" }}</dd>
-        </div>
-        <div>
-          <dt>Origem</dt>
-          <dd>{{ selectedConversation.channel || "WhatsApp" }}</dd>
-        </div>
-      </dl>
-
-      <div class="inbox-contact-tags">
-        <span v-for="tag in selectedTags" :key="tag" class="inbox-tag">{{ tag }}</span>
-        <span v-if="!selectedTags.length" class="inbox-no-tags">Sem tags</span>
-      </div>
-
-      <div class="inbox-contact-deal-section">
-        <p class="inbox-contact-section-label">Deal em andamento</p>
-        <Skeleton v-if="dealLoading" height="56px" rounded="md" />
-        <div v-else-if="contactDeal" class="inbox-contact-deal" @click="navigateTo('/crm')">
-          <div class="inbox-contact-deal-top">
-            <strong>{{ contactDeal.contact?.name || contactDeal.title }}</strong>
-            <span v-if="contactDeal.aiScore" class="inbox-deal-score">{{ contactDeal.aiScore }}</span>
+        <div class="body">
+          <div class="top-row">
+            <span class="name">{{ conv.contact?.name || conv.contact?.phone || 'Contato' }}</span>
+            <span class="when">{{ relativeTime(conv.updatedAt) }}</span>
           </div>
-          <div class="inbox-contact-deal-meta">
-            <span class="inbox-deal-stage">{{ contactDeal.stage?.name || "—" }}</span>
-            <span v-if="contactDeal.valueCents" class="inbox-deal-value">{{ formatMoney(contactDeal.valueCents) }}</span>
+          <div class="preview">{{ conv.lastMessage?.content || 'Sem mensagens ainda' }}</div>
+          <div class="meta">
+            <span v-if="conv.aiEnabled === false" class="badge neutral" style="height:18px;padding:0 7px;font-size:10px;">humano</span>
+            <span v-else-if="conv.status === 'OPEN'" class="badge success" style="height:18px;padding:0 7px;font-size:10px;"><span class="bdot" />aberta</span>
+            <span v-else-if="conv.status === 'CLOSED'" class="badge neutral" style="height:18px;padding:0 7px;font-size:10px;">fechada</span>
+            <span v-else-if="conv.status === 'SNOOZED'" class="badge warning" style="height:18px;padding:0 7px;font-size:10px;">adiada</span>
+            <span v-if="conv.unreadCount" class="unread">{{ conv.unreadCount }}</span>
           </div>
         </div>
-        <p v-else class="inbox-no-deal">Nenhum deal ativo</p>
       </div>
-    </aside>
+
+      <div v-if="!loadingConversations && !filteredConversations.length" style="padding:40px 20px;text-align:center;color:var(--ka-fg-muted);font-size:13px;">
+        <Icon name="message" :size="28" style="opacity:0.3;display:block;margin:0 auto 8px;" />
+        Nenhuma conversa encontrada.
+      </div>
+    </div>
+
+    <!-- Thread -->
+    <div class="thread" v-if="selectedConversation">
+      <div class="thread-header">
+        <div class="avatar" :style="`background:${avatarColor(selectedContact?.name || selectedContact?.phone)};`">
+          {{ initials(selectedContact?.name || selectedContact?.phone) }}
+        </div>
+        <div class="info">
+          <div class="name">{{ selectedContact?.name || selectedContact?.phone || 'Contato' }}</div>
+          <div class="meta">
+            <span class="dot" style="background:var(--ka-success);" />
+            {{ selectedContact?.phone || 'Sem telefone' }} · {{ selectedConversation.channel || 'WhatsApp' }}
+          </div>
+        </div>
+        <div class="right">
+          <button class="icon-btn" title="Tags"><Icon name="tag" :size="16" /></button>
+          <button v-if="selectedConversation.status === 'OPEN'" class="btn primary sm" :disabled="resolving" @click="resolveConversation">
+            <Icon name="check" :size="14" />
+            {{ resolving ? 'Resolvendo…' : 'Resolver' }}
+          </button>
+          <button v-else class="btn secondary sm" @click="reopenConversation">
+            <Icon name="refresh" :size="14" />
+            Reabrir
+          </button>
+          <button class="icon-btn" title="Painel do contato" @click="showContactPanel = !showContactPanel">
+            <Icon name="user" :size="16" />
+          </button>
+        </div>
+      </div>
+
+      <div class="thread-messages" ref="messagesEl">
+        <!-- Loading -->
+        <template v-if="loadingMessages">
+          <div v-for="i in 6" :key="i" :style="`display:flex;${i%2===0?'justify-content:flex-end;':''}`">
+            <div :style="`width:${120+i*30}px;height:44px;border-radius:12px;background:var(--ka-gray-100);animation:ib-pulse 1.5s infinite;`" />
+          </div>
+        </template>
+
+        <template v-else>
+          <div v-if="!messages.length" style="align-self:center;font-size:13px;color:var(--ka-fg-muted);">
+            <Icon name="message" :size="28" style="opacity:0.3;display:block;margin:0 auto 8px;" />
+            Sem mensagens ainda.
+          </div>
+
+          <template v-for="(msg, i) in messages" :key="msg.id">
+            <!-- Day divider when date changes -->
+            <div
+              v-if="i === 0 || dayOf(messages[i-1].createdAt) !== dayOf(msg.createdAt)"
+              class="day-divider"
+            >{{ dayLabel(msg.createdAt) }}</div>
+
+            <div
+              class="msg"
+              :class="msgClass(msg)"
+            >
+              <div v-if="msg.senderType === 'AI'" class="author">
+                <Icon name="sparkles" :size="11" />
+                IA · Karis
+              </div>
+              {{ msg.content }}
+              <div class="time">
+                <span>{{ timeOf(msg.createdAt) }}</span>
+              </div>
+            </div>
+          </template>
+        </template>
+      </div>
+
+      <!-- Composer -->
+      <div class="composer">
+        <!-- AI suggestion -->
+        <div v-if="lastAiMessage && !dismissedSuggestion" class="ai-suggestion">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(139,92,246,0.16);color:var(--ka-bot);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <Icon name="sparkles" :size="14" />
+          </div>
+          <div style="flex:1;">
+            <div class="label"><Icon name="sparkles" :size="11" />Sugestão da IA</div>
+            <div class="text">{{ lastAiMessage.content }}</div>
+            <div class="actions">
+              <button class="btn primary sm" @click="acceptSuggestion">
+                <Icon name="check" :size="13" />Aceitar e enviar
+              </button>
+              <button class="btn secondary sm" @click="draft = lastAiMessage.content; dismissedSuggestion = true">
+                Editar antes
+              </button>
+              <button class="btn ghost sm" @click="dismissedSuggestion = true">Descartar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="composer-input">
+          <div class="composer-actions">
+            <button class="icon-mini" type="button" title="Anexar"><Icon name="paperclip" :size="16" /></button>
+            <button class="icon-mini" type="button" title="Emoji"><Icon name="smile" :size="16" /></button>
+          </div>
+          <textarea
+            v-model="draft"
+            placeholder="Digite uma mensagem..."
+            rows="1"
+            @keydown.enter.exact.prevent="sendMessage"
+          />
+          <button class="icon-mini" type="button" title="Áudio"><Icon name="mic" :size="16" /></button>
+          <button
+            class="send"
+            type="button"
+            :disabled="!draft.trim() || sending"
+            @click="sendMessage"
+          >
+            <Icon name="send" :size="16" />
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state when no conversation selected -->
+    <div v-else class="thread" style="align-items:center;justify-content:center;">
+      <div style="text-align:center;color:var(--ka-fg-muted);">
+        <Icon name="message" :size="40" style="opacity:0.2;display:block;margin:0 auto 12px;" />
+        <div style="font-size:15px;font-weight:500;margin-bottom:6px;">Selecione uma conversa</div>
+        <div style="font-size:13px;">Escolha um atendimento para ver as mensagens.</div>
+      </div>
+    </div>
+
+    <!-- Contact panel -->
+    <div v-if="showContactPanel && selectedConversation" class="contact-panel">
+      <div class="head">
+        <div class="avatar" :style="`background:${avatarColor(selectedContact?.name || selectedContact?.phone)};width:64px;height:64px;font-size:22px;`">
+          {{ initials(selectedContact?.name || selectedContact?.phone) }}
+        </div>
+        <div class="name">{{ selectedContact?.name || 'Contato' }}</div>
+        <div class="sub">{{ selectedContact?.phone || 'Sem telefone' }}</div>
+        <div class="actions-row">
+          <button class="btn secondary sm"><Icon name="phone" :size="13" />Ligar</button>
+          <button class="btn secondary sm" @click="navigateTo('/contacts')"><Icon name="user" :size="13" />Perfil</button>
+        </div>
+      </div>
+
+      <div class="field-block">
+        <h5>Contato</h5>
+        <div class="kv"><span class="k">Email</span><span class="v">{{ selectedContact?.email || 'Não informado' }}</span></div>
+        <div v-if="selectedContact?.city || selectedContact?.state" class="kv">
+          <span class="k">Cidade</span>
+          <span class="v">{{ [selectedContact?.city, selectedContact?.state].filter(Boolean).join(', ') }}</span>
+        </div>
+        <div class="kv"><span class="k">1º contato</span><span class="v">{{ selectedContact?.createdAt ? relativeTime(selectedContact.createdAt) : 'Não informado' }}</span></div>
+        <div class="kv"><span class="k">Origem</span><span class="v">{{ selectedConversation.channel || 'WhatsApp' }}</span></div>
+      </div>
+
+      <div class="field-block">
+        <h5>Tags</h5>
+        <div class="tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+          <span v-for="tag in selectedTags" :key="tag" class="badge outline" style="font-size:12px;">
+            <span class="bdot" style="background:var(--ka-brand);" />{{ tag }}
+          </span>
+          <span v-if="!selectedTags.length" style="font-size:12px;color:var(--ka-fg-muted);">Sem tags</span>
+        </div>
+      </div>
+
+      <div class="field-block">
+        <h5>Deal em andamento</h5>
+        <div v-if="dealLoading" style="height:56px;border-radius:10px;background:var(--ka-gray-100);animation:ib-pulse 1.5s infinite;margin-top:8px;" />
+        <div v-else-if="contactDeal" class="card" style="padding:12px;margin-top:8px;box-shadow:none;cursor:pointer;" @click="navigateTo('/crm')">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-weight:600;font-size:13px;">{{ contactDeal.contact?.name || contactDeal.title }}</div>
+              <div style="font-size:11px;color:var(--ka-fg-muted);margin-top:2px;">{{ contactDeal.stage?.name || '—' }}</div>
+            </div>
+            <div v-if="contactDeal.valueCents" style="font-weight:700;font-size:15px;color:var(--ka-success);">
+              {{ formatMoney(contactDeal.valueCents) }}
+            </div>
+          </div>
+        </div>
+        <div v-else style="font-size:12px;color:var(--ka-fg-muted);margin-top:8px;">Nenhum deal ativo</div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-definePageMeta({ layout: false, middleware: "auth" });
+import { formatDate, formatDateTime, formatMoney, unwrapList } from '~/composables/useKarisData'
 
-const route = useRoute();
-const api = useApi();
-const toast = useToast();
-const search = ref("");
-const activeFilter = ref("all");
-const conversations = ref<any[]>([]);
-const selectedId = ref<string | null>(typeof route.query.conversation === "string" ? route.query.conversation : null);
-const selectedConversation = ref<any | null>(null);
-const messages = ref<any[]>([]);
-const draft = ref("");
-const loadingConversations = ref(true);
-const loadingMessages = ref(false);
-const sending = ref(false);
-const dismissedSuggestion = ref(false);
-const showContactPanel = ref(true);
-const showFilters = ref(true);
+definePageMeta({ layout: false, middleware: 'auth' })
+
+const route = useRoute()
+const api = useApi()
+const toast = useToast()
+
+const search = ref('')
+const searchOpen = ref(false)
+const activeFilter = ref('all')
+const conversations = ref<any[]>([])
+const selectedId = ref<string | null>(
+  typeof route.query.conversation === 'string' ? route.query.conversation : null
+)
+const selectedConversation = ref<any | null>(null)
+const messages = ref<any[]>([])
+const draft = ref('')
+const loadingConversations = ref(true)
+const loadingMessages = ref(false)
+const sending = ref(false)
+const dismissedSuggestion = ref(false)
+const showContactPanel = ref(true)
+const contactDeal = ref<any | null>(null)
+const dealLoading = ref(false)
+const resolving = ref(false)
+const messagesEl = ref<HTMLElement | null>(null)
+
+const AVATAR_COLORS = ['#5B7FFF', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#EC4899', '#14B8A6']
+
+function avatarColor(name?: string) {
+  if (!name) return AVATAR_COLORS[0]
+  return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length]
+}
+
+function initials(name?: string) {
+  if (!name) return '?'
+  return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
+}
+
+function relativeTime(dateStr: string) {
+  if (!dateStr) return ''
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const min = Math.floor(diff / 60000)
+  if (min < 1) return 'agora'
+  if (min < 60) return `${min}m`
+  const h = Math.floor(min / 60)
+  if (h < 24) return `${h}h`
+  return `${Math.floor(h / 24)}d`
+}
+
+function dayOf(dateStr: string) {
+  return new Date(dateStr).toDateString()
+}
+
+function dayLabel(dateStr: string) {
+  const d = new Date(dateStr)
+  const today = new Date()
+  if (d.toDateString() === today.toDateString()) return 'Hoje'
+  const yesterday = new Date(today)
+  yesterday.setDate(today.getDate() - 1)
+  if (d.toDateString() === yesterday.toDateString()) return 'Ontem'
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+}
+
+function timeOf(dateStr: string) {
+  if (!dateStr) return ''
+  return new Date(dateStr).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+}
+
+function msgClass(msg: any) {
+  if (msg.direction === 'INBOUND') return 'in'
+  if (msg.senderType === 'AI') return 'bot'
+  return 'out'
+}
 
 const filters = computed(() => [
-  { key: "all", label: "Todas", count: conversations.value.length },
-  { key: "open", label: "Abertas", count: conversations.value.filter(c => c.status === "OPEN").length },
-  { key: "unread", label: "Não lidas", count: unreadTotal.value },
-  { key: "human", label: "Com humano", count: conversations.value.filter(c => c.aiEnabled === false).length },
-]);
+  { key: 'all', label: 'Todas', count: conversations.value.length },
+  { key: 'open', label: 'Abertas', count: conversations.value.filter(c => c.status === 'OPEN').length },
+  { key: 'unread', label: 'Não lidas', count: conversations.value.reduce((s, c) => s + Number(c.unreadCount || 0), 0) },
+  { key: 'human', label: 'Com humano', count: conversations.value.filter(c => c.aiEnabled === false).length },
+])
 
 const statusFilters = computed(() => [
-  { key: "closed", label: "Fechadas", count: conversations.value.filter(c => c.status === "CLOSED").length },
-  { key: "snoozed", label: "Adiada", count: conversations.value.filter(c => c.status === "SNOOZED").length },
-]);
+  { key: 'closed', label: 'Fechadas', count: conversations.value.filter(c => c.status === 'CLOSED').length },
+  { key: 'snoozed', label: 'Adiadas', count: conversations.value.filter(c => c.status === 'SNOOZED').length },
+])
 
-const unreadTotal = computed(() => conversations.value.reduce((sum, conv) => sum + Number(conv.unreadCount || 0), 0));
-const selectedContact = computed(() => selectedConversation.value?.contact || conversations.value.find(c => c.id === selectedId.value)?.contact || null);
+const selectedContact = computed(() =>
+  selectedConversation.value?.contact ||
+  conversations.value.find(c => c.id === selectedId.value)?.contact ||
+  null
+)
+
 const selectedTags = computed(() => {
-  const raw = selectedContact.value?.tags || selectedConversation.value?.tags || [];
-  return Array.isArray(raw) ? raw.filter(Boolean).slice(0, 6) : [];
-});
-const lastAiMessage = computed(() => [...messages.value].reverse().find(msg => msg.senderType === "AI"));
+  const raw = selectedContact.value?.tags || selectedConversation.value?.tags || []
+  return Array.isArray(raw) ? raw.filter(Boolean).slice(0, 6) : []
+})
+
+const lastAiMessage = computed(() =>
+  [...messages.value].reverse().find(m => m.senderType === 'AI')
+)
 
 const filteredConversations = computed(() => {
-  const q = search.value.trim().toLowerCase();
+  const q = search.value.trim().toLowerCase()
   return conversations.value.filter(conv => {
-    if (activeFilter.value === "open" && conv.status !== "OPEN") return false;
-    if (activeFilter.value === "closed" && conv.status !== "CLOSED") return false;
-    if (activeFilter.value === "snoozed" && conv.status !== "SNOOZED") return false;
-    if (activeFilter.value === "unread" && !conv.unreadCount) return false;
-    if (activeFilter.value === "human" && conv.aiEnabled !== false) return false;
-    if (!q) return true;
-    return `${conv.contact?.name || ""} ${conv.contact?.phone || ""} ${conv.lastMessage?.content || ""}`.toLowerCase().includes(q);
-  });
-});
+    if (activeFilter.value === 'open' && conv.status !== 'OPEN') return false
+    if (activeFilter.value === 'closed' && conv.status !== 'CLOSED') return false
+    if (activeFilter.value === 'snoozed' && conv.status !== 'SNOOZED') return false
+    if (activeFilter.value === 'unread' && !conv.unreadCount) return false
+    if (activeFilter.value === 'human' && conv.aiEnabled !== false) return false
+    if (!q) return true
+    return `${conv.contact?.name || ''} ${conv.contact?.phone || ''} ${conv.lastMessage?.content || ''}`.toLowerCase().includes(q)
+  })
+})
 
 async function loadConversations() {
-  loadingConversations.value = true;
+  loadingConversations.value = true
   try {
-    const res = await api.fetch<any>("/conversations?limit=100");
-    conversations.value = unwrapList(res, ["conversations"]);
-    if (!selectedId.value && conversations.value[0]) selectedId.value = conversations.value[0].id;
-    if (selectedId.value) await selectConversation(selectedId.value);
+    const res = await api.fetch<any>('/conversations?limit=100')
+    conversations.value = unwrapList(res, ['conversations'])
+    if (!selectedId.value && conversations.value[0]) selectedId.value = conversations.value[0].id
+    if (selectedId.value) await selectConversation(selectedId.value)
   } finally {
-    loadingConversations.value = false;
+    loadingConversations.value = false
   }
 }
 
 async function selectConversation(id: string) {
-  selectedId.value = id;
-  dismissedSuggestion.value = false;
-  contactDeal.value = null;
-  loadingMessages.value = true;
+  selectedId.value = id
+  dismissedSuggestion.value = false
+  contactDeal.value = null
+  loadingMessages.value = true
   try {
     const [convRes, msgRes] = await Promise.all([
       api.fetch<any>(`/conversations/${id}`),
       api.fetch<any>(`/messages/conversation/${id}`),
-    ]);
-    selectedConversation.value = convRes.conversation;
-    messages.value = unwrapList(msgRes, ["messages"]);
-    const cid = convRes.conversation?.contactId || convRes.conversation?.contact?.id;
-    if (cid) loadContactDeal(cid);
+    ])
+    selectedConversation.value = convRes.conversation
+    messages.value = unwrapList(msgRes, ['messages'])
+    const cid = convRes.conversation?.contactId || convRes.conversation?.contact?.id
+    if (cid) loadContactDeal(cid)
+    await nextTick()
+    if (messagesEl.value) messagesEl.value.scrollTop = messagesEl.value.scrollHeight
   } finally {
-    loadingMessages.value = false;
+    loadingMessages.value = false
   }
 }
 
 async function loadContactDeal(contactId: string) {
-  dealLoading.value = true;
+  dealLoading.value = true
   try {
-    const res = await api.fetch<any>(`/crm/deals?contactId=${contactId}&limit=1`);
-    const list = unwrapList(res, ["deals"]);
-    contactDeal.value = list[0] || null;
+    const res = await api.fetch<any>(`/crm/deals?contactId=${contactId}&limit=1`)
+    const list = unwrapList(res, ['deals'])
+    contactDeal.value = list[0] || null
   } catch {
-    contactDeal.value = null;
+    contactDeal.value = null
   } finally {
-    dealLoading.value = false;
+    dealLoading.value = false
   }
 }
 
-const contactDeal = ref<any | null>(null);
-const dealLoading = ref(false);
-const resolving = ref(false);
-
 async function resolveConversation() {
-  if (!selectedId.value || resolving.value) return;
-  resolving.value = true;
+  if (!selectedId.value || resolving.value) return
+  resolving.value = true
   try {
     await api.fetch(`/conversations/${selectedId.value}`, {
-      method: "PUT",
-      body: JSON.stringify({ status: "CLOSED" }),
-    });
-    await loadConversations();
-    selectedId.value = null;
-    toast.success("Conversa resolvida.");
+      method: 'PUT',
+      body: JSON.stringify({ status: 'CLOSED' }),
+    })
+    toast.success('Conversa resolvida.')
+    await loadConversations()
+    selectedId.value = null
+    selectedConversation.value = null
   } catch {
-    toast.error("Não foi possível resolver a conversa.");
+    toast.error('Não foi possível resolver a conversa.')
   } finally {
-    resolving.value = false;
+    resolving.value = false
   }
 }
 
 async function reopenConversation() {
-  if (!selectedId.value) return;
+  if (!selectedId.value) return
   try {
     await api.fetch(`/conversations/${selectedId.value}`, {
-      method: "PUT",
-      body: JSON.stringify({ status: "OPEN" }),
-    });
-    await loadConversations();
-    toast.success("Conversa reaberta.");
+      method: 'PUT',
+      body: JSON.stringify({ status: 'OPEN' }),
+    })
+    toast.success('Conversa reaberta.')
+    await loadConversations()
   } catch {
-    toast.error("Não foi possível reabrir a conversa.");
+    toast.error('Não foi possível reabrir a conversa.')
   }
 }
 
 async function sendMessage() {
-  if (!selectedId.value || !draft.value.trim()) return;
-  const content = draft.value.trim();
-  sending.value = true;
+  if (!selectedId.value || !draft.value.trim()) return
+  const content = draft.value.trim()
+  sending.value = true
+  draft.value = ''
   try {
     await api.fetch(`/messages/conversation/${selectedId.value}`, {
-      method: "POST",
+      method: 'POST',
       body: JSON.stringify({ content }),
-    });
-    draft.value = "";
-    await selectConversation(selectedId.value);
+    })
+    await selectConversation(selectedId.value)
+  } catch {
+    toast.error('Erro ao enviar mensagem.')
+    draft.value = content
   } finally {
-    sending.value = false;
+    sending.value = false
   }
 }
 
-onMounted(loadConversations);
+async function acceptSuggestion() {
+  if (!lastAiMessage.value) return
+  draft.value = lastAiMessage.value.content
+  dismissedSuggestion.value = true
+  await sendMessage()
+}
+
+onMounted(loadConversations)
 </script>
 
 <style scoped>
-.inbox-shell {
-  display: grid;
-  grid-template-columns: 200px 320px 1fr 300px;
-  height: calc(100vh - var(--ka-topbar-height, 64px));
-  overflow: hidden;
+@keyframes ib-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
-@media (max-width: 1200px) {
-  .inbox-shell {
-    grid-template-columns: 200px 280px 1fr;
-  }
-  .inbox-contact-panel {
-    display: none;
-  }
+/* The grid layout lives in global styles.css (.inbox-page) */
+/* Only local overrides here */
+
+.contact-panel .field-block {
+  padding-top: 18px;
+  border-top: 1px solid var(--ka-divider);
+  margin-top: 18px;
 }
 
-@media (max-width: 900px) {
-  .inbox-shell {
-    grid-template-columns: 1fr;
-  }
-  .inbox-filters,
-  .inbox-list {
-    display: none;
-  }
-}
-
-.inbox-filters {
-  border-right: 1px solid var(--ka-border);
-  background: var(--ka-surface);
-  padding: 16px 12px;
-  overflow-y: auto;
-}
-
-.inbox-filters-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.inbox-filters-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--ka-fg);
-  margin: 0;
-}
-
-.inbox-filter-group {
-  margin-bottom: 20px;
-}
-
-.inbox-filter-label {
+.contact-panel .field-block h5 {
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--ka-fg-3);
-  margin: 0 0 8px;
-  padding: 0 8px;
+  letter-spacing: 0.06em;
+  color: var(--ka-fg-muted);
+  margin: 0 0 10px;
 }
 
-.inbox-filter-btn {
+.contact-panel .kv {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  width: 100%;
-  padding: 8px 10px;
-  border: none;
-  border-radius: var(--ka-r-sm);
-  background: transparent;
+  align-items: baseline;
   font-size: 13px;
-  color: var(--ka-fg-2);
-  cursor: pointer;
-  text-align: left;
+  margin-bottom: 8px;
 }
 
-.inbox-filter-btn:hover {
-  background: var(--ka-gray-50);
-  color: var(--ka-fg);
-}
-
-.inbox-filter-btn-active {
-  background: var(--ka-brand-alpha);
-  color: var(--ka-brand-dark);
-  font-weight: 600;
-}
-
-.inbox-filter-count {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--ka-fg-3);
-}
-
-.inbox-list {
-  border-right: 1px solid var(--ka-border);
-  background: var(--ka-surface);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.inbox-list-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 16px;
-  border-bottom: 1px solid var(--ka-border);
-}
-
-.inbox-list-header h2 {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--ka-fg);
-  margin: 0;
-}
-
-.inbox-list-header p {
-  font-size: 12px;
-  color: var(--ka-fg-3);
-  margin: 2px 0 0;
-}
-
-.inbox-search-wrap {
-  position: relative;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--ka-border);
-}
-
-.inbox-search-icon {
-  position: absolute;
-  left: 28px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--ka-fg-3);
-  pointer-events: none;
-}
-
-.inbox-search-input {
-  width: 100%;
-  height: 36px;
-  padding: 0 12px 0 36px;
-  border: 1px solid var(--ka-border);
-  border-radius: var(--ka-r-sm);
-  background: var(--ka-gray-50);
-  font-size: 13px;
-  color: var(--ka-fg);
-  outline: none;
-}
-
-.inbox-search-input:focus {
-  border-color: var(--ka-brand);
-  box-shadow: 0 0 0 2px var(--ka-brand-alpha);
-}
-
-.inbox-list-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px;
-}
-
-.inbox-list-skeletons {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 8px;
-}
-
-.inbox-thread {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: var(--ka-r-md);
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-
-.inbox-thread:hover {
-  background: var(--ka-gray-50);
-}
-
-.inbox-thread-active {
-  background: var(--ka-brand-alpha);
-}
-
-.inbox-thread-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.inbox-thread-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 2px;
-}
-
-.inbox-thread-top strong {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--ka-fg);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.inbox-thread-top time {
-  font-size: 11px;
-  color: var(--ka-fg-3);
+.contact-panel .kv .k {
+  color: var(--ka-fg-muted);
   flex-shrink: 0;
 }
 
-.inbox-thread-preview {
-  font-size: 12px;
-  color: var(--ka-fg-3);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin: 0 0 6px;
-}
-
-.inbox-thread-bottom {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.inbox-status-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.inbox-status-badge.is-open {
-  background: var(--ka-brand-alpha);
-  color: var(--ka-brand-dark);
-}
-
-.inbox-status-badge.is-closed {
-  background: var(--ka-gray-100);
-  color: var(--ka-fg-3);
-}
-
-.inbox-status-badge.is-snoozed {
-  background: var(--ka-warning-alpha);
-  color: var(--ka-warning);
-}
-
-.inbox-unread-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 9px;
-  background: var(--ka-danger);
-  color: white;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.inbox-chat {
-  display: flex;
-  flex-direction: column;
-  background: var(--ka-bg);
-  overflow: hidden;
-}
-
-.inbox-chat-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--ka-border);
-  background: var(--ka-surface);
-}
-
-.inbox-chat-header-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.inbox-chat-header-info h3 {
-  font-size: 15px;
-  font-weight: 600;
+.contact-panel .kv .v {
   color: var(--ka-fg);
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-align: right;
+  word-break: break-all;
 }
 
-.inbox-chat-header-info p {
-  font-size: 12px;
-  color: var(--ka-fg-3);
-  margin: 2px 0 0;
+/* Responsive */
+@media (max-width: 1200px) {
+  .inbox-page {
+    grid-template-columns: 190px 300px minmax(0, 1fr) !important;
+  }
+  .contact-panel {
+    display: none !important;
+  }
 }
 
-.inbox-chat-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.inbox-messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.inbox-messages-skeletons {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.inbox-msg {
-  max-width: 75%;
-  padding: 10px 14px;
-  border-radius: var(--ka-r-md);
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.inbox-msg p {
-  margin: 0 0 4px;
-}
-
-.inbox-msg time {
-  font-size: 11px;
-  opacity: 0.6;
-}
-
-.inbox-msg-inbound {
-  align-self: flex-start;
-  background: var(--ka-surface);
-  border: 1px solid var(--ka-border);
-  color: var(--ka-fg);
-}
-
-.inbox-msg-outbound {
-  align-self: flex-end;
-  background: var(--ka-brand);
-  color: white;
-}
-
-.inbox-msg-ai {
-  align-self: flex-start;
-  background: var(--ka-brand-alpha);
-  border: 1px solid var(--ka-brand);
-  color: var(--ka-brand-dark);
-}
-
-.inbox-msg-agent {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  margin: 0 0 4px;
-}
-
-.inbox-ai-suggestion {
-  padding: 16px;
-  border: 1px solid var(--ka-brand);
-  border-radius: var(--ka-r-md);
-  background: var(--ka-brand-alpha);
-  margin-top: 8px;
-}
-
-.inbox-ai-suggestion p {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ka-brand-dark);
-  margin: 0 0 8px;
-}
-
-.inbox-ai-suggestion strong {
-  display: block;
-  font-size: 14px;
-  color: var(--ka-fg);
-  margin-bottom: 12px;
-}
-
-.inbox-ai-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.inbox-composer {
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  padding: 14px 20px;
-  border-top: 1px solid var(--ka-border);
-  background: var(--ka-surface);
-}
-
-.inbox-composer-tools {
-  display: flex;
-  gap: 2px;
-}
-
-.inbox-composer-input {
-  flex: 1;
-  min-height: 40px;
-  max-height: 120px;
-  padding: 10px 14px;
-  border: 1px solid var(--ka-border);
-  border-radius: var(--ka-r-md);
-  background: var(--ka-gray-50);
-  font-size: 14px;
-  color: var(--ka-fg);
-  outline: none;
-  resize: none;
-}
-
-.inbox-composer-input:focus {
-  border-color: var(--ka-brand);
-  box-shadow: 0 0 0 2px var(--ka-brand-alpha);
-}
-
-.inbox-empty {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.inbox-contact-panel {
-  border-left: 1px solid var(--ka-border);
-  background: var(--ka-surface);
-  padding: 16px;
-  overflow-y: auto;
-}
-
-.inbox-contact-panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-.inbox-contact-panel-header h3 {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--ka-fg);
-  margin: 0;
-}
-
-.inbox-contact-profile {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.inbox-contact-profile h4 {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--ka-fg);
-  margin: 12px 0 4px;
-}
-
-.inbox-contact-profile p {
-  font-size: 13px;
-  color: var(--ka-fg-3);
-  margin: 0;
-}
-
-.inbox-contact-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-.inbox-contact-details {
-  margin-bottom: 20px;
-}
-
-.inbox-contact-details div {
-  padding: 10px 0;
-  border-bottom: 1px solid var(--ka-border);
-}
-
-.inbox-contact-details dt {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--ka-fg-3);
-  text-transform: uppercase;
-  margin: 0 0 4px;
-}
-
-.inbox-contact-details dd {
-  font-size: 13px;
-  color: var(--ka-fg);
-  margin: 0;
-}
-
-.inbox-contact-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 20px;
-}
-
-.inbox-tag {
-  padding: 4px 10px;
-  border-radius: 12px;
-  background: var(--ka-gray-100);
-  font-size: 12px;
-  color: var(--ka-fg-2);
-}
-
-.inbox-no-tags {
-  font-size: 12px;
-  color: var(--ka-fg-3);
-}
-
-.inbox-contact-deal-section {
-  margin-top: 16px;
-}
-
-.inbox-contact-section-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--ka-fg-3);
-  text-transform: uppercase;
-  margin: 0 0 8px;
-}
-
-.inbox-contact-deal {
-  padding: 12px;
-  border: 1px solid var(--ka-border);
-  border-radius: var(--ka-r-md);
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
-
-.inbox-contact-deal:hover {
-  border-color: var(--ka-brand);
-}
-
-.inbox-contact-deal-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-
-.inbox-contact-deal-top strong {
-  font-size: 13px;
-  color: var(--ka-fg);
-}
-
-.inbox-deal-score {
-  padding: 2px 6px;
-  border-radius: var(--ka-r-sm);
-  background: var(--ka-brand-alpha);
-  color: var(--ka-brand-dark);
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.inbox-contact-deal-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-}
-
-.inbox-deal-stage {
-  color: var(--ka-fg-3);
-}
-
-.inbox-deal-value {
-  color: var(--ka-success);
-  font-weight: 600;
-}
-
-.inbox-no-deal {
-  font-size: 12px;
-  color: var(--ka-fg-3);
-  margin: 0;
+@media (max-width: 860px) {
+  .inbox-page {
+    grid-template-columns: 1fr !important;
+  }
+  .inbox-filters,
+  .inbox-list {
+    display: none !important;
+  }
 }
 </style>

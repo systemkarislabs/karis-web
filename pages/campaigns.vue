@@ -1,212 +1,182 @@
 <template>
-  <NuxtLayout name="default">
-    <div class="contacts-v2">
-      <!-- Header -->
-      <div class="contacts-v2-header">
-        <div>
-          <p class="dashboard-eyebrow">Campanhas</p>
-          <h1 style="font-family:var(--ka-font-display);font-size:26px;font-weight:700;letter-spacing:-0.01em;color:var(--ka-fg);margin:2px 0 4px;">
-            Envios em massa
-          </h1>
-          <p style="font-size:14px;color:var(--ka-fg-muted);">
-            Marketing via WhatsApp · {{ activeCount }} {{ activeCount === 1 ? 'campanha ativa' : 'campanhas ativas' }}
-          </p>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <Button variant="secondary" size="sm" @click="loadCampaigns">
-            <RefreshCw class="h-4 w-4" />
-            Atualizar
-          </Button>
-          <Button size="sm" @click="openNew">
-            <Plus class="h-4 w-4" />
-            Nova campanha
-          </Button>
-        </div>
+  <div class="campaigns-page">
+    <div class="page-header">
+      <div>
+        <p class="page-eyebrow">Campanhas</p>
+        <h1 class="page-title">Envios em massa</h1>
+        <p class="page-subtitle">Marketing via WhatsApp · {{ activeCount }} {{ activeCount === 1 ? 'campanha ativa' : 'campanhas ativas' }}</p>
       </div>
-
-      <!-- 4 Stat cards -->
-      <div class="campaign-stat-grid">
-        <div class="stat-card">
-          <div class="ico" style="background:var(--ka-brand-50);color:var(--ka-brand);">
-            <Megaphone class="h-5 w-5" />
-          </div>
-          <div class="txt">
-            <div class="num">{{ activeCount }}</div>
-            <div class="lbl">Campanhas ativas</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="ico" style="background:var(--ka-success-bg);color:var(--ka-success);">
-            <Send class="h-5 w-5" />
-          </div>
-          <div class="txt">
-            <div class="num">{{ sentLast7d.toLocaleString('pt-BR') }}</div>
-            <div class="lbl">Enviadas (7 dias)</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="ico" style="background:var(--ka-bot-bg);color:var(--ka-bot);">
-            <Reply class="h-5 w-5" />
-          </div>
-          <div class="txt">
-            <div class="num">{{ responseRate }}%</div>
-            <div class="lbl">Taxa de resposta</div>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="ico" style="background:var(--ka-warning-bg);color:var(--ka-warning);">
-            <DollarSign class="h-5 w-5" />
-          </div>
-          <div class="txt">
-            <div class="num">{{ formatMoney(attributedRevenue) }}</div>
-            <div class="lbl">Receita atribuída</div>
-          </div>
-        </div>
+      <div class="page-actions">
+        <Button variant="secondary" size="sm" @click="loadCampaigns">
+          <Icon name="refresh" :size="16" />
+          Atualizar
+        </Button>
+        <Button size="sm" @click="openNew">
+          <Icon name="plus" :size="16" />
+          Nova campanha
+        </Button>
       </div>
-
-      <!-- Campaign list -->
-      <div class="card" style="padding:0;background:var(--ka-surface);border:1px solid var(--ka-border);border-radius:14px;overflow:hidden;box-shadow:var(--ka-shadow-sm);">
-        <div v-if="loading" class="p-4 space-y-3">
-          <Skeleton v-for="i in 5" :key="i" height="5rem" />
-        </div>
-
-        <template v-else-if="campaigns.length">
-          <div
-            v-for="(camp, idx) in campaigns"
-            :key="camp.id"
-            style="display:flex;align-items:center;gap:14px;padding:16px 20px;"
-            :style="{ borderBottom: idx < campaigns.length - 1 ? '1px solid var(--ka-divider)' : 'none' }"
-          >
-            <!-- Icon -->
-            <div
-              style="width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"
-              :style="{ background: campColor(camp.status) + '22', color: campColor(camp.status) }"
-            >
-              <Megaphone class="h-4.5 w-4.5" style="width:18px;height:18px;" />
-            </div>
-
-            <!-- Name + date -->
-            <div style="flex:1;min-width:0;">
-              <div style="font-weight:600;font-size:14px;color:var(--ka-fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                {{ camp.name }}
-              </div>
-              <div style="font-size:12px;color:var(--ka-fg-muted);margin-top:2px;">
-                {{ camp.scheduledAt ? formatDateTime(camp.scheduledAt) : formatDate(camp.createdAt) }}
-                · {{ camp.channel || 'WhatsApp' }}
-              </div>
-            </div>
-
-            <!-- Metrics -->
-            <div style="display:flex;gap:24px;font-size:12px;color:var(--ka-fg-2);">
-              <div style="text-align:center;min-width:52px;">
-                <div style="font-family:var(--ka-font-display);font-weight:700;font-size:16px;color:var(--ka-fg);">
-                  {{ (camp._count?.recipients ?? camp.recipientCount ?? 0).toLocaleString('pt-BR') }}
-                </div>
-                <div>Enviadas</div>
-              </div>
-              <div style="text-align:center;min-width:52px;">
-                <div style="font-family:var(--ka-font-display);font-weight:700;font-size:16px;color:var(--ka-fg);">
-                  {{ (camp.readCount ?? 0).toLocaleString('pt-BR') }}
-                </div>
-                <div>Lidas</div>
-              </div>
-              <div style="text-align:center;min-width:52px;">
-                <div style="font-family:var(--ka-font-display);font-weight:700;font-size:16px;color:var(--ka-fg);">
-                  {{ (camp.replyCount ?? 0).toLocaleString('pt-BR') }}
-                </div>
-                <div>Respostas</div>
-              </div>
-            </div>
-
-            <!-- Status badge -->
-            <Badge :variant="statusVariant(camp.status)" size="sm" dot style="min-width:90px;justify-content:center;">
-              {{ statusLabel(camp.status) }}
-            </Badge>
-
-            <!-- Actions -->
-            <div style="display:flex;gap:4px;flex-shrink:0;">
-              <button
-                v-if="camp.status === 'DRAFT'"
-                class="icon-action"
-                title="Enviar campanha"
-                @click="scheduleCampaign(camp)"
-              >
-                <Send class="h-4 w-4" />
-              </button>
-              <button
-                v-if="['DRAFT', 'SCHEDULED'].includes(camp.status)"
-                class="icon-action danger"
-                title="Cancelar"
-                @click="cancelCampaign(camp)"
-              >
-                <X class="h-4 w-4" />
-              </button>
-              <button class="icon-action" title="Mais opções">
-                <MoreHorizontal class="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        </template>
-
-        <div v-else class="p-10">
-          <EmptyState :icon="Megaphone" title="Nenhuma campanha ainda" description="Crie sua primeira campanha para enviar mensagens em massa." />
-        </div>
-      </div>
-
-      <!-- Modal de criação -->
-      <Modal :open="showNew" title="Nova campanha" @close="showNew = false">
-        <form class="space-y-4" @submit.prevent="createCampaign">
-          <div>
-            <label class="field-label">Nome da campanha *</label>
-            <input v-model="form.name" class="input-field" type="text" placeholder="Ex: Promo Black Friday" required />
-          </div>
-          <div>
-            <label class="field-label">Mensagem *</label>
-            <textarea v-model="form.message" class="input-field" rows="4" placeholder="Olá {nome}, temos uma oferta especial para você..." required style="resize:vertical;" />
-            <p class="field-hint">Use {nome} para personalizar com o nome do contato.</p>
-          </div>
-          <div>
-            <label class="field-label">Público-alvo *</label>
-            <select v-model="form.targetType" class="input-field" required>
-              <option value="ALL_CONTACTS">Todos os contatos</option>
-              <option value="STAGE">Etapa do CRM</option>
-            </select>
-          </div>
-          <div v-if="form.targetType === 'STAGE'">
-            <label class="field-label">Etapa do CRM *</label>
-            <select v-model="form.stageId" class="input-field" :required="form.targetType === 'STAGE'">
-              <option value="">Selecionar etapa</option>
-              <option v-for="stage in stages" :key="stage.id" :value="stage.id">{{ stage.name }}</option>
-            </select>
-          </div>
-          <div>
-            <label class="field-label">Canal</label>
-            <select v-model="form.channel" class="input-field">
-              <option value="WHATSAPP">WhatsApp</option>
-            </select>
-          </div>
-          <div>
-            <label class="field-label">Agendamento (opcional)</label>
-            <input v-model="form.scheduledAt" class="input-field" type="datetime-local" />
-            <p class="field-hint">Deixe vazio para salvar como rascunho e enviar manualmente.</p>
-          </div>
-          <p v-if="formError" class="form-alert" role="alert">{{ formError }}</p>
-          <div class="flex justify-end gap-2 pt-2">
-            <Button variant="secondary" type="button" @click="showNew = false">Cancelar</Button>
-            <Button type="submit" :loading="formLoading">
-              {{ formLoading ? "Salvando..." : "Criar campanha" }}
-            </Button>
-          </div>
-        </form>
-      </Modal>
     </div>
-  </NuxtLayout>
+
+    <div class="campaigns-stat-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: var(--ka-brand-alpha); color: var(--ka-brand);">
+          <Icon name="megaphone" :size="20" />
+        </div>
+        <div class="stat-text">
+          <div class="stat-value">{{ activeCount }}</div>
+          <div class="stat-label">Campanhas ativas</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: var(--ka-success-alpha); color: var(--ka-success);">
+          <Icon name="send" :size="20" />
+        </div>
+        <div class="stat-text">
+          <div class="stat-value">{{ sentLast7d.toLocaleString('pt-BR') }}</div>
+          <div class="stat-label">Enviadas (7 dias)</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: var(--ka-brand-alpha); color: var(--ka-brand);">
+          <Icon name="reply" :size="20" />
+        </div>
+        <div class="stat-text">
+          <div class="stat-value">{{ responseRate }}%</div>
+          <div class="stat-label">Taxa de resposta</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: var(--ka-warning-alpha); color: var(--ka-warning);">
+          <Icon name="dollar" :size="20" />
+        </div>
+        <div class="stat-text">
+          <div class="stat-value">{{ formatMoney(attributedRevenue) }}</div>
+          <div class="stat-label">Receita atribuída</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="campaigns-list">
+      <div v-if="loading" class="campaigns-list-skeletons">
+        <Skeleton v-for="i in 5" :key="i" height="80px" rounded="md" />
+      </div>
+
+      <template v-else-if="campaigns.length">
+        <div
+          v-for="(camp, idx) in campaigns"
+          :key="camp.id"
+          class="campaign-row"
+          :class="{ 'campaign-row-last': idx === campaigns.length - 1 }"
+        >
+          <div class="campaign-icon" :style="{ background: campColor(camp.status) + '22', color: campColor(camp.status) }">
+            <Icon name="megaphone" :size="18" />
+          </div>
+
+          <div class="campaign-info">
+            <div class="campaign-name">{{ camp.name }}</div>
+            <div class="campaign-meta">
+              {{ camp.scheduledAt ? formatDateTime(camp.scheduledAt) : formatDate(camp.createdAt) }}
+              · {{ camp.channel || 'WhatsApp' }}
+            </div>
+          </div>
+
+          <div class="campaign-metrics">
+            <div class="campaign-metric">
+              <div class="campaign-metric-value">{{ (camp._count?.recipients ?? camp.recipientCount ?? 0).toLocaleString('pt-BR') }}</div>
+              <div class="campaign-metric-label">Enviadas</div>
+            </div>
+            <div class="campaign-metric">
+              <div class="campaign-metric-value">{{ (camp.readCount ?? 0).toLocaleString('pt-BR') }}</div>
+              <div class="campaign-metric-label">Lidas</div>
+            </div>
+            <div class="campaign-metric">
+              <div class="campaign-metric-value">{{ (camp.replyCount ?? 0).toLocaleString('pt-BR') }}</div>
+              <div class="campaign-metric-label">Respostas</div>
+            </div>
+          </div>
+
+          <Badge :variant="statusVariant(camp.status)" size="sm" style="min-width: 90px; justify-content: center;">
+            {{ statusLabel(camp.status) }}
+          </Badge>
+
+          <div class="campaign-actions">
+            <button
+              v-if="camp.status === 'DRAFT'"
+              class="campaign-action-btn"
+              title="Enviar campanha"
+              @click="scheduleCampaign(camp)"
+            >
+              <Icon name="send" :size="16" />
+            </button>
+            <button
+              v-if="['DRAFT', 'SCHEDULED'].includes(camp.status)"
+              class="campaign-action-btn campaign-action-danger"
+              title="Cancelar"
+              @click="cancelCampaign(camp)"
+            >
+              <Icon name="x" :size="16" />
+            </button>
+            <button class="campaign-action-btn" title="Mais opções">
+              <Icon name="moreH" :size="16" />
+            </button>
+          </div>
+        </div>
+      </template>
+
+      <EmptyState v-else icon="megaphone" title="Nenhuma campanha ainda" description="Crie sua primeira campanha para enviar mensagens em massa." />
+    </div>
+
+    <Modal :open="showNew" title="Nova campanha" @close="showNew = false">
+      <form class="modal-form" @submit.prevent="createCampaign">
+        <div class="form-group">
+          <label class="form-label">Nome da campanha *</label>
+          <input v-model="form.name" class="form-input" type="text" placeholder="Ex: Promo Black Friday" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mensagem *</label>
+          <textarea v-model="form.message" class="form-textarea" rows="4" placeholder="Olá {nome}, temos uma oferta especial para você..." required />
+          <p class="form-hint">Use {nome} para personalizar com o nome do contato.</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Público-alvo *</label>
+          <select v-model="form.targetType" class="form-input" required>
+            <option value="ALL_CONTACTS">Todos os contatos</option>
+            <option value="STAGE">Etapa do CRM</option>
+          </select>
+        </div>
+        <div v-if="form.targetType === 'STAGE'" class="form-group">
+          <label class="form-label">Etapa do CRM *</label>
+          <select v-model="form.stageId" class="form-input" :required="form.targetType === 'STAGE'">
+            <option value="">Selecionar etapa</option>
+            <option v-for="stage in stages" :key="stage.id" :value="stage.id">{{ stage.name }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Canal</label>
+          <select v-model="form.channel" class="form-input">
+            <option value="WHATSAPP">WhatsApp</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Agendamento (opcional)</label>
+          <input v-model="form.scheduledAt" class="form-input" type="datetime-local" />
+          <p class="form-hint">Deixe vazio para salvar como rascunho e enviar manualmente.</p>
+        </div>
+        <p v-if="formError" class="form-alert">{{ formError }}</p>
+        <div class="modal-actions">
+          <Button variant="secondary" type="button" @click="showNew = false">Cancelar</Button>
+          <Button type="submit" :loading="formLoading">
+            {{ formLoading ? "Salvando..." : "Criar campanha" }}
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { DollarSign, Megaphone, MoreHorizontal, Plus, RefreshCw, Reply, Send, X } from "lucide-vue-next";
-
-definePageMeta({ layout: false, middleware: "auth" });
+definePageMeta({ middleware: "auth" });
 
 const api = useApi();
 const loading   = ref(true);
@@ -327,32 +297,4 @@ async function createCampaign() {
 onMounted(loadCampaigns);
 </script>
 
-<style scoped>
-.field-label {
-  display: block;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ka-fg);
-  margin-bottom: 6px;
-}
-.field-hint {
-  font-size: 12px;
-  color: var(--ka-fg-muted);
-  margin-top: 4px;
-}
-.icon-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 6px;
-  color: var(--ka-fg-muted);
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: color 0.14s, background 0.14s;
-}
-.icon-action:hover        { background: var(--ka-gray-100); color: var(--ka-fg); }
-.icon-action.danger:hover { background: var(--ka-danger-bg); color: var(--ka-danger); }
-</style>
+

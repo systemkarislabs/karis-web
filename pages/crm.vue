@@ -1,194 +1,213 @@
 <template>
-  <NuxtLayout name="default">
-    <div class="crm-page">
-      <!-- Header -->
-      <section class="crm-header">
-        <div>
-          <p>CRM</p>
-          <h1>Pipeline</h1>
-          <span>{{ deals.length }} leads ativos · {{ formatMoney(totalPipelineValue) }} em negociação</span>
-        </div>
-        <div class="crm-actions">
-          <Button variant="secondary" size="sm" @click="loadCrm">
-            <RefreshCw class="h-4 w-4" />
-            Atualizar
-          </Button>
-          <Button size="sm" @click="openNewDeal">
-            <Plus class="h-4 w-4" />
-            Novo lead
-          </Button>
-        </div>
-      </section>
-
-      <!-- Board -->
-      <section v-if="loading" class="crm-board">
-        <Skeleton v-for="i in 4" :key="i" width="18rem" height="32rem" rounded="md" />
-      </section>
-
-      <section v-else-if="stages.length" class="crm-board">
-        <article v-for="stage in stages" :key="stage.id" class="crm-column">
-          <header>
-            <span class="crm-dot" :style="{ background: stage.color || 'var(--ka-brand)' }" />
-            <strong>{{ stage.name }}</strong>
-            <em>{{ stageDeals(stage.id).length }}</em>
-          </header>
-
-          <div class="crm-deals">
-            <button
-              v-for="deal in stageDeals(stage.id)"
-              :key="deal.id"
-              class="crm-deal"
-              type="button"
-              @click="openDeal(deal)"
-            >
-              <div class="crm-deal-head">
-                <div class="crm-deal-title">
-                  <Avatar :name="deal.contact?.name || deal.title" size="sm" />
-                  <strong>{{ deal.contact?.name || deal.title }}</strong>
-                </div>
-                <span v-if="deal.aiScore" class="crm-deal-score">
-                  <Sparkles class="h-2.5 w-2.5" />{{ deal.aiScore }}
-                </span>
-              </div>
-              <b v-if="deal.valueCents" class="crm-deal-value">{{ formatMoney(deal.valueCents) }}</b>
-              <p v-if="deal.aiNextAction" class="crm-deal-action">
-                <Sparkles class="h-3 w-3" style="color:var(--ka-brand);flex-shrink:0;" />
-                {{ deal.aiNextAction }}
-              </p>
-              <div class="crm-deal-footer">
-                <span v-for="tag in (deal.contact?.tags || []).slice(0, 2)" :key="tag" class="crm-deal-tag">{{ tag }}</span>
-                <span class="crm-deal-time" style="display:flex;align-items:center;gap:4px;">
-                  <Clock class="h-3 w-3" />{{ relativeTime(deal.updatedAt) }}
-                </span>
-                <button class="crm-deal-menu" type="button" @click.stop>
-                  <MoreHorizontal class="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </button>
-
-            <div v-if="!stageDeals(stage.id).length" class="crm-empty">Sem negócios nesta etapa.</div>
-          </div>
-
-          <button class="crm-add-deal" type="button" @click="openNewDeal(stage.id)">
-            <Plus class="h-3.5 w-3.5" /> Adicionar
-          </button>
-        </article>
-      </section>
-
-      <EmptyState v-else :icon="Kanban" title="Pipeline vazio" description="A API respondeu, mas ainda não há etapas de CRM nesta empresa." />
+  <div class="crm-page">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Pipeline</h1>
+        <p class="page-subtitle">{{ deals.length }} leads ativos · {{ formatMoney(totalPipelineValue) }} em negociação</p>
+      </div>
+      <div class="page-actions">
+        <Button variant="secondary" size="sm" @click="loadCrm">
+          <Icon name="refresh" :size="16" />
+          Atualizar
+        </Button>
+        <Button size="sm" @click="openNewDeal">
+          <Icon name="plus" :size="16" />
+          Novo lead
+        </Button>
+      </div>
     </div>
 
-    <!-- ── Novo Lead Modal ───────────────────────── -->
+    <div v-if="loading" class="crm-board">
+      <div v-for="i in 4" :key="i" class="crm-col-skeleton">
+        <Skeleton height="32px" rounded="md" />
+        <div class="crm-col-cards">
+          <Skeleton v-for="j in 3" :key="j" height="120px" rounded="md" />
+        </div>
+      </div>
+    </div>
+
+    <div v-else-if="stages.length" class="crm-board">
+      <div v-for="stage in stages" :key="stage.id" class="crm-col">
+        <div class="crm-col-header">
+          <div class="crm-col-title">
+            <span class="crm-col-dot" :style="{ background: stage.color || 'var(--ka-brand)' }" />
+            {{ stage.name }}
+          </div>
+          <span class="crm-col-count">{{ stageDeals(stage.id).length }}</span>
+        </div>
+
+        <div class="crm-col-cards">
+          <button
+            v-for="deal in stageDeals(stage.id)"
+            :key="deal.id"
+            class="crm-deal-card"
+            type="button"
+            @click="openDeal(deal)"
+          >
+            <div class="crm-deal-top">
+              <Avatar :name="deal.contact?.name || deal.title" size="sm" />
+              <span class="crm-deal-name">{{ deal.contact?.name || deal.title }}</span>
+              <span v-if="deal.aiScore" class="crm-deal-score">
+                <Icon name="sparkles" :size="12" />{{ deal.aiScore }}
+              </span>
+            </div>
+
+            <div v-if="deal.valueCents" class="crm-deal-value">
+              <span class="crm-deal-currency">R$</span>{{ (deal.valueCents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 0 }) }}
+            </div>
+
+            <div v-if="deal.aiNextAction" class="crm-deal-action">
+              <Icon name="sparkles" :size="12" class="crm-deal-action-icon" />
+              {{ deal.aiNextAction }}
+            </div>
+
+            <div class="crm-deal-footer">
+              <div class="crm-deal-tags">
+                <span v-for="tag in (deal.contact?.tags || []).slice(0, 2)" :key="tag" class="crm-deal-tag">{{ tag }}</span>
+              </div>
+              <span class="crm-deal-time">
+                <Icon name="clock" :size="12" />{{ relativeTime(deal.updatedAt) }}
+              </span>
+            </div>
+          </button>
+        </div>
+
+        <div v-if="!stageDeals(stage.id).length" class="crm-col-empty">
+          Sem negócios nesta etapa.
+        </div>
+
+        <button class="crm-add-btn" type="button" @click="openNewDeal(stage.id)">
+          <Icon name="plus" :size="14" /> Adicionar
+        </button>
+      </div>
+    </div>
+
+    <EmptyState v-else icon="kanban" title="Pipeline vazio" description="A API respondeu, mas ainda não há etapas de CRM nesta empresa." />
+
     <Modal :open="showNewDeal" title="Novo lead" @close="showNewDeal = false">
-      <form class="space-y-4" @submit.prevent="createDeal">
-        <div>
-          <label class="field-label">Título do lead *</label>
-          <input v-model="form.title" class="input" type="text" placeholder="Ex: Proposta para João" required />
+      <form class="modal-form" @submit.prevent="createDeal">
+        <div class="form-group">
+          <label class="form-label">Título do lead *</label>
+          <input v-model="form.title" class="form-input" type="text" placeholder="Ex: Proposta para João" required />
         </div>
-        <div>
-          <label class="field-label">Nome do contato</label>
-          <input v-model="form.contactName" class="input" type="text" placeholder="Nome do cliente" />
+        <div class="form-group">
+          <label class="form-label">Nome do contato</label>
+          <input v-model="form.contactName" class="form-input" type="text" placeholder="Nome do cliente" />
         </div>
-        <div>
-          <label class="field-label">Etapa</label>
-          <select v-model="form.stageId" class="input">
+        <div class="form-group">
+          <label class="form-label">Etapa</label>
+          <select v-model="form.stageId" class="form-input">
             <option value="">Selecionar etapa</option>
             <option v-for="stage in stages" :key="stage.id" :value="stage.id">{{ stage.name }}</option>
           </select>
         </div>
-        <div>
-          <label class="field-label">Valor (R$)</label>
-          <input v-model.number="form.valueReais" class="input" type="number" min="0" step="0.01" placeholder="0,00" />
+        <div class="form-group">
+          <label class="form-label">Valor (R$)</label>
+          <input v-model.number="form.valueReais" class="form-input" type="number" min="0" step="0.01" placeholder="0,00" />
         </div>
         <p v-if="formError" class="form-alert">{{ formError }}</p>
-        <div class="flex justify-end gap-2 pt-2">
+        <div class="modal-actions">
           <Button variant="secondary" type="button" @click="showNewDeal = false">Cancelar</Button>
           <Button type="submit" :disabled="formLoading">
-            <LoaderCircle v-if="formLoading" class="h-4 w-4 spin" />
             {{ formLoading ? "Salvando..." : "Criar lead" }}
           </Button>
         </div>
       </form>
     </Modal>
 
-    <!-- ── Deal Detail Panel ─────────────────────── -->
-    <Sheet :open="!!selectedDeal" @close="selectedDeal = null">
-      <template v-if="selectedDeal">
-        <div class="sheet-header">
-          <h2 class="sheet-title">{{ selectedDeal.contact?.name || selectedDeal.title }}</h2>
-          <Badge :variant="scoreVariant(selectedDeal.aiScore)" size="sm">Score {{ selectedDeal.aiScore ?? 0 }}</Badge>
+    <template v-if="selectedDeal">
+      <div class="drawer-backdrop" @click="selectedDeal = null" />
+      <aside class="drawer">
+        <div class="drawer-header">
+          <div class="drawer-header-info">
+            <Avatar :name="selectedDeal.contact?.name || selectedDeal.title" size="md" />
+            <div>
+              <div class="drawer-deal-name">{{ selectedDeal.contact?.name || selectedDeal.title }}</div>
+              <div class="drawer-deal-stage">
+                <span class="crm-col-dot" :style="{ background: stageName(selectedDeal.stageId) ? 'var(--ka-brand)' : 'var(--ka-fg-3)' }" />
+                {{ stageName(selectedDeal.stageId) }}
+              </div>
+            </div>
+          </div>
+          <Button variant="ghost" size="icon" @click="selectedDeal = null">
+            <Icon name="x" :size="18" />
+          </Button>
         </div>
 
-        <div class="sheet-meta">
-          <div><span class="label">Valor</span> <span>{{ selectedDeal.valueCents ? formatMoney(selectedDeal.valueCents) : "—" }}</span></div>
-          <div><span class="label">Etapa</span> <span>{{ stageName(selectedDeal.stageId) }}</span></div>
-          <div><span class="label">Atualizado</span> <span>{{ relativeTime(selectedDeal.updatedAt) }}</span></div>
+        <div class="drawer-body">
+          <div class="drawer-stats">
+            <div class="drawer-stat">
+              <div class="drawer-stat-label">Valor</div>
+              <div class="drawer-stat-value">{{ selectedDeal.valueCents ? formatMoney(selectedDeal.valueCents) : "—" }}</div>
+            </div>
+            <div class="drawer-stat drawer-stat-ai">
+              <div class="drawer-stat-label">Score da IA</div>
+              <div class="drawer-stat-value drawer-stat-ai-value">{{ selectedDeal.aiScore ?? 0 }}/100</div>
+            </div>
+          </div>
+
+          <div v-if="selectedDeal.aiNextAction" class="drawer-section">
+            <h5 class="drawer-section-title">Próxima ação</h5>
+            <div class="drawer-ai-action">
+              <Icon name="sparkles" :size="16" />
+              <span>{{ selectedDeal.aiNextAction }}</span>
+            </div>
+          </div>
+
+          <div class="drawer-section">
+            <h5 class="drawer-section-title">Notas</h5>
+            <form class="drawer-note-form" @submit.prevent="addNote">
+              <textarea v-model="noteText" class="form-input" rows="2" placeholder="Adicionar nota..." />
+              <Button type="submit" size="sm" :disabled="!noteText.trim() || noteLoading">
+                {{ noteLoading ? "..." : "Salvar nota" }}
+              </Button>
+            </form>
+            <div v-if="notesLoading"><Skeleton height="64px" rounded="md" /></div>
+            <div v-else-if="notes.length" class="drawer-notes">
+              <div v-for="note in notes" :key="note.id" class="drawer-note">
+                <p>{{ note.content }}</p>
+                <span>{{ relativeTime(note.createdAt) }}</span>
+              </div>
+            </div>
+            <p v-else class="drawer-empty">Nenhuma nota ainda.</p>
+          </div>
+
+          <div class="drawer-section">
+            <h5 class="drawer-section-title">Tarefas</h5>
+            <form class="drawer-task-form" @submit.prevent="addTask">
+              <input v-model="taskTitle" class="form-input" type="text" placeholder="Descrição da tarefa..." />
+              <input v-model="taskDueAt" class="form-input" type="datetime-local" />
+              <Button type="submit" size="sm" :disabled="!taskTitle.trim() || taskLoading">
+                {{ taskLoading ? "..." : "Adicionar tarefa" }}
+              </Button>
+            </form>
+            <div v-if="tasksLoading"><Skeleton height="64px" rounded="md" /></div>
+            <div v-else-if="tasks.length" class="drawer-tasks">
+              <div v-for="task in tasks" :key="task.id" class="drawer-task">
+                <p :class="{ 'drawer-task-done': task.completedAt }">{{ task.title }}</p>
+                <span>{{ task.dueAt ? relativeTime(task.dueAt) : "Sem prazo" }}</span>
+              </div>
+            </div>
+            <p v-else class="drawer-empty">Nenhuma tarefa ainda.</p>
+          </div>
         </div>
 
-        <p v-if="selectedDeal.aiNextAction" class="sheet-ai-hint">
-          <span class="label">Próximo passo IA:</span> {{ selectedDeal.aiNextAction }}
-        </p>
-
-        <Tabs :tabs="['Notas', 'Tarefas']" v-model="detailTab">
-          <!-- Notes -->
-          <template #tab-0>
-            <div class="panel-section">
-              <form class="panel-add-form" @submit.prevent="addNote">
-                <textarea v-model="noteText" class="input" rows="2" placeholder="Adicionar nota..." />
-                <Button type="submit" size="sm" :disabled="!noteText.trim() || noteLoading">
-                  <LoaderCircle v-if="noteLoading" class="h-3 w-3 spin" />
-                  {{ noteLoading ? "..." : "Salvar" }}
-                </Button>
-              </form>
-              <div v-if="notesLoading" class="panel-loading"><Skeleton width="100%" height="4rem" rounded="md" /></div>
-              <div v-else-if="notes.length" class="panel-list">
-                <div v-for="note in notes" :key="note.id" class="panel-item">
-                  <p>{{ note.content }}</p>
-                  <span class="panel-item-meta">{{ relativeTime(note.createdAt) }}</span>
-                </div>
-              </div>
-              <p v-else class="panel-empty">Nenhuma nota ainda.</p>
-            </div>
-          </template>
-
-          <!-- Tasks -->
-          <template #tab-1>
-            <div class="panel-section">
-              <form class="panel-add-form" @submit.prevent="addTask">
-                <input v-model="taskTitle" class="input" type="text" placeholder="Descrição da tarefa..." />
-                <input v-model="taskDueAt" class="input" type="datetime-local" />
-                <Button type="submit" size="sm" :disabled="!taskTitle.trim() || taskLoading">
-                  <LoaderCircle v-if="taskLoading" class="h-3 w-3 spin" />
-                  {{ taskLoading ? "..." : "Adicionar" }}
-                </Button>
-              </form>
-              <div v-if="tasksLoading" class="panel-loading"><Skeleton width="100%" height="4rem" rounded="md" /></div>
-              <div v-else-if="tasks.length" class="panel-list">
-                <div v-for="task in tasks" :key="task.id" class="panel-item">
-                  <p :class="{ 'line-through opacity-60': task.completedAt }">{{ task.title }}</p>
-                  <span class="panel-item-meta">{{ task.dueAt ? relativeTime(task.dueAt) : "Sem prazo" }}</span>
-                </div>
-              </div>
-              <p v-else class="panel-empty">Nenhuma tarefa ainda.</p>
-            </div>
-          </template>
-        </Tabs>
-      </template>
-    </Sheet>
-  </NuxtLayout>
+        <div class="drawer-footer">
+          <Button variant="secondary" size="sm" @click="selectedDeal = null">Fechar</Button>
+        </div>
+      </aside>
+    </template>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { Clock, Kanban, LoaderCircle, MoreHorizontal, Plus, RefreshCw, Sparkles } from "lucide-vue-next";
-
-definePageMeta({ layout: false, middleware: "auth" });
+definePageMeta({ middleware: "auth" });
 
 const api = useApi();
 const loading = ref(true);
 const stages = ref<any[]>([]);
 const deals = ref<any[]>([]);
 
-// ── Board ──────────────────────────────────────────
 const totalPipelineValue = computed(() =>
   deals.value.reduce((sum, deal) => sum + Number(deal.valueCents || 0), 0)
 );
@@ -199,13 +218,6 @@ function stageDeals(stageId: string) {
 
 function stageName(stageId?: string) {
   return stages.value.find((s) => s.id === stageId)?.name || "—";
-}
-
-function scoreVariant(score?: number | null) {
-  const value = Number(score || 0);
-  if (value >= 70) return "success";
-  if (value >= 40) return "warning";
-  return "neutral";
 }
 
 async function loadCrm() {
@@ -224,7 +236,6 @@ async function loadCrm() {
 
 onMounted(loadCrm);
 
-// ── New Deal Modal ─────────────────────────────────
 const showNewDeal = ref(false);
 const formLoading = ref(false);
 const formError = ref("");
@@ -240,17 +251,10 @@ async function createDeal() {
   formError.value = "";
   formLoading.value = true;
   try {
-    const body: any = {
-      title: form.title,
-      stageId: form.stageId || stages.value[0]?.id,
-    };
+    const body: any = { title: form.title, stageId: form.stageId || stages.value[0]?.id };
     if (form.contactName) body.contactName = form.contactName;
     if (form.valueReais != null) body.valueCents = Math.round(form.valueReais * 100);
-
-    const newDeal = await api.fetch<any>("/crm/deals", {
-      method: "POST",
-      body: JSON.stringify(body),
-    });
+    const newDeal = await api.fetch<any>("/crm/deals", { method: "POST", body: JSON.stringify(body) });
     deals.value.unshift(newDeal.deal || newDeal);
     showNewDeal.value = false;
   } catch (e: any) {
@@ -260,17 +264,11 @@ async function createDeal() {
   }
 }
 
-// ── Deal Detail Panel ──────────────────────────────
 const selectedDeal = ref<any | null>(null);
-const detailTab = ref(0);
-
-// Notes
 const notes = ref<any[]>([]);
 const notesLoading = ref(false);
 const noteText = ref("");
 const noteLoading = ref(false);
-
-// Tasks
 const tasks = ref<any[]>([]);
 const tasksLoading = ref(false);
 const taskTitle = ref("");
@@ -279,7 +277,6 @@ const taskLoading = ref(false);
 
 async function openDeal(deal: any) {
   selectedDeal.value = deal;
-  detailTab.value = 0;
   noteText.value = "";
   taskTitle.value = "";
   taskDueAt.value = "";
@@ -291,11 +288,8 @@ async function loadNotes(dealId: string) {
   try {
     const res = await api.fetch<any>(`/crm/deals/${dealId}/notes`);
     notes.value = unwrapList(res, ["notes"]);
-  } catch {
-    notes.value = [];
-  } finally {
-    notesLoading.value = false;
-  }
+  } catch { notes.value = []; }
+  finally { notesLoading.value = false; }
 }
 
 async function loadTasks(dealId: string) {
@@ -303,11 +297,8 @@ async function loadTasks(dealId: string) {
   try {
     const res = await api.fetch<any>(`/crm/deals/${dealId}/tasks`);
     tasks.value = unwrapList(res, ["tasks"]);
-  } catch {
-    tasks.value = [];
-  } finally {
-    tasksLoading.value = false;
-  }
+  } catch { tasks.value = []; }
+  finally { tasksLoading.value = false; }
 }
 
 async function addNote() {
@@ -320,11 +311,7 @@ async function addNote() {
     });
     notes.value.unshift(note.note || note);
     noteText.value = "";
-  } catch {
-    // silent — note might not be implemented yet
-  } finally {
-    noteLoading.value = false;
-  }
+  } catch {} finally { noteLoading.value = false; }
 }
 
 async function addTask() {
@@ -340,84 +327,7 @@ async function addTask() {
     tasks.value.unshift(task.task || task);
     taskTitle.value = "";
     taskDueAt.value = "";
-  } catch {
-    // silent — task might not be implemented yet
-  } finally {
-    taskLoading.value = false;
-  }
+  } catch {} finally { taskLoading.value = false; }
 }
 </script>
 
-<style scoped>
-.sheet-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-.sheet-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--ka-fg);
-  flex: 1;
-}
-.sheet-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-  font-size: 0.875rem;
-  color: var(--ka-fg);
-  margin-bottom: 1rem;
-}
-.sheet-meta .label,
-.sheet-ai-hint .label {
-  color: var(--ka-fg-muted);
-  font-size: 0.75rem;
-  margin-right: 0.375rem;
-}
-.sheet-ai-hint {
-  font-size: 0.875rem;
-  background: var(--ka-gray-50);
-  border-radius: var(--ka-r-md);
-  padding: 0.625rem 0.75rem;
-  margin-bottom: 1rem;
-  color: var(--ka-fg);
-}
-.panel-section {
-  padding-top: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-.panel-add-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-.panel-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-.panel-item {
-  padding: 0.625rem 0.75rem;
-  background: var(--ka-gray-50);
-  border-radius: var(--ka-r-md);
-}
-.panel-item p {
-  font-size: 0.875rem;
-  color: var(--ka-fg);
-  margin: 0 0 0.25rem;
-}
-.panel-item-meta {
-  font-size: 0.75rem;
-  color: var(--ka-fg-muted);
-}
-.panel-empty,
-.panel-loading {
-  font-size: 0.875rem;
-  color: var(--ka-fg-muted);
-  text-align: center;
-  padding: 1rem 0;
-}
-</style>

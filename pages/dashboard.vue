@@ -1,113 +1,103 @@
 <template>
-  <NuxtLayout name="default">
-    <div class="dashboard-page">
-      <section class="dashboard-hero">
-        <div>
-          <p class="dashboard-eyebrow">Dashboard</p>
-          <h1>Boa {{ greeting }}, {{ auth.user?.name?.split(" ")?.[0] || "time" }} ✳</h1>
-          <p>Aqui tá tudo sob controle. Hoje seu time já resolveu {{ overview?.conversations?.closed ?? 0 }} conversas.</p>
+  <div class="dashboard-page">
+    <div class="dashboard-hero">
+      <div>
+        <h1>Boa {{ greeting }}, {{ auth.user?.name?.split(" ")?.[0] || "time" }}</h1>
+        <p>Aqui tá tudo sob controle. Hoje seu time já resolveu {{ overview?.conversations?.closed ?? 0 }} conversas.</p>
+      </div>
+      <div class="dashboard-actions">
+        <button class="btn secondary sm" type="button" @click="refresh">
+          <Icon name="refresh" :size="16" />
+          Atualizar
+        </button>
+        <button class="btn primary sm" type="button" @click="navigateTo('/inbox')">
+          <Icon name="plus" :size="16" />
+          Nova conversa
+        </button>
+      </div>
+    </div>
+
+    <div class="dashboard-shortcuts">
+      <button class="dashboard-shortcut" type="button" @click="navigateTo('/inbox')">
+        <div class="dashboard-shortcut-ico"><Icon name="message" :size="20" /></div>
+        <div class="dashboard-shortcut-text">
+          <strong>Nova conversa</strong>
+          <small>Abrir chat com novo contato</small>
         </div>
-        <div class="dashboard-actions">
-          <Button variant="secondary" size="sm" @click="refresh">
-            <RefreshCw class="h-4 w-4" />
-            Atualizar
-          </Button>
-          <Button size="sm" @click="navigateTo('/inbox')">
-            <Plus class="h-4 w-4" />
-            Nova conversa
-          </Button>
+      </button>
+      <button class="dashboard-shortcut" type="button" @click="navigateTo('/crm')">
+        <div class="dashboard-shortcut-ico"><Icon name="kanban" :size="20" /></div>
+        <div class="dashboard-shortcut-text">
+          <strong>Ver pipeline</strong>
+          <small>{{ overview?.contacts?.newLast7d ?? 0 }} leads em aberto</small>
         </div>
-      </section>
+      </button>
+      <button class="dashboard-shortcut" type="button" @click="navigateTo('/agent')">
+        <div class="dashboard-shortcut-ico"><Icon name="sparkles" :size="20" /></div>
+        <div class="dashboard-shortcut-text">
+          <strong>Treinar a IA</strong>
+          <small>Adicionar documentos</small>
+        </div>
+      </button>
+    </div>
 
-      <section class="dashboard-shortcuts">
-        <button class="dashboard-shortcut" type="button" @click="navigateTo('/inbox')">
-          <span class="dashboard-shortcut-ico"><MessageSquare class="h-5 w-5" /></span>
-          <span class="dashboard-shortcut-text">
-            <strong>Nova conversa</strong>
-            <small>Abrir chat com novo contato</small>
+    <div class="dashboard-kpis">
+      <div v-for="kpi in kpis" :key="kpi.label" class="dashboard-kpi">
+        <span class="dashboard-kpi-label">{{ kpi.label }}</span>
+        <Skeleton v-if="loading" height="2rem" width="7rem" />
+        <strong v-else class="dashboard-kpi-value">{{ kpi.value }}</strong>
+        <div class="dashboard-kpi-delta">
+          <span v-if="kpi.trend" class="kpi-badge" :class="kpi.trend > 0 ? 'is-success' : 'is-danger'">
+            <Icon :name="kpi.trend > 0 ? 'trendUp' : 'trendDown'" :size="12" />
+            {{ kpi.trend > 0 ? '+' : '' }}{{ kpi.trend }}%
           </span>
-        </button>
-        <button class="dashboard-shortcut" type="button" @click="navigateTo('/crm')">
-          <span class="dashboard-shortcut-ico"><Kanban class="h-5 w-5" /></span>
-          <span class="dashboard-shortcut-text">
-            <strong>Ver pipeline</strong>
-            <small>{{ overview?.contacts?.newLast7d ?? 0 }} leads em aberto</small>
-          </span>
-        </button>
-        <button class="dashboard-shortcut" type="button" @click="navigateTo('/agent')">
-          <span class="dashboard-shortcut-ico"><Sparkles class="h-5 w-5" /></span>
-          <span class="dashboard-shortcut-text">
-            <strong>Treinar a IA</strong>
-            <small>Adicionar documentos</small>
-          </span>
-        </button>
-      </section>
+          <span v-else class="kpi-note" :class="kpi.noteClass">{{ kpi.note }}</span>
+        </div>
+        <svg v-if="kpi.sparkData.length > 1" class="dashboard-kpi-spark" viewBox="0 0 100 32" preserveAspectRatio="none">
+          <polyline fill="none" stroke="var(--ka-brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            :points="sparkPoints(kpi.sparkData)" />
+        </svg>
+      </div>
+    </div>
 
-      <section class="dashboard-kpis">
-        <article v-for="kpi in kpis" :key="kpi.label" class="dashboard-kpi">
-          <p class="dashboard-kpi-label">{{ kpi.label }}</p>
-          <Skeleton v-if="loading" class="mt-3" height="2rem" width="7rem" />
-          <strong v-else class="dashboard-kpi-value">{{ kpi.value }}</strong>
-          <div class="dashboard-kpi-delta">
-            <span v-if="kpi.trend" class="kpi-badge" :class="kpi.trend > 0 ? 'is-success' : 'is-danger'">
-              <component :is="kpi.trend > 0 ? TrendingUp : TrendingDown" class="h-3 w-3" />
-              {{ kpi.trendLabel }}
-            </span>
-            <span v-else class="kpi-note" :class="kpi.noteClass">{{ kpi.note }}</span>
+    <div class="dashboard-content-grid">
+      <div class="dashboard-panel">
+        <div class="dashboard-panel-header">
+          <div>
+            <h2>Mensagens por dia</h2>
+            <p>Entrada, IA e atendimento humano nos últimos 7 dias.</p>
           </div>
-          <Sparkline v-if="!loading && kpi.sparkData.length > 1" :data="kpi.sparkData" :color="kpi.trend < 0 ? 'var(--ka-danger)' : 'var(--ka-brand)'" class="dashboard-kpi-spark" />
-        </article>
-      </section>
+          <div class="dashboard-segment">
+            <span>Semana</span>
+            <span>Mês</span>
+          </div>
+        </div>
+        <div v-if="loading" style="display:flex;flex-direction:column;gap:12px;padding:16px">
+          <Skeleton v-for="i in 6" :key="i" height="2.5rem" />
+        </div>
+        <div v-else-if="hasChartData" class="dashboard-bars">
+          <div v-for="day in chartDays" :key="day.day" class="dashboard-bar-col">
+            <div class="dashboard-bar-stack">
+              <i class="is-inbound" :style="{ height: barHeight(day.inbound, maxMessages) }" :title="`${day.inbound} recebidas`" />
+              <i class="is-ai" :style="{ height: barHeight(day.ai, maxMessages) }" :title="`${day.ai} IA`" />
+              <i class="is-human" :style="{ height: barHeight(day.human, maxMessages) }" :title="`${day.human} humanas`" />
+            </div>
+            <small>{{ shortDay(day.day) }}</small>
+          </div>
+        </div>
+        <EmptyState v-else icon="barChart" title="Sem mensagens no período" description="Quando houver conversas no backend, o volume aparece aqui." />
+      </div>
 
-      <section class="dashboard-content-grid">
-        <article class="dashboard-panel dashboard-chart-panel">
-          <div class="dashboard-panel-header">
-            <div>
-              <h2>Mensagens por dia</h2>
-              <p>Entrada, IA e atendimento humano nos últimos 7 dias.</p>
-            </div>
-            <div class="dashboard-legend" aria-label="Legenda do gráfico">
-              <span><i class="is-inbound" /> Recebidas</span>
-              <span><i class="is-ai" /> IA</span>
-              <span><i class="is-human" /> Humano</span>
-            </div>
-          </div>
-
-          <div v-if="loading" class="space-y-3">
-            <Skeleton v-for="i in 6" :key="i" height="2.5rem" />
-          </div>
-          <div v-else-if="hasChartData" class="dashboard-chart" :aria-label="chartSummary">
-            <div class="dashboard-y-axis" aria-hidden="true">
-              <span>{{ maxMessages }}</span>
-              <span>{{ Math.ceil(maxMessages / 2) }}</span>
-              <span>0</span>
-            </div>
-            <div class="dashboard-plot">
-              <div v-for="day in chartDays" :key="day.day" class="dashboard-bar-col">
-                <div class="dashboard-bar-stack">
-                  <i class="is-inbound" :style="{ height: barHeight(day.inbound, maxMessages) }" :title="`${day.inbound} recebidas`" />
-                  <i class="is-ai" :style="{ height: barHeight(day.ai, maxMessages) }" :title="`${day.ai} IA`" />
-                  <i class="is-human" :style="{ height: barHeight(day.human, maxMessages) }" :title="`${day.human} humanas`" />
-                </div>
-                <small>{{ shortDay(day.day) }}</small>
-              </div>
-            </div>
-          </div>
-          <EmptyState v-else :icon="BarChart3" title="Sem mensagens no período" description="Quando houver conversas no backend, o volume aparece aqui." />
-        </article>
-
-        <article class="dashboard-panel dashboard-recent-panel">
-          <div class="dashboard-panel-header">
-            <div>
-              <h2>Conversas recentes</h2>
-              <p>Últimos atendimentos atualizados.</p>
-            </div>
-            <Button variant="ghost" size="sm" @click="navigateTo('/inbox')">Ver todas</Button>
-          </div>
-          <div v-if="loading" class="space-y-3">
-            <Skeleton v-for="i in 5" :key="i" height="3.5rem" />
-          </div>
-          <div v-else-if="conversations.length" class="dashboard-conversation-list">
+      <div class="dashboard-panel dashboard-recent-panel">
+        <div class="dashboard-panel-header">
+          <h2>Conversas recentes</h2>
+          <button class="btn ghost sm" type="button" @click="navigateTo('/inbox')">Ver todas</button>
+        </div>
+        <div v-if="loading" style="display:flex;flex-direction:column;gap:12px;padding:16px">
+          <Skeleton v-for="i in 5" :key="i" height="3.5rem" />
+        </div>
+        <template v-else-if="conversations.length">
+          <div class="dashboard-conversation-list">
             <button
               v-for="conv in conversations.slice(0, 6)"
               :key="conv.id"
@@ -121,22 +111,20 @@
                 <small>{{ conv.lastMessage?.content || "Sem mensagens ainda" }}</small>
               </span>
               <div class="dashboard-conv-meta">
-                <em>{{ relativeTime(conv.updatedAt) }}</em>
-                <b v-if="conv.unreadCount" class="dashboard-unread">{{ conv.unreadCount }}</b>
+                <small>{{ relativeTime(conv.updatedAt) }}</small>
+                <span v-if="conv.unreadCount" class="dashboard-unread">{{ conv.unreadCount }}</span>
               </div>
             </button>
           </div>
-          <EmptyState v-else :icon="MessageSquare" title="Nenhuma conversa aberta" description="Conecte o WhatsApp ou treine a IA para iniciar a operação." action-label="Treinar a IA" action-link="/agent" />
-        </article>
-      </section>
+        </template>
+        <EmptyState v-else icon="message" title="Nenhuma conversa aberta" description="Conecte o WhatsApp ou treine a IA para iniciar a operação." action-label="Treinar a IA" action-link="/agent" />
+      </div>
     </div>
-  </NuxtLayout>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { BarChart3, Bot, Kanban, MessageSquare, Plus, RefreshCw, Sparkles, TrendingDown, TrendingUp, UserPlus, Users } from "lucide-vue-next";
-
-definePageMeta({ layout: false, middleware: "auth" });
+definePageMeta({ middleware: "auth" });
 
 const api = useApi();
 const auth = useAuthStore();
@@ -155,7 +143,7 @@ const greeting = computed(() => {
 
 const chartDays = computed(() => messageDays.value.slice(-7));
 const inboundSpark = computed(() => chartDays.value.map((d: any) => Number(d.inbound || 0)));
-const aiSpark      = computed(() => chartDays.value.map((d: any) => Number(d.ai || 0)));
+const aiSpark = computed(() => chartDays.value.map((d: any) => Number(d.ai || 0)));
 
 function trendPct(spark: number[]) {
   if (spark.length < 2) return 0;
@@ -166,13 +154,13 @@ function trendPct(spark: number[]) {
 }
 
 const kpis = computed(() => {
-  const successRate  = Number(overview.value?.ai?.successRate ?? 0);
-  const newLeads     = Number(overview.value?.contacts?.newLast7d ?? 0);
-  const convToday    = Number(overview.value?.conversations?.today ?? 0);
-  const convOpen     = Number(overview.value?.conversations?.open ?? 0);
-  const contacts     = Number(stats.value?.stats?.contacts ?? 0);
-  const convTrend    = trendPct(inboundSpark.value);
-  const aiTrend      = trendPct(aiSpark.value);
+  const successRate = Number(overview.value?.ai?.successRate ?? 0);
+  const newLeads = Number(overview.value?.contacts?.newLast7d ?? 0);
+  const convToday = Number(overview.value?.conversations?.today ?? 0);
+  const convOpen = Number(overview.value?.conversations?.open ?? 0);
+  const contacts = Number(stats.value?.stats?.contacts ?? 0);
+  const convTrend = trendPct(inboundSpark.value);
+  const aiTrend = trendPct(aiSpark.value);
 
   return [
     {
@@ -181,9 +169,7 @@ const kpis = computed(() => {
       note: convOpen > 0 ? `${convOpen} em aberto agora` : "Nenhuma em aberto",
       noteClass: convOpen > 0 ? "is-positive" : "",
       trend: convTrend,
-      trendLabel: `${Math.abs(convTrend)}%`,
       sparkData: inboundSpark.value,
-      icon: MessageSquare,
     },
     {
       label: "Contatos",
@@ -191,9 +177,7 @@ const kpis = computed(() => {
       note: newLeads > 0 ? `+${newLeads} nos últimos 7 dias` : "Base total",
       noteClass: newLeads > 0 ? "is-positive" : "",
       trend: 0,
-      trendLabel: "",
       sparkData: [] as number[],
-      icon: Users,
     },
     {
       label: "Leads novos",
@@ -201,9 +185,7 @@ const kpis = computed(() => {
       note: "Nos últimos 7 dias",
       noteClass: newLeads > 0 ? "is-positive" : "",
       trend: 0,
-      trendLabel: "",
       sparkData: chartDays.value.map((d: any) => Number(d.total || 0)),
-      icon: UserPlus,
     },
     {
       label: "Respostas IA",
@@ -211,16 +193,13 @@ const kpis = computed(() => {
       note: successRate > 0 ? `${successRate}% sem intervenção humana` : "Últimos 30 dias",
       noteClass: successRate >= 70 ? "is-positive" : successRate > 0 && successRate < 40 ? "is-negative" : "",
       trend: aiTrend,
-      trendLabel: `${Math.abs(aiTrend)}%`,
       sparkData: aiSpark.value,
-      icon: Bot,
     },
   ];
 });
 
 const maxMessages = computed(() => Math.max(1, ...chartDays.value.map((d: any) => Math.max(Number(d.inbound || 0), Number(d.ai || 0), Number(d.human || 0)))));
 const hasChartData = computed(() => chartDays.value.some((d: any) => Number(d.inbound || 0) + Number(d.ai || 0) + Number(d.human || 0) > 0));
-const chartSummary = computed(() => `Gráfico dos últimos ${chartDays.value.length} dias. Pico de ${maxMessages.value} mensagens.`);
 
 function barHeight(value: number, max: number) {
   const n = Number(value || 0);
@@ -230,6 +209,13 @@ function barHeight(value: number, max: number) {
 
 function shortDay(day: string) {
   return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit" }).format(new Date(`${day}T12:00:00`));
+}
+
+function sparkPoints(data: number[]) {
+  const w = 100, h = 32;
+  const max = Math.max(1, ...data);
+  const stepX = w / Math.max(data.length - 1, 1);
+  return data.map((v, i) => `${i * stepX},${h - (v / max) * (h - 4) - 2}`).join(" ");
 }
 
 async function refresh() {
@@ -252,3 +238,4 @@ async function refresh() {
 
 onMounted(refresh);
 </script>
+

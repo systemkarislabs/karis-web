@@ -135,7 +135,7 @@
 <script setup lang="ts">
 import { AlertTriangle, CheckCircle, Clock, MessageSquare, RefreshCw, UserCheck, Users } from "lucide-vue-next";
 
-definePageMeta({ layout: false, middleware: "auth" });
+definePageMeta({ middleware: "auth" });
 
 const api = useApi();
 const toast = useToast();

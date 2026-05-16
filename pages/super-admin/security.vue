@@ -2,9 +2,9 @@
   <section class="super-admin-page">
     <header class="super-admin-header">
       <div>
-        <p class="eyebrow">Segurança</p>
+        <p class="eyebrow">Seguranca</p>
         <h1>Acesso do Super Admin</h1>
-        <p>2FA, auditoria, staff e restrições de impersonação.</p>
+        <p>2FA, auditoria, staff e restricoes de impersonacao.</p>
       </div>
     </header>
 
@@ -22,23 +22,23 @@
         </div>
 
         <div class="stack-form" style="margin-top: 1.5rem;">
-          <h3>Autenticação de dois fatores (2FA)</h3>
+          <h3>Autenticacao de dois fatores (2FA)</h3>
           <div v-if="!superAdmin.platformUser?.totpEnabled && !qrData.qrUrl">
-            <p>Adicione uma camada extra de segurança ao seu login.</p>
+            <p>Adicione uma camada extra de seguranca ao seu login.</p>
             <button class="primary-action" @click="enable2FA" :disabled="qrData.loading">{{ qrData.loading ? "Gerando..." : "Ativar 2FA" }}</button>
           </div>
           <div v-if="qrData.qrUrl && !superAdmin.platformUser?.totpEnabled">
             <p>Escaneie o QR code com seu app autenticador (Google Authenticator, Authy, etc):</p>
             <img :src="qrData.qrUrl" alt="QR Code 2FA" style="width: 200px; height: 200px; margin: 1rem 0;" />
-            <p class="muted">Códigos de recuperação (salve em local seguro):</p>
+            <p class="muted">Codigos de recuperacao (salve em local seguro):</p>
             <pre style="background: #f1f5f9; padding: 0.75rem; border-radius: 0.5rem; font-size: 0.75rem; overflow-x: auto;">{{ qrData.recoveryCodes?.join("\n") }}</pre>
-            <label>Digite o código de 6 dígitos para confirmar:
+            <label>Digite o codigo de 6 digitos para confirmar:
               <input v-model="qrData.code" type="text" maxlength="6" placeholder="000000" />
             </label>
-            <button class="primary-action" @click="verify2FA" :disabled="qrData.loading">{{ qrData.loading ? "Verificando..." : "Confirmar ativação" }}</button>
+            <button class="primary-action" @click="verify2FA" :disabled="qrData.loading">{{ qrData.loading ? "Verificando..." : "Confirmar ativacao" }}</button>
           </div>
           <div v-if="superAdmin.platformUser?.totpEnabled">
-            <p class="success-copy">2FA está ativo.</p>
+            <p class="success-copy">2FA esta ativo.</p>
             <label>Para desativar, digite um codigo atual:
               <input v-model="disableCode" type="text" maxlength="6" placeholder="000000" />
             </label>
@@ -73,15 +73,15 @@
             </select>
           </label>
           <p v-if="newUser.error" class="form-error">{{ newUser.error }}</p>
-          <button class="primary-action" @click="createUser" :disabled="newUser.loading">{{ newUser.loading ? "Criando..." : "Criar usuário" }}</button>
+          <button class="primary-action" @click="createUser" :disabled="newUser.loading">{{ newUser.loading ? "Criando..." : "Criar usuario" }}</button>
         </div>
       </section>
 
       <!-- Sessoes -->
       <section class="super-admin-panel">
-        <h2>Sessões</h2>
-        <p>Encerrar todas as sessões invalida todos os tokens ativos.</p>
-        <button class="primary-action" @click="logoutAll" :disabled="logoutLoading">{{ logoutLoading ? "Encerrando..." : "Encerrar todas as sessões" }}</button>
+        <h2>Sessoes</h2>
+        <p>Encerrar todas as sessoes invalida todos os tokens ativos.</p>
+        <button class="primary-action" @click="logoutAll" :disabled="logoutLoading">{{ logoutLoading ? "Encerrando..." : "Encerrar todas as sessoes" }}</button>
       </section>
     </div>
   </section>
@@ -141,9 +141,9 @@ async function verify2FA() {
     qrData.qrUrl = "";
     qrData.code = "";
     await superAdmin.fetchMe();
-    alert("2FA ativado com sucesso! Faça login novamente.");
+    alert("2FA ativado com sucesso!");
   } catch (err: any) {
-    alert(err?.data?.message || "Código inválido.");
+    alert(err?.data?.message || "Codigo invalido.");
   } finally { qrData.loading = false; }
 }
 
@@ -155,7 +155,7 @@ async function disable2FA() {
     await superAdmin.fetchMe();
     alert("2FA desativado.");
   } catch (err: any) {
-    alert(err?.data?.message || "Código inválido.");
+    alert(err?.data?.message || "Codigo invalido.");
   } finally { disableLoading.value = false; }
 }
 
@@ -164,7 +164,7 @@ async function logoutAll() {
   try {
     await api.fetch("/auth/logout", { method: "POST" });
     superAdmin.clear();
-    navigateTo("/login");
+    navigateTo("/super-admin/login");
   } catch { logoutLoading.value = false; }
 }
 
@@ -178,17 +178,17 @@ async function createUser() {
     newUser.name = ""; newUser.email = ""; newUser.password = ""; newUser.role = "STAFF";
     await loadUsers();
   } catch (err: any) {
-    newUser.error = err?.data?.message || "Erro ao criar usuário.";
+    newUser.error = err?.data?.message || "Erro ao criar usuario.";
   } finally { newUser.loading = false; }
 }
 
 async function deleteUser(id: string) {
-  if (!confirm("Tem certeza que deseja remover este usuário?")) return;
+  if (!confirm("Tem certeza que deseja remover este usuario?")) return;
   try {
     await api.fetch(`/platform-users/${id}`, { method: "DELETE" });
     await loadUsers();
   } catch (err: any) {
-    alert(err?.data?.message || "Erro ao remover usuário.");
+    alert(err?.data?.message || "Erro ao remover usuario.");
   }
 }
 

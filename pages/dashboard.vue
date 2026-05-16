@@ -174,6 +174,7 @@ definePageMeta({ middleware: 'auth' })
 
 const api = useApi()
 const auth = useAuthStore()
+const toast = useToast()
 const loading = ref(true)
 const stats = ref<any>(null)
 const overview = ref<any>(null)
@@ -299,16 +300,20 @@ function relativeTime(dateStr: string) {
 async function refresh() {
   loading.value = true
   try {
-    const [statsRes, overviewRes, daysRes, convRes] = await Promise.all([
+    const [statsRes, overviewRes, daysRes, convRes] = await Promise.allSettled([
       api.fetch<any>('/companies/me/stats'),
       api.fetch<any>('/analytics/overview'),
       api.fetch<any>('/analytics/messages-per-day?days=7'),
       api.fetch<any>('/conversations?limit=6'),
     ])
-    stats.value = statsRes
-    overview.value = overviewRes
-    messageDays.value = daysRes.days || []
-    conversations.value = unwrapList(convRes, ['conversations'])
+
+    if (statsRes.status === 'fulfilled') stats.value = statsRes.value
+    if (overviewRes.status === 'fulfilled') overview.value = overviewRes.value
+    if (daysRes.status === 'fulfilled') messageDays.value = (daysRes.value as any).days || []
+    if (convRes.status === 'fulfilled') conversations.value = unwrapList(convRes.value, ['conversations'])
+
+    const failed = [statsRes, overviewRes, daysRes, convRes].filter(r => r.status === 'rejected')
+    if (failed.length === 4) toast.error('Não foi possível carregar os dados. Verifique sua conexão.')
   } finally {
     loading.value = false
   }

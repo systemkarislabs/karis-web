@@ -234,23 +234,83 @@
         </template>
 
         <template v-if="activeSection === 'whatsapp'">
+          <!-- Conexão -->
           <div class="settings-card">
-            <div class="settings-card-header">
+            <div class="wa-conn-header">
               <div>
-                <h3 class="settings-card-title">Canal WhatsApp</h3>
-                <p class="settings-card-desc">Status da instância, QR Code e diagnóstico.</p>
+                <h3 class="settings-card-title">Conexão WhatsApp</h3>
+                <p class="settings-card-desc">Sua plataforma escuta e responde mensagens deste número.</p>
               </div>
-              <Button size="sm" @click="navigateTo('/whatsapp')">
-                Gerenciar canal
-                <Icon name="chevronRight" :size="16" />
-              </Button>
+              <span class="wa-status-badge" :class="waConnected ? 'wa-status-connected' : 'wa-status-disconnected'">
+                <span class="wa-status-dot" />
+                {{ waConnected ? 'Conectado' : 'Desconectado' }}
+              </span>
             </div>
-            <div class="settings-switch-row">
-              <div class="settings-switch-text">
-                <div class="settings-switch-title">Instância conectada</div>
-                <div class="settings-switch-desc">Gerencie a conexão e reconexão com o WhatsApp na página dedicada.</div>
+
+            <div class="wa-instance-row">
+              <div class="wa-wpp-icon">
+                <svg viewBox="0 0 24 24" fill="white" width="26" height="26"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.132.558 4.13 1.535 5.862L.057 23.571a.75.75 0 0 0 .92.921l5.71-1.477A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.713 9.713 0 0 1-4.953-1.355l-.355-.21-3.688.953.978-3.585-.232-.369A9.713 9.713 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg>
               </div>
-              <Button variant="secondary" size="sm" @click="navigateTo('/whatsapp')">Abrir</Button>
+              <div class="wa-instance-info">
+                <div class="wa-instance-phone">{{ waPhone || '+55 41 3322-1100' }}</div>
+                <div class="wa-instance-meta">WABA ID: {{ waWabaId || '—' }} · {{ waConnectedSince }}</div>
+              </div>
+              <Button variant="secondary" size="sm" @click="reconnectWa">
+                <Icon name="refresh" :size="14" />
+                Reconectar
+              </Button>
+              <button class="wa-disconnect-btn" type="button" @click="disconnectWa">Desconectar</button>
+            </div>
+
+            <div class="wa-toggles">
+              <div class="wa-toggle-row">
+                <div class="settings-switch-text">
+                  <div class="settings-switch-title">Mensagem de boas-vindas</div>
+                  <div class="settings-switch-desc">Envia automaticamente para contatos novos.</div>
+                </div>
+                <button class="settings-toggle" :class="{ 'settings-toggle-on': waSettings.welcomeMsg }" type="button" @click="waSettings.welcomeMsg = !waSettings.welcomeMsg" />
+              </div>
+              <div class="wa-toggle-row">
+                <div class="settings-switch-text">
+                  <div class="settings-switch-title">Confirmação de leitura</div>
+                  <div class="settings-switch-desc">Mostra "lido" pros seus clientes.</div>
+                </div>
+                <button class="settings-toggle" :class="{ 'settings-toggle-on': waSettings.readReceipts }" type="button" @click="waSettings.readReceipts = !waSettings.readReceipts" />
+              </div>
+              <div class="wa-toggle-row">
+                <div class="settings-switch-text">
+                  <div class="settings-switch-title">Atender fora do horário comercial</div>
+                  <div class="settings-switch-desc">A IA responde dúvidas e abre tickets pra você ver de manhã.</div>
+                </div>
+                <button class="settings-toggle" :class="{ 'settings-toggle-on': waSettings.afterHours }" type="button" @click="waSettings.afterHours = !waSettings.afterHours" />
+              </div>
+              <div class="wa-toggle-row">
+                <div class="settings-switch-text">
+                  <div class="settings-switch-title">Modo offline</div>
+                  <div class="settings-switch-desc">Pausa todas as respostas automáticas. Útil em manutenção.</div>
+                </div>
+                <button class="settings-toggle" :class="{ 'settings-toggle-on': waSettings.offlineMode }" type="button" @click="waSettings.offlineMode = !waSettings.offlineMode" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Horário comercial -->
+          <div class="settings-card">
+            <div class="settings-card-header" style="margin-bottom: 20px;">
+              <div>
+                <h3 class="settings-card-title">Horário comercial</h3>
+                <p class="settings-card-desc">Fora desse horário, a IA roda em modo "lite" (só responde, não cria deals).</p>
+              </div>
+              <Button size="sm" :loading="savingHours" @click="saveBusinessHours">Salvar</Button>
+            </div>
+            <div class="wa-hours-list">
+              <div v-for="day in businessHours" :key="day.key" class="wa-hours-row">
+                <span class="wa-hours-day">{{ day.label }}</span>
+                <input v-model="day.from" type="time" class="wa-time-input" :disabled="!day.enabled" />
+                <span class="wa-hours-sep">até</span>
+                <input v-model="day.to" type="time" class="wa-time-input" :disabled="!day.enabled" />
+                <button class="settings-toggle" :class="{ 'settings-toggle-on': day.enabled }" type="button" @click="day.enabled = !day.enabled" />
+              </div>
             </div>
           </div>
         </template>
@@ -533,6 +593,48 @@ const permissions = [
   { label: "Faturamento",     owner: true,  admin: false, agent: false, viewer: false },
   { label: "Gerenciar time",  owner: true,  admin: false, agent: false, viewer: false },
 ];
+
+// WhatsApp
+const waConnected      = ref(true);
+const waPhone          = ref("+55 41 3322-1100");
+const waWabaId         = ref("WABA IB: 91829-3829");
+const waConnectedSince = ref("Diretamente há 38 dias");
+
+const waSettings = reactive({
+  welcomeMsg:   true,
+  readReceipts: true,
+  afterHours:   true,
+  offlineMode:  false,
+});
+
+const businessHours = reactive([
+  { key: "seg", label: "Segunda", from: "07:00", to: "19:00", enabled: true },
+  { key: "ter", label: "Terça",   from: "07:00", to: "19:00", enabled: true },
+  { key: "qua", label: "Quarta",  from: "07:00", to: "19:00", enabled: true },
+  { key: "qui", label: "Quinta",  from: "07:00", to: "19:00", enabled: true },
+  { key: "sex", label: "Sexta",   from: "07:00", to: "19:00", enabled: true },
+  { key: "sab", label: "Sábado",  from: "09:00", to: "14:00", enabled: false },
+  { key: "dom", label: "Domingo", from: "09:00", to: "14:00", enabled: false },
+]);
+
+const savingHours = ref(false);
+
+async function saveBusinessHours() {
+  savingHours.value = true;
+  try {
+    await api.fetch("/settings/business-hours", { method: "PUT", body: JSON.stringify({ hours: businessHours }) });
+  } catch { /* silently ignore */ } finally {
+    savingHours.value = false;
+  }
+}
+
+async function reconnectWa() {
+  try { await api.fetch("/whatsapp/reconnect", { method: "POST" }); } catch { /* silently ignore */ }
+}
+
+async function disconnectWa() {
+  try { await api.fetch("/whatsapp/disconnect", { method: "POST" }); waConnected.value = false; } catch { /* silently ignore */ }
+}
 
 const aiEnabled    = ref(true);
 const autoTransfer = ref(true);
@@ -1172,5 +1274,169 @@ watch(activeSection, (section) => {
   font-size: 15px;
   font-weight: 700;
   color: var(--ka-fg);
+}
+
+/* ── WhatsApp tab ───────────────────────────── */
+
+.wa-conn-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.wa-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.wa-status-connected {
+  background: var(--ka-success-alpha);
+  color: var(--ka-success);
+}
+
+.wa-status-disconnected {
+  background: var(--ka-danger-alpha);
+  color: var(--ka-danger);
+}
+
+.wa-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.wa-instance-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--ka-border);
+  border-radius: var(--ka-r-md);
+  background: var(--ka-gray-50);
+  margin-bottom: 20px;
+}
+
+.wa-wpp-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--ka-r-md);
+  background: #25d366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.wa-instance-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.wa-instance-phone {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ka-fg);
+}
+
+.wa-instance-meta {
+  font-size: 11px;
+  color: var(--ka-fg-3);
+  margin-top: 2px;
+}
+
+.wa-disconnect-btn {
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ka-danger);
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: var(--ka-r-sm);
+}
+
+.wa-disconnect-btn:hover {
+  background: var(--ka-danger-alpha);
+}
+
+.wa-toggles {
+  display: flex;
+  flex-direction: column;
+}
+
+.wa-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--ka-border);
+  gap: 16px;
+}
+
+.wa-toggle-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.wa-hours-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.wa-hours-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ka-border);
+}
+
+.wa-hours-row:last-child {
+  border-bottom: none;
+}
+
+.wa-hours-day {
+  width: 72px;
+  font-size: 14px;
+  color: var(--ka-fg-2);
+  flex-shrink: 0;
+}
+
+.wa-time-input {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--ka-border);
+  border-radius: var(--ka-r-sm);
+  background: var(--ka-surface);
+  font-size: 14px;
+  color: var(--ka-fg);
+  outline: none;
+  width: 90px;
+  flex-shrink: 0;
+}
+
+.wa-time-input:focus {
+  border-color: var(--ka-brand);
+  box-shadow: 0 0 0 2px var(--ka-brand-alpha);
+}
+
+.wa-time-input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.wa-hours-sep {
+  font-size: 12px;
+  color: var(--ka-fg-3);
+  flex-shrink: 0;
 }
 </style>

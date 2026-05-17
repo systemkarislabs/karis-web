@@ -7424,10 +7424,14 @@ button {
 /* Inbox grid — renders inside .content (which is already 100dvh - 64px) */
 .inbox-page {
   display: grid;
-  grid-template-columns: 190px 300px minmax(0, 1fr) 280px;
+  grid-template-columns: 190px 300px minmax(0, 1fr);
   height: 100%;
   background: var(--ka-bg);
   overflow: hidden;
+  transition: grid-template-columns 200ms ease;
+}
+.inbox-page.panel-open {
+  grid-template-columns: 190px 300px minmax(0, 1fr) 280px;
 }
 
 /* Filters column */
@@ -7564,10 +7568,12 @@ button {
 
 /* Responsive breakpoints for inbox */
 @media (max-width: 1200px) {
-  .inbox-page { grid-template-columns: 190px 300px minmax(0, 1fr); }
+  .inbox-page,
+  .inbox-page.panel-open { grid-template-columns: 190px 300px minmax(0, 1fr); }
   .contact-panel { display: none; }
 }
 @media (max-width: 860px) {
-  .inbox-page { grid-template-columns: minmax(0, 1fr); }
+  .inbox-page,
+  .inbox-page.panel-open { grid-template-columns: minmax(0, 1fr); }
   .inbox-filters, .inbox-list { display: none; }
 }

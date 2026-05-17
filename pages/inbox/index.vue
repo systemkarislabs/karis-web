@@ -1,5 +1,5 @@
 ﻿<template>
-  <div class="inbox-page">
+  <div class="inbox-page" :class="{ 'panel-open': showContactPanel && selectedConversation }">
     <!-- Filters column -->
     <aside class="inbox-filters">
       <h4>Caixa de entrada</h4>

@@ -208,8 +208,79 @@
       </div>
     </div>
 
-    <!-- Transferências / Treinamento tab -->
-    <div v-else-if="activeTab === 'sectors' || activeTab === 'training'" class="agent-section">
+    <!-- Treinamento por correção tab -->
+    <div v-else-if="activeTab === 'training'" class="agent-section">
+      <div class="agent-section-head" style="flex-direction:row;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <h2>Treinamento por correção</h2>
+          <p>Pega uma resposta que a IA errou e ensina ela como deveria ser. Cada correção melhora as próximas respostas.</p>
+        </div>
+        <button class="btn primary sm" type="button" @click="showTrainingForm = !showTrainingForm">
+          <Icon name="plus" :size="14" />
+          Adicionar caso de treino
+        </button>
+      </div>
+
+      <!-- Add training case form -->
+      <div v-if="showTrainingForm" class="sector-form" style="margin-bottom:16px;">
+        <div class="form-group">
+          <label class="form-label">Mensagem do cliente</label>
+          <textarea v-model="trainingForm.userMessage" class="form-input" style="height:60px;resize:vertical;padding:8px 12px;" placeholder="O que o cliente perguntou ou disse?" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Resposta errada da IA</label>
+          <textarea v-model="trainingForm.wrongResponse" class="form-input" style="height:60px;resize:vertical;padding:8px 12px;" placeholder="O que a IA respondeu de errado?" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Resposta correta</label>
+          <textarea v-model="trainingForm.correctResponse" class="form-input" style="height:60px;resize:vertical;padding:8px 12px;" placeholder="Como deveria ter respondido?" />
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn primary sm" type="button" :disabled="trainingSaving" @click="saveTrainingCase">{{ trainingSaving ? 'Salvando…' : 'Salvar caso' }}</button>
+          <button class="btn secondary sm" type="button" @click="showTrainingForm = false">Cancelar</button>
+        </div>
+      </div>
+
+      <!-- Training cases list -->
+      <div v-if="trainingCases.length" class="knowledge-list">
+        <div v-for="tc in trainingCases" :key="tc.id" class="knowledge-item" style="align-items:flex-start;gap:14px;">
+          <div class="knowledge-icon" style="background:rgba(139,92,246,0.1);color:#7C3AED;flex-shrink:0;">
+            <Icon name="sparkles" :size="16" />
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:12px;color:var(--ka-fg-muted);margin-bottom:4px;">Cliente perguntou:</div>
+            <div style="font-size:13px;color:var(--ka-fg);margin-bottom:8px;">{{ tc.userMessage }}</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div style="padding:8px 10px;border-radius:8px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);">
+                <div style="font-size:11px;font-weight:600;color:#EF4444;margin-bottom:3px;">Resposta errada</div>
+                <div style="font-size:12px;color:var(--ka-fg-2);">{{ tc.wrongResponse }}</div>
+              </div>
+              <div style="padding:8px 10px;border-radius:8px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);">
+                <div style="font-size:11px;font-weight:600;color:#10B981;margin-bottom:3px;">Resposta correta</div>
+                <div style="font-size:12px;color:var(--ka-fg-2);">{{ tc.correctResponse }}</div>
+              </div>
+            </div>
+          </div>
+          <button class="icon-btn" style="width:28px;height:28px;border:0;background:transparent;color:var(--ka-danger);flex-shrink:0;" title="Remover" @click="deleteTrainingCase(tc.id)">
+            <Icon name="trash" :size="14" />
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div v-else-if="!showTrainingForm" class="training-empty">
+        <div class="training-empty-icon">🧠</div>
+        <div class="training-empty-title">Treinamento por correção</div>
+        <div class="training-empty-desc">Pega uma resposta que a IA errou e ensina ela como deveria ser. Cada correção melhora as próximas respostas.</div>
+        <button class="btn primary sm" type="button" @click="showTrainingForm = true">
+          <Icon name="plus" :size="14" />
+          Adicionar caso de treino
+        </button>
+      </div>
+    </div>
+
+    <!-- Transferências tab -->
+    <div v-else-if="activeTab === 'sectors'" class="agent-section">
       <div class="agent-section-head" style="flex-direction:row;align-items:flex-start;justify-content:space-between;">
         <div>
           <h2>Setores de Transferência</h2>
@@ -501,9 +572,14 @@ const personalityOptions = [
   { value: 'direto',       label: 'Direto (respostas curtas e precisas)' },
 ]
 
+const showTrainingForm = ref(false)
+const trainingSaving = ref(false)
+const trainingCases = ref<any[]>([])
+const trainingForm = reactive({ userMessage: '', wrongResponse: '', correctResponse: '' })
+
 watch(activeTab, (value) => {
   if (value === 'sectors' && !sectors.value.length) loadSectors()
-  if (value === 'training' && !sectors.value.length) loadSectors()
+  if (value === 'training' && !trainingCases.value.length) loadTrainingCases()
 })
 
 function formatPhone(phone: string) {
@@ -674,6 +750,48 @@ async function runPlayground() {
     toast.error(err?.data?.message || 'Não foi possível testar o agente.')
   } finally {
     playgroundLoading.value = false
+  }
+}
+
+async function loadTrainingCases() {
+  try {
+    const res = await api.fetch<any>('/assistant/training-cases')
+    trainingCases.value = Array.isArray(res) ? res : (res.cases || [])
+  } catch {
+    trainingCases.value = []
+  }
+}
+
+async function saveTrainingCase() {
+  if (!trainingForm.userMessage.trim() || !trainingForm.correctResponse.trim()) {
+    toast.warning('Informe a mensagem do cliente e a resposta correta.')
+    return
+  }
+  trainingSaving.value = true
+  try {
+    const res = await api.fetch<any>('/assistant/training-cases', {
+      method: 'POST',
+      body: JSON.stringify({ ...trainingForm }),
+    })
+    trainingCases.value.unshift(res.case || res)
+    Object.assign(trainingForm, { userMessage: '', wrongResponse: '', correctResponse: '' })
+    showTrainingForm.value = false
+    toast.success('Caso de treino salvo.')
+  } catch (err: any) {
+    toast.error(err?.data?.message || 'Erro ao salvar caso de treino.')
+  } finally {
+    trainingSaving.value = false
+  }
+}
+
+async function deleteTrainingCase(id: string) {
+  if (!confirm('Remover este caso de treino?')) return
+  try {
+    await api.fetch(`/assistant/training-cases/${id}`, { method: 'DELETE' })
+    trainingCases.value = trainingCases.value.filter(tc => tc.id !== id)
+    toast.success('Caso removido.')
+  } catch {
+    toast.error('Erro ao remover caso.')
   }
 }
 
@@ -1117,6 +1235,38 @@ onMounted(loadAgent)
   color: var(--ka-fg);
   line-height: 1.6;
   white-space: pre-wrap;
+}
+
+/* Training empty state */
+.training-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  gap: 10px;
+}
+
+.training-empty-icon {
+  font-size: 40px;
+  line-height: 1;
+  margin-bottom: 4px;
+  opacity: 0.7;
+}
+
+.training-empty-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ka-fg);
+}
+
+.training-empty-desc {
+  font-size: 13px;
+  color: var(--ka-fg-muted);
+  max-width: 420px;
+  line-height: 1.5;
+  margin-bottom: 8px;
 }
 
 @media (max-width: 900px) {

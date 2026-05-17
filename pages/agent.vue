@@ -1,110 +1,174 @@
-﻿<template>
+<template>
   <div class="agent-page">
-    <section class="agent-hero">
+    <!-- Hero header -->
+    <div class="agent-hero">
       <div class="agent-hero-info">
         <div class="agent-hero-icon">
-          <Icon name="sparkles" :size="24" />
+          <Icon name="sparkles" :size="22" />
         </div>
         <div>
-          <p class="agent-hero-label">Agente IA</p>
-          <h1 class="agent-hero-title">{{ form.name || "Agente IA da Karis" }}</h1>
-          <small class="agent-hero-status">
-            <span class="agent-status-dot" :class="form.isActive ? 'agent-status-online' : 'agent-status-offline'" />
-            {{ form.isActive ? "Ativa" : "Inativa" }}
-            <template v-if="agentStats.today > 0"> · {{ agentStats.today }} conversas hoje · {{ agentStats.successRate }}% sem necessidade humana</template>
-          </small>
+          <div class="agent-eyebrow">Agente IA</div>
+          <h1 class="agent-title">{{ form.name || 'Agente IA da Karis' }}</h1>
+          <div class="agent-status-line">
+            <span class="agent-status-dot" :class="form.isActive ? 'online' : 'offline'" />
+            {{ form.isActive ? 'Ativa' : 'Inativa' }}
+            <template v-if="agentStats.today > 0">
+              · {{ agentStats.today }} conversas atendidas hoje · {{ agentStats.successRate }}% sem necessidade humana
+            </template>
+          </div>
         </div>
       </div>
       <div class="agent-hero-actions">
-        <Button variant="secondary" size="sm" @click="runPlayground">
-          <Icon name="play" :size="16" />
+        <button class="btn secondary sm" type="button" :disabled="playgroundLoading" @click="runPlayground">
+          <Icon name="play" :size="14" />
           Testar
-        </Button>
-        <Button size="sm" :loading="saving" @click="saveAssistant">
-          <Icon name="sparkles" :size="16" />
-          Publicar mudanças
-        </Button>
+        </button>
+        <button class="btn primary sm" type="button" :disabled="saving" @click="saveAssistant">
+          <Icon name="sparkles" :size="14" />
+          {{ saving ? 'Publicando…' : 'Publicar mudanças' }}
+        </button>
       </div>
-    </section>
+    </div>
 
-    <nav class="agent-tabs">
-      <button v-for="tab in tabs" :key="tab.key" class="agent-tab" :class="{ 'agent-tab-active': activeTab === tab.key }" type="button" @click="activeTab = tab.key">
-        {{ tab.label }}
-      </button>
-    </nav>
+    <!-- Tabs -->
+    <div class="agent-tabs">
+      <button
+        v-for="tab in tabs"
+        :key="tab.key"
+        class="agent-tab"
+        :class="{ active: activeTab === tab.key }"
+        type="button"
+        @click="activeTab = tab.key"
+      >{{ tab.label }}</button>
+    </div>
 
-    <section v-if="activeTab === 'config'" class="agent-config">
-      <div class="agent-main">
-        <article class="agent-card">
-          <div class="agent-card-header">
-            <h2 class="agent-card-title">Identidade</h2>
-            <p class="agent-card-desc">Nome e instruções que definem como o agente se apresenta.</p>
+    <!-- Config tab -->
+    <div v-if="activeTab === 'config'" class="agent-config">
+      <!-- Left: Instructions -->
+      <div class="agent-main-col">
+        <div class="agent-section">
+          <div class="agent-section-head">
+            <h2>Instruções do agente</h2>
+            <p>Como sua IA deve se comportar — escreva como se estivesse treinando um novo atendente.</p>
           </div>
           <div class="form-group">
             <label class="form-label">Nome do agente</label>
-            <input v-model="form.name" class="form-input" placeholder="Assistente Karis" />
+            <input v-model="form.name" class="form-input" placeholder="Agente IA da Karis" />
           </div>
-          <div class="form-group">
-            <label class="form-label">Instruções</label>
-            <textarea v-model="form.instructions" class="form-textarea" placeholder="Você é um atendente da empresa X. Responda apenas sobre produtos e serviços da empresa..." />
+          <div class="form-group" style="flex:1;">
+            <textarea
+              v-model="form.instructions"
+              class="agent-instructions"
+              placeholder="Você é o agente de atendimento da Empresa X, em Curitiba.&#10;&#10;Tom: simpático, breve, usa 'você' e responde como uma pessoa real.&#10;Use no máximo 2 emojis por mensagem (não 🎉, café ☕, obrigada 🙏).&#10;&#10;REGRAS DE NEGÓCIO:&#10;- Entregamos em toda a Grande Curitiba, frete R$ 12,90 fixo.&#10;- Cardápio do dia: consulte o documento 'cardapio-hoje.pdf'.&#10;- Pagamentos via Pix (chave: contato@empresa.com.br).&#10;- Horário: seg–sáb, 7h–19h."
+            />
           </div>
-        </article>
+        </div>
       </div>
 
-      <aside class="agent-aside">
-        <article class="agent-card">
-          <h3 class="agent-card-title">Modelo</h3>
-          <div class="form-group">
-            <select v-model="form.model" class="form-input">
-              <option v-for="opt in modelOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-            </select>
-          </div>
-        </article>
+      <!-- Right: Settings sidebar -->
+      <aside class="agent-aside-col">
+        <div class="agent-section">
+          <h3 class="agent-aside-title">Modelo</h3>
+          <select v-model="form.model" class="form-input">
+            <option v-for="opt in modelOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+          </select>
+        </div>
 
-        <article class="agent-card">
-          <h3 class="agent-card-title">Personalidade</h3>
+        <div class="agent-section">
+          <h3 class="agent-aside-title">Personalidade</h3>
           <div class="form-group">
             <label class="form-label">Tom de voz</label>
             <select v-model="form.personality" class="form-input">
               <option v-for="opt in personalityOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
             </select>
           </div>
-          <div class="form-group">
-            <label class="form-label">Idioma principal</label>
-            <select v-model="form.language" class="form-input">
-              <option v-for="opt in languageOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-            </select>
-          </div>
-        </article>
-
-        <article class="agent-card">
-          <h3 class="agent-card-title">Auto-resposta</h3>
-          <label class="agent-toggle">
-            <span>Responder automaticamente</span>
-            <input v-model="form.isActive" type="checkbox" />
-          </label>
-          <label class="agent-toggle">
-            <span>Sugerir para o humano</span>
-            <input v-model="form.suggestToHuman" type="checkbox" />
-          </label>
-        </article>
-      </aside>
-    </section>
-
-    <section v-else-if="activeTab === 'sectors'" class="agent-card">
-      <div class="agent-card-header agent-card-header-row">
-        <div>
-          <h2 class="agent-card-title">Setores de Transferência</h2>
-          <p class="agent-card-desc">A IA detecta automaticamente quando transferir e envia um resumo da conversa para o responsável.</p>
         </div>
-        <Button size="sm" @click="openSectorForm()">
-          <Icon name="plus" :size="16" />
-          Novo setor
-        </Button>
+
+        <div class="agent-section">
+          <h3 class="agent-aside-title">Idioma principal</h3>
+          <select v-model="form.language" class="form-input">
+            <option v-for="opt in languageOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+          </select>
+        </div>
+
+        <div class="agent-section">
+          <h3 class="agent-aside-title">Auto-resposta</h3>
+          <div class="agent-toggle-row">
+            <span>Responder automaticamente</span>
+            <label class="ka-switch">
+              <input v-model="form.isActive" type="checkbox" />
+              <span class="ka-switch-track" />
+            </label>
+          </div>
+          <div class="agent-toggle-row">
+            <span>Sugerir para o humano</span>
+            <label class="ka-switch">
+              <input v-model="form.suggestToHuman" type="checkbox" />
+              <span class="ka-switch-track" />
+            </label>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Knowledge tab -->
+    <div v-else-if="activeTab === 'knowledge'" class="agent-section">
+      <div class="agent-section-head" style="flex-direction:row;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <h2>Base de conhecimento</h2>
+          <p>Documentos e textos que a IA consulta para responder.</p>
+        </div>
+        <button class="btn primary sm" type="button" @click="createKnowledge">
+          <Icon name="upload" :size="14" />
+          Adicionar
+        </button>
       </div>
 
-      <div v-if="sectorFormVisible" class="agent-sector-form">
-        <div class="agent-sector-form-grid">
+      <div class="knowledge-add-form">
+        <div class="form-group">
+          <label class="form-label">Título</label>
+          <input v-model="knowledgeForm.title" class="form-input" placeholder="FAQ de preços" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Conteúdo</label>
+          <input v-model="knowledgeForm.content" class="form-input" placeholder="Cole uma regra ou resposta frequente" />
+        </div>
+      </div>
+
+      <div v-if="loading" style="display:flex;flex-direction:column;gap:10px;">
+        <div v-for="i in 4" :key="i" style="height:52px;background:var(--ka-gray-100);border-radius:8px;animation:agent-pulse 1.5s infinite;" />
+      </div>
+      <div v-else-if="knowledge.length" class="knowledge-list">
+        <div v-for="item in knowledge" :key="item.id" class="knowledge-item">
+          <div class="knowledge-icon"><Icon name="fileText" :size="18" /></div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:14px;font-weight:600;color:var(--ka-fg);">{{ item.title }}</div>
+            <div style="font-size:12px;color:var(--ka-fg-muted);margin-top:2px;">{{ item.fileName || `${String(item.content || '').length} caracteres` }} · {{ formatDate(item.createdAt) }}</div>
+          </div>
+          <span class="badge success" style="height:20px;padding:0 8px;font-size:11px;">Indexado</span>
+        </div>
+      </div>
+      <div v-else style="padding:40px;text-align:center;color:var(--ka-fg-muted);font-size:13px;">
+        <Icon name="fileText" :size="32" style="opacity:0.2;display:block;margin:0 auto 10px;" />
+        Nenhum conhecimento adicionado ainda.
+      </div>
+    </div>
+
+    <!-- Transferências tab -->
+    <div v-else-if="activeTab === 'sectors'" class="agent-section">
+      <div class="agent-section-head" style="flex-direction:row;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <h2>Setores de Transferência</h2>
+          <p>A IA detecta automaticamente quando transferir e envia um resumo da conversa para o responsável.</p>
+        </div>
+        <button class="btn primary sm" type="button" @click="openSectorForm()">
+          <Icon name="plus" :size="14" />
+          Novo setor
+        </button>
+      </div>
+
+      <div v-if="sectorFormVisible" class="sector-form">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div class="form-group">
             <label class="form-label">Nome do setor</label>
             <input v-model="sectorForm.name" class="form-input" placeholder="Suporte Técnico" />
@@ -116,359 +180,339 @@
         </div>
         <div class="form-group">
           <label class="form-label">Quando transferir</label>
-          <textarea v-model="sectorForm.transferWhen" class="form-textarea" placeholder="Quando o cliente tiver problema técnico, defeito no produto, precisar de instalação..." />
+          <textarea v-model="sectorForm.transferWhen" class="form-input" style="height:70px;resize:vertical;padding:8px 12px;" placeholder="Quando o cliente tiver problema técnico, precisar de instalação..." />
         </div>
         <div class="form-group">
           <label class="form-label">Descrição do setor (opcional)</label>
-          <textarea v-model="sectorForm.description" class="form-textarea" placeholder="Equipe de suporte técnico especializado" />
+          <textarea v-model="sectorForm.description" class="form-input" style="height:56px;resize:vertical;padding:8px 12px;" placeholder="Equipe de suporte técnico especializado" />
         </div>
-        <div class="agent-sector-form-actions">
-          <Button size="sm" :loading="sectorSaving" @click="saveSector">Salvar setor</Button>
-          <Button size="sm" variant="secondary" @click="closeSectorForm">Cancelar</Button>
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <button class="btn primary sm" type="button" :disabled="sectorSaving" @click="saveSector">{{ sectorSaving ? 'Salvando…' : 'Salvar setor' }}</button>
+          <button class="btn secondary sm" type="button" @click="closeSectorForm">Cancelar</button>
         </div>
       </div>
 
-      <div v-if="sectorsLoading" class="agent-sector-skeletons">
-        <Skeleton v-for="i in 3" :key="i" height="64px" rounded="md" />
+      <div v-if="sectorsLoading" style="display:flex;flex-direction:column;gap:10px;">
+        <div v-for="i in 3" :key="i" style="height:64px;background:var(--ka-gray-100);border-radius:8px;animation:agent-pulse 1.5s infinite;" />
       </div>
-      <div v-else-if="sectors.length" class="agent-sector-list">
-        <div v-for="sector in sectors" :key="sector.id" class="agent-sector-item">
-          <div class="agent-sector-info">
-            <div class="agent-sector-header">
-              <Icon name="arrowRight" :size="16" style="color: var(--ka-brand);" />
-              <strong>{{ sector.name }}</strong>
-              <Badge :variant="sector.isActive ? 'success' : 'secondary'" size="sm">
-                {{ sector.isActive ? 'Ativo' : 'Inativo' }}
-              </Badge>
+      <div v-else-if="sectors.length" class="sector-list">
+        <div v-for="sector in sectors" :key="sector.id" class="sector-item">
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+              <Icon name="arrowRight" :size="14" style="color:var(--ka-brand);flex-shrink:0;" />
+              <span style="font-size:14px;font-weight:600;color:var(--ka-fg);">{{ sector.name }}</span>
+              <span class="badge" :class="sector.isActive ? 'success' : 'neutral'" style="height:18px;padding:0 7px;font-size:10px;">{{ sector.isActive ? 'Ativo' : 'Inativo' }}</span>
             </div>
-            <span class="agent-sector-phone">{{ formatPhone(sector.phone) }}</span>
-            <p v-if="sector.transferWhen" class="agent-sector-when">
-              <em>Quando:</em> {{ sector.transferWhen }}
-            </p>
+            <div style="font-size:12px;color:var(--ka-fg-muted);">{{ formatPhone(sector.phone) }}</div>
+            <div v-if="sector.transferWhen" style="font-size:12px;color:var(--ka-fg-2);margin-top:2px;"><em>Quando:</em> {{ sector.transferWhen }}</div>
           </div>
-          <div class="agent-sector-actions">
-            <button class="agent-sector-action-btn" title="Editar" @click="openSectorForm(sector)">
-              <Icon name="edit" :size="16" />
+          <div style="display:flex;gap:4px;">
+            <button class="icon-btn" style="width:30px;height:30px;border:0;background:transparent;" title="Editar" @click="openSectorForm(sector)">
+              <Icon name="edit" :size="14" />
             </button>
-            <button class="agent-sector-action-btn agent-sector-action-danger" title="Excluir" @click="deleteSector(sector.id)">
-              <Icon name="trash" :size="16" />
+            <button class="icon-btn" style="width:30px;height:30px;border:0;background:transparent;color:var(--ka-danger);" title="Excluir" @click="deleteSector(sector.id)">
+              <Icon name="trash" :size="14" />
             </button>
           </div>
         </div>
       </div>
-      <EmptyState
-        v-else-if="!sectorFormVisible"
-        icon="arrowRight"
-        title="Nenhum setor configurado"
-        description="Adicione setores para que a IA transfira automaticamente quando necessário."
-      />
-    </section>
+      <div v-else-if="!sectorFormVisible" style="padding:40px;text-align:center;color:var(--ka-fg-muted);font-size:13px;">
+        <Icon name="arrowRight" :size="32" style="opacity:0.2;display:block;margin:0 auto 10px;" />
+        Nenhum setor configurado.
+      </div>
+    </div>
 
-    <section v-else-if="activeTab === 'knowledge'" class="agent-card">
-      <div class="agent-card-header agent-card-header-row">
+    <!-- Playground tab -->
+    <div v-else-if="activeTab === 'playground'" class="agent-section">
+      <div class="agent-section-head">
+        <h2>Playground</h2>
+        <p>Ambiente de teste — não envia mensagens para clientes reais.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="form-group">
+          <label class="form-label">Mensagem de teste</label>
+          <textarea v-model="playgroundMessage" class="form-input" style="height:90px;resize:vertical;padding:10px 12px;" placeholder="Digite uma pergunta para testar o agente." />
+        </div>
+        <div class="playground-response">
+          <div class="playground-response-label">
+            <Icon name="sparkles" :size="13" />
+            Resposta do agente
+          </div>
+          <div v-if="playgroundLoading" style="height:80px;background:var(--ka-gray-100);border-radius:8px;animation:agent-pulse 1.5s infinite;" />
+          <div v-else class="playground-response-text">{{ playgroundReply || 'A resposta aparece aqui após você testar.' }}</div>
+        </div>
         <div>
-          <h2 class="agent-card-title">Base de conhecimento</h2>
-          <p class="agent-card-desc">Documentos e textos que a IA consulta para responder.</p>
-        </div>
-        <Button size="sm" @click="createKnowledge">
-          <Icon name="upload" :size="16" />
-          Adicionar texto
-        </Button>
-      </div>
-
-      <div class="agent-knowledge-form">
-        <div class="form-group">
-          <label class="form-label">Título</label>
-          <input v-model="knowledgeForm.title" class="form-input" placeholder="FAQ de preços" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Conteúdo rápido</label>
-          <input v-model="knowledgeForm.content" class="form-input" placeholder="Cole uma regra ou resposta frequente" />
+          <button class="btn primary sm" type="button" :disabled="playgroundLoading" @click="runPlayground">
+            <Icon name="play" :size="14" />
+            {{ playgroundLoading ? 'Testando…' : 'Testar agente' }}
+          </button>
         </div>
       </div>
-
-      <div v-if="loading" class="agent-knowledge-skeletons">
-        <Skeleton v-for="i in 4" :key="i" height="48px" rounded="md" />
-      </div>
-      <div v-else-if="knowledge.length" class="agent-knowledge-list">
-        <div v-for="item in knowledge" :key="item.id" class="agent-knowledge-item">
-          <Icon name="fileText" :size="20" style="color: var(--ka-brand);" />
-          <div class="agent-knowledge-info">
-            <strong>{{ item.title }}</strong>
-            <small>{{ item.fileName || `${String(item.content || '').length} caracteres` }} · {{ formatDate(item.createdAt) }}</small>
-          </div>
-          <Badge variant="success" size="sm">Indexado</Badge>
-        </div>
-      </div>
-      <EmptyState v-else icon="fileText" title="Nenhum conhecimento adicionado" description="Adicione textos ou documentos para a IA responder com mais precisão." />
-    </section>
-
-    <section v-else class="agent-card">
-      <div class="agent-card-header">
-        <h2 class="agent-card-title">Playground</h2>
-        <p class="agent-card-desc">Ambiente de teste. Não envia mensagens para clientes reais.</p>
-      </div>
-      <div class="agent-playground">
-        <textarea v-model="playgroundMessage" class="agent-playground-input" placeholder="Digite uma pergunta para testar o agente." />
-        <div class="agent-playground-response">
-          <p class="agent-playground-response-label">Resposta</p>
-          <Skeleton v-if="playgroundLoading" height="96px" rounded="md" />
-          <span v-else class="agent-playground-response-text">{{ playgroundReply || "A resposta do teste aparece aqui." }}</span>
-        </div>
-      </div>
-      <Button class="agent-playground-btn" :loading="playgroundLoading" @click="runPlayground">Testar agente</Button>
-    </section>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-definePageMeta({ middleware: "auth" });
+import { formatDate, unwrapList } from '~/composables/useKarisData'
 
-const api = useApi();
-const toast = useToast();
-const activeTab = ref("config");
-const loading = ref(true);
-const saving = ref(false);
-const playgroundLoading = ref(false);
-const assistant = ref<any>(null);
-const knowledge = ref<any[]>([]);
-const sectors = ref<any[]>([]);
-const sectorsLoading = ref(false);
-const sectorSaving = ref(false);
-const sectorFormVisible = ref(false);
-const editingSectorId = ref<string | null>(null);
+definePageMeta({ middleware: 'auth' })
 
-const form = reactive({ name: "Assistente Karis", instructions: "", isActive: true, suggestToHuman: false, personality: "", language: "pt-BR", model: "karis-pro", transferPhone: "", transferConditions: "" });
-const agentStats = reactive({ today: 0, successRate: 0 });
-const knowledgeForm = reactive({ title: "", content: "" });
-const sectorForm = reactive({ name: "", phone: "", description: "", transferWhen: "" });
-const playgroundMessage = ref("Como vocês podem me ajudar no atendimento?");
-const playgroundReply = ref("");
+const api = useApi()
+const toast = useToast()
+const activeTab = ref('config')
+const loading = ref(true)
+const saving = ref(false)
+const playgroundLoading = ref(false)
+const assistant = ref<any>(null)
+const knowledge = ref<any[]>([])
+const sectors = ref<any[]>([])
+const sectorsLoading = ref(false)
+const sectorSaving = ref(false)
+const sectorFormVisible = ref(false)
+const editingSectorId = ref<string | null>(null)
+
+const form = reactive({
+  name: 'Agente IA da Karis',
+  instructions: '',
+  isActive: true,
+  suggestToHuman: false,
+  personality: '',
+  language: 'pt-BR',
+  model: 'karis-pro',
+  transferPhone: '',
+  transferConditions: '',
+})
+
+const agentStats = reactive({ today: 0, successRate: 0 })
+const knowledgeForm = reactive({ title: '', content: '' })
+const sectorForm = reactive({ name: '', phone: '', description: '', transferWhen: '' })
+const playgroundMessage = ref('Como vocês podem me ajudar?')
+const playgroundReply = ref('')
 
 const tabs = [
-  { key: "config",    label: "Configuração" },
-  { key: "sectors",   label: "Transferências" },
-  { key: "knowledge", label: "Conhecimento" },
-  { key: "playground",label: "Playground" },
-];
+  { key: 'config',    label: 'Configuração' },
+  { key: 'knowledge', label: 'Conhecimento' },
+  { key: 'sectors',   label: 'Treinamento' },
+  { key: 'playground',label: 'Playground' },
+]
 
 const modelOptions = [
-  { value: "karis-pro",   label: "Karis Pro (recomendado)" },
-  { value: "karis-fast",  label: "Karis Fast — rápido · preciso" },
-];
+  { value: 'karis-pro',  label: 'Karis Pro (recomendado)' },
+  { value: 'karis-fast', label: 'Karis Fast — rápido · preciso' },
+]
 
 const languageOptions = [
-  { value: "pt-BR", label: "Português (Brasil)" },
-  { value: "en",    label: "English" },
-  { value: "es",    label: "Español" },
-];
+  { value: 'pt-BR', label: 'Português (Brasil)' },
+  { value: 'en',    label: 'English' },
+  { value: 'es',    label: 'Español' },
+]
 
 const personalityOptions = [
-  { value: "",            label: "Padrão (cordial e profissional)" },
-  { value: "descontraido",label: "Descontraído (usa emojis, tom próximo)" },
-  { value: "prestativo",  label: "Prestativo (detalhado, proativo)" },
-  { value: "formal",      label: "Formal (senhor/senhora, tom sério)" },
-  { value: "direto",      label: "Direto (respostas curtas e precisas)" },
-];
+  { value: '',             label: 'Padrão (cordial e profissional)' },
+  { value: 'descontraido', label: 'Descontraído (usa emojis, tom próximo)' },
+  { value: 'prestativo',   label: 'Prestativo (detalhado, proativo)' },
+  { value: 'formal',       label: 'Formal (senhor/senhora, tom sério)' },
+  { value: 'direto',       label: 'Direto (respostas curtas e precisas)' },
+]
 
 watch(activeTab, (value) => {
-  if (value === "sectors" && !sectors.value.length) loadSectors();
-});
+  if (value === 'sectors' && !sectors.value.length) loadSectors()
+})
 
 function formatPhone(phone: string) {
-  const p = String(phone || "").replace(/\D/g, "");
-  if (p.length === 13) return `+${p.slice(0,2)} (${p.slice(2,4)}) ${p.slice(4,9)}-${p.slice(9)}`;
-  if (p.length === 12) return `+${p.slice(0,2)} (${p.slice(2,4)}) ${p.slice(4,8)}-${p.slice(8)}`;
-  return phone;
-}
-
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+  const p = String(phone || '').replace(/\D/g, '')
+  if (p.length === 13) return `+${p.slice(0,2)} (${p.slice(2,4)}) ${p.slice(4,9)}-${p.slice(9)}`
+  if (p.length === 12) return `+${p.slice(0,2)} (${p.slice(2,4)}) ${p.slice(4,8)}-${p.slice(8)}`
+  return phone
 }
 
 async function loadAgent() {
-  loading.value = true;
+  loading.value = true
   try {
-    const [assistantRes, knowledgeRes, overviewRes] = await Promise.all([
-      api.fetch<any>("/assistant"),
-      api.fetch<any>("/knowledge").catch(() => ({ knowledge: [] })),
-      api.fetch<any>("/analytics/overview").catch(() => null),
-    ]);
-    assistant.value = assistantRes.assistant;
-    Object.assign(form, {
-      name: assistant.value?.name || "Assistente Karis",
-      instructions: assistant.value?.instructions || "",
-      isActive: assistant.value?.isActive ?? true,
-      suggestToHuman: assistant.value?.suggestToHuman ?? false,
-      personality: assistant.value?.personality || "",
-      language: assistant.value?.language || "pt-BR",
-      model: assistant.value?.model || "karis-pro",
-      transferPhone: assistant.value?.transferPhone || "",
-      transferConditions: assistant.value?.transferConditions || "",
-    });
-    knowledge.value = knowledgeRes.knowledge || assistant.value?.knowledge || [];
-    if (overviewRes) {
-      agentStats.today = overviewRes?.conversations?.today ?? 0;
-      agentStats.successRate = overviewRes?.ai?.successRate ?? 0;
+    const [assistantRes, knowledgeRes, overviewRes] = await Promise.allSettled([
+      api.fetch<any>('/assistant'),
+      api.fetch<any>('/knowledge'),
+      api.fetch<any>('/analytics/overview'),
+    ])
+
+    if (assistantRes.status === 'fulfilled') {
+      assistant.value = assistantRes.value.assistant
+      Object.assign(form, {
+        name: assistant.value?.name || 'Agente IA da Karis',
+        instructions: assistant.value?.instructions || '',
+        isActive: assistant.value?.isActive ?? true,
+        suggestToHuman: assistant.value?.suggestToHuman ?? false,
+        personality: assistant.value?.personality || '',
+        language: assistant.value?.language || 'pt-BR',
+        model: assistant.value?.model || 'karis-pro',
+        transferPhone: assistant.value?.transferPhone || '',
+        transferConditions: assistant.value?.transferConditions || '',
+      })
+      if (assistantRes.value.knowledge) knowledge.value = assistantRes.value.knowledge
+    }
+
+    if (knowledgeRes.status === 'fulfilled') {
+      const k = knowledgeRes.value
+      knowledge.value = k.knowledge || k || []
+    }
+
+    if (overviewRes.status === 'fulfilled') {
+      const ov = overviewRes.value
+      agentStats.today = ov?.conversations?.today ?? 0
+      agentStats.successRate = ov?.ai?.successRate ?? 0
     }
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
 async function loadSectors() {
-  sectorsLoading.value = true;
+  sectorsLoading.value = true
   try {
-    sectors.value = await api.fetch<any[]>("/assistant/transfer-sectors");
+    sectors.value = await api.fetch<any[]>('/assistant/transfer-sectors')
   } catch {
-    sectors.value = [];
+    sectors.value = []
   } finally {
-    sectorsLoading.value = false;
+    sectorsLoading.value = false
   }
 }
 
 function openSectorForm(sector?: any) {
   if (sector) {
-    editingSectorId.value = sector.id;
-    Object.assign(sectorForm, {
-      name: sector.name,
-      phone: sector.phone,
-      description: sector.description || "",
-      transferWhen: sector.transferWhen || "",
-    });
+    editingSectorId.value = sector.id
+    Object.assign(sectorForm, { name: sector.name, phone: sector.phone, description: sector.description || '', transferWhen: sector.transferWhen || '' })
   } else {
-    editingSectorId.value = null;
-    Object.assign(sectorForm, { name: "", phone: "", description: "", transferWhen: "" });
+    editingSectorId.value = null
+    Object.assign(sectorForm, { name: '', phone: '', description: '', transferWhen: '' })
   }
-  sectorFormVisible.value = true;
+  sectorFormVisible.value = true
 }
 
 function closeSectorForm() {
-  sectorFormVisible.value = false;
-  editingSectorId.value = null;
+  sectorFormVisible.value = false
+  editingSectorId.value = null
 }
 
 async function saveSector() {
   if (!sectorForm.name.trim() || !sectorForm.phone.trim()) {
-    toast.warning("Informe o nome e o WhatsApp do setor.");
-    return;
+    toast.warning('Informe o nome e o WhatsApp do setor.')
+    return
   }
-  sectorSaving.value = true;
+  sectorSaving.value = true
   try {
     if (editingSectorId.value) {
-      const updated = await api.fetch<any>(`/assistant/transfer-sectors/${editingSectorId.value}`, {
-        method: "PUT",
-        body: JSON.stringify(sectorForm),
-      });
-      const idx = sectors.value.findIndex(s => s.id === editingSectorId.value);
-      if (idx !== -1) sectors.value[idx] = updated;
+      const updated = await api.fetch<any>(`/assistant/transfer-sectors/${editingSectorId.value}`, { method: 'PUT', body: JSON.stringify(sectorForm) })
+      const idx = sectors.value.findIndex(s => s.id === editingSectorId.value)
+      if (idx !== -1) sectors.value[idx] = updated
     } else {
-      const created = await api.fetch<any>("/assistant/transfer-sectors", {
-        method: "POST",
-        body: JSON.stringify(sectorForm),
-      });
-      sectors.value = [...sectors.value, created];
+      const created = await api.fetch<any>('/assistant/transfer-sectors', { method: 'POST', body: JSON.stringify(sectorForm) })
+      sectors.value = [...sectors.value, created]
     }
-    toast.success("Setor salvo.");
-    closeSectorForm();
+    toast.success('Setor salvo.')
+    closeSectorForm()
   } catch (err: any) {
-    toast.error(err?.data?.error || "Erro ao salvar setor.");
+    toast.error(err?.data?.error || 'Erro ao salvar setor.')
   } finally {
-    sectorSaving.value = false;
+    sectorSaving.value = false
   }
 }
 
 async function deleteSector(id: string) {
-  if (!confirm("Excluir este setor de transferência?")) return;
+  if (!confirm('Excluir este setor de transferência?')) return
   try {
-    await api.fetch(`/assistant/transfer-sectors/${id}`, { method: "DELETE" });
-    sectors.value = sectors.value.filter(s => s.id !== id);
-    toast.success("Setor excluído.");
+    await api.fetch(`/assistant/transfer-sectors/${id}`, { method: 'DELETE' })
+    sectors.value = sectors.value.filter(s => s.id !== id)
+    toast.success('Setor excluído.')
   } catch {
-    toast.error("Erro ao excluir setor.");
+    toast.error('Erro ao excluir setor.')
   }
 }
 
 async function saveAssistant() {
-  saving.value = true;
+  saving.value = true
   try {
-    const res = await api.fetch<any>("/assistant", {
-      method: "PUT",
-      body: JSON.stringify(form),
-    });
-    assistant.value = res.assistant;
+    const res = await api.fetch<any>('/assistant', { method: 'PUT', body: JSON.stringify(form) })
+    assistant.value = res.assistant
     Object.assign(form, {
-      name: assistant.value?.name || "Assistente Karis",
-      instructions: assistant.value?.instructions || "",
+      name: assistant.value?.name || 'Agente IA da Karis',
+      instructions: assistant.value?.instructions || '',
       isActive: assistant.value?.isActive ?? true,
       suggestToHuman: assistant.value?.suggestToHuman ?? false,
-      personality: assistant.value?.personality || "",
-      language: assistant.value?.language || "pt-BR",
-      model: assistant.value?.model || "karis-pro",
-      transferPhone: assistant.value?.transferPhone || "",
-      transferConditions: assistant.value?.transferConditions || "",
-    });
-    toast.success("Agente atualizado.");
+      personality: assistant.value?.personality || '',
+      language: assistant.value?.language || 'pt-BR',
+      model: assistant.value?.model || 'karis-pro',
+    })
+    toast.success('Agente atualizado.')
   } catch (err: any) {
-    toast.error(err?.data?.message || err?.message || "Não foi possível publicar as mudanças.");
+    toast.error(err?.data?.message || 'Não foi possível publicar as mudanças.')
   } finally {
-    saving.value = false;
+    saving.value = false
   }
 }
 
 async function createKnowledge() {
   if (!knowledgeForm.title.trim() || !knowledgeForm.content.trim()) {
-    toast.warning("Informe título e conteúdo.");
-    return;
+    toast.warning('Informe título e conteúdo.')
+    return
   }
-  const res = await api.fetch<any>("/knowledge", {
-    method: "POST",
-    body: JSON.stringify({ title: knowledgeForm.title, content: knowledgeForm.content }),
-  });
-  knowledge.value = [res.knowledge, ...knowledge.value];
-  knowledgeForm.title = "";
-  knowledgeForm.content = "";
-  toast.success("Conhecimento adicionado.");
+  try {
+    const res = await api.fetch<any>('/knowledge', {
+      method: 'POST',
+      body: JSON.stringify({ title: knowledgeForm.title, content: knowledgeForm.content }),
+    })
+    knowledge.value = [res.knowledge || res, ...knowledge.value]
+    knowledgeForm.title = ''
+    knowledgeForm.content = ''
+    toast.success('Conhecimento adicionado.')
+  } catch {
+    toast.error('Erro ao adicionar conhecimento.')
+  }
 }
 
 async function runPlayground() {
   if (!playgroundMessage.value.trim()) {
-    toast.warning("Digite uma mensagem para testar.");
-    return;
+    toast.warning('Digite uma mensagem para testar.')
+    return
   }
-  playgroundLoading.value = true;
-  playgroundReply.value = "";
-  activeTab.value = "playground";
+  playgroundLoading.value = true
+  playgroundReply.value = ''
+  activeTab.value = 'playground'
   try {
-    const res = await api.fetch<any>("/assistant/playground", {
-      method: "POST",
+    const res = await api.fetch<any>('/assistant/playground', {
+      method: 'POST',
       body: JSON.stringify({ message: playgroundMessage.value }),
-    });
-    playgroundReply.value = res.reply || "Sem resposta do modelo.";
+    })
+    playgroundReply.value = res.reply || 'Sem resposta do modelo.'
   } catch (err: any) {
-    toast.error(err?.data?.message || "Não foi possível testar o agente. Verifique se o modelo está disponível.");
+    toast.error(err?.data?.message || 'Não foi possível testar o agente.')
   } finally {
-    playgroundLoading.value = false;
+    playgroundLoading.value = false
   }
 }
 
-onMounted(loadAgent);
+onMounted(loadAgent)
 </script>
 
 <style scoped>
-.agent-page {
-  max-width: 1100px;
+@keyframes agent-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
+.agent-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Hero */
 .agent-hero {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px;
-  border: 1px solid var(--ka-border);
-  border-radius: var(--ka-r-md);
-  background: var(--ka-surface);
-  margin-bottom: 20px;
+  padding: 20px 24px 0;
+  flex-shrink: 0;
 }
 
 .agent-hero-info {
@@ -478,392 +522,336 @@ onMounted(loadAgent);
 }
 
 .agent-hero-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(139, 92, 246, 0.12);
+  color: #7C3AED;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: var(--ka-r-md);
-  background: var(--ka-brand-alpha);
-  color: var(--ka-brand);
+  flex-shrink: 0;
 }
 
-.agent-hero-label {
-  font-size: 12px;
+.agent-eyebrow {
+  font-size: 11px;
   font-weight: 600;
-  color: var(--ka-fg-3);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0;
+  letter-spacing: 0.06em;
+  color: var(--ka-fg-muted);
+  margin-bottom: 2px;
 }
 
-.agent-hero-title {
-  font-size: 24px;
+.agent-title {
+  font-size: 22px;
   font-weight: 700;
   color: var(--ka-fg);
-  margin: 4px 0;
+  margin: 0 0 4px;
 }
 
-.agent-hero-status {
+.agent-status-line {
   font-size: 13px;
-  color: var(--ka-fg-2);
+  color: var(--ka-fg-muted);
+  display: flex;
+  align-items: center;
+  gap: 0;
 }
 
 .agent-status-dot {
   display: inline-block;
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   margin-right: 6px;
 }
-
-.agent-status-online {
-  background: var(--ka-success);
-}
-
-.agent-status-offline {
-  background: var(--ka-fg-3);
-}
+.agent-status-dot.online { background: var(--ka-success); }
+.agent-status-dot.offline { background: var(--ka-fg-muted); }
 
 .agent-hero-actions {
   display: flex;
   gap: 8px;
 }
 
+/* Tabs */
 .agent-tabs {
   display: flex;
-  gap: 4px;
-  padding: 4px;
-  border: 1px solid var(--ka-border);
-  border-radius: var(--ka-r-md);
-  background: var(--ka-gray-50);
-  margin-bottom: 20px;
-  width: fit-content;
+  gap: 2px;
+  padding: 16px 24px 0;
+  border-bottom: 1px solid var(--ka-border);
+  margin-bottom: 0;
+  flex-shrink: 0;
 }
 
 .agent-tab {
   padding: 8px 16px;
-  border: none;
-  border-radius: var(--ka-r-sm);
-  background: transparent;
   font-size: 14px;
-  color: var(--ka-fg-2);
-  cursor: pointer;
   font-weight: 500;
+  color: var(--ka-fg-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
 }
 
-.agent-tab:hover {
-  color: var(--ka-fg);
-}
+.agent-tab:hover { color: var(--ka-fg); }
 
-.agent-tab-active {
-  background: var(--ka-surface);
-  color: var(--ka-fg);
+.agent-tab.active {
+  color: var(--ka-brand);
+  border-bottom-color: var(--ka-brand);
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
+/* Config two-column layout */
 .agent-config {
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 20px;
+  grid-template-columns: 1fr 280px;
+  gap: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.agent-main-col {
+  padding: 20px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--ka-border);
+}
+
+.agent-aside-col {
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Section */
+.agent-section {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.agent-section-head {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.agent-section-head h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ka-fg);
+  margin: 0 0 4px;
+}
+
+.agent-section-head p {
+  font-size: 13px;
+  color: var(--ka-fg-muted);
+  margin: 0;
+}
+
+.agent-aside-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ka-fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 10px;
+}
+
+.agent-aside-col .agent-section {
+  padding: 0;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--ka-border);
+  margin-bottom: 20px;
+  overflow: visible;
+  flex: none;
+}
+
+.agent-aside-col .agent-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+/* Instructions textarea */
+.agent-instructions {
+  width: 100%;
+  min-height: 280px;
+  flex: 1;
+  padding: 14px 16px;
+  border: 1px solid var(--ka-border);
+  border-radius: 10px;
+  background: var(--ka-gray-50);
+  font-size: 13px;
+  font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
+  color: var(--ka-fg);
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.agent-instructions:focus {
+  border-color: var(--ka-brand);
+  box-shadow: 0 0 0 3px rgba(45, 91, 255, 0.1);
+  background: var(--ka-surface);
+}
+
+/* Toggle switch */
+.agent-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  font-size: 13px;
+  color: var(--ka-fg);
+  border-bottom: 1px solid var(--ka-border);
+}
+
+.agent-toggle-row:last-child { border-bottom: none; }
+
+.ka-switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.ka-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.ka-switch-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: var(--ka-gray-200, #E2E8F0);
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.ka-switch-track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  transition: left 0.2s;
+}
+
+.ka-switch input:checked + .ka-switch-track {
+  background: var(--ka-brand);
+}
+
+.ka-switch input:checked + .ka-switch-track::after {
+  left: 18px;
+}
+
+/* Knowledge */
+.knowledge-add-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.knowledge-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.knowledge-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--ka-border);
+  border-radius: 10px;
+  background: var(--ka-surface);
+}
+
+.knowledge-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(45, 91, 255, 0.08);
+  color: var(--ka-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Sectors */
+.sector-form {
+  padding: 16px;
+  border: 1px solid var(--ka-border);
+  border-radius: 10px;
+  background: var(--ka-gray-50);
+  margin-bottom: 16px;
+}
+
+.sector-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sector-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px;
+  border: 1px solid var(--ka-border);
+  border-radius: 10px;
+  background: var(--ka-surface);
+}
+
+/* Playground */
+.playground-response {
+  padding: 16px;
+  border: 1px solid var(--ka-border);
+  border-radius: 10px;
+  background: var(--ka-gray-50);
+  min-height: 100px;
+}
+
+.playground-response-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ka-fg-muted);
+  margin-bottom: 10px;
+}
+
+.playground-response-text {
+  font-size: 14px;
+  color: var(--ka-fg);
+  line-height: 1.6;
+  white-space: pre-wrap;
 }
 
 @media (max-width: 900px) {
   .agent-config {
     grid-template-columns: 1fr;
   }
-}
-
-.agent-card {
-  border: 1px solid var(--ka-border);
-  border-radius: var(--ka-r-md);
-  background: var(--ka-surface);
-  padding: 24px;
-  margin-bottom: 16px;
-}
-
-.agent-card-header {
-  margin-bottom: 20px;
-}
-
-.agent-card-header-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-
-.agent-card-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--ka-fg);
-  margin: 0;
-}
-
-.agent-card-desc {
-  font-size: 13px;
-  color: var(--ka-fg-3);
-  margin: 4px 0 0;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 16px;
-}
-
-.form-group:last-child {
-  margin-bottom: 0;
-}
-
-.form-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ka-fg-2);
-}
-
-.form-input {
-  height: 40px;
-  padding: 0 12px;
-  border: 1px solid var(--ka-border);
-  border-radius: var(--ka-r-sm);
-  background: var(--ka-surface);
-  font-size: 14px;
-  color: var(--ka-fg);
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.form-input:focus {
-  border-color: var(--ka-brand);
-  box-shadow: 0 0 0 3px var(--ka-brand-alpha);
-}
-
-.form-textarea {
-  padding: 10px 12px;
-  border: 1px solid var(--ka-border);
-  border-radius: var(--ka-r-sm);
-  background: var(--ka-surface);
-  font-size: 14px;
-  color: var(--ka-fg);
-  outline: none;
-  resize: vertical;
-  min-height: 80px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.form-textarea:focus {
-  border-color: var(--ka-brand);
-  box-shadow: 0 0 0 3px var(--ka-brand-alpha);
-}
-
-.agent-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--ka-border);
-  font-size: 14px;
-  color: var(--ka-fg);
-  cursor: pointer;
-}
-
-.agent-toggle:last-child {
-  border-bottom: none;
-}
-
-.agent-toggle input {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--ka-brand);
-}
-
-.agent-sector-form {
-  padding: 16px;
-  border: 1px solid var(--ka-border);
-  border-radius: var(--ka-r-md);
-  background: var(--ka-gray-50);
-  margin-bottom: 16px;
-}
-
-.agent-sector-form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.agent-sector-form-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.agent-sector-skeletons {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.agent-sector-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.agent-sector-item {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 14px;
-  border: 1px solid var(--ka-border);
-  border-radius: var(--ka-r-md);
-}
-
-.agent-sector-info {
-  flex: 1;
-}
-
-.agent-sector-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.agent-sector-header strong {
-  font-size: 14px;
-  color: var(--ka-fg);
-}
-
-.agent-sector-phone {
-  font-size: 12px;
-  color: var(--ka-fg-3);
-}
-
-.agent-sector-when {
-  font-size: 12px;
-  color: var(--ka-fg-2);
-  margin: 4px 0 0;
-}
-
-.agent-sector-actions {
-  display: flex;
-  gap: 4px;
-}
-
-.agent-sector-action-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: var(--ka-r-sm);
-  background: transparent;
-  color: var(--ka-fg-3);
-  cursor: pointer;
-}
-
-.agent-sector-action-btn:hover {
-  background: var(--ka-gray-100);
-  color: var(--ka-fg);
-}
-
-.agent-sector-action-danger:hover {
-  background: var(--ka-danger-alpha);
-  color: var(--ka-danger);
-}
-
-.agent-knowledge-form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.agent-knowledge-skeletons {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.agent-knowledge-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.agent-knowledge-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border: 1px solid var(--ka-border);
-  border-radius: var(--ka-r-sm);
-}
-
-.agent-knowledge-info {
-  flex: 1;
-}
-
-.agent-knowledge-info strong {
-  display: block;
-  font-size: 14px;
-  color: var(--ka-fg);
-}
-
-.agent-knowledge-info small {
-  font-size: 12px;
-  color: var(--ka-fg-3);
-}
-
-.agent-playground {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.agent-playground-input {
-  padding: 12px;
-  border: 1px solid var(--ka-border);
-  border-radius: var(--ka-r-md);
-  background: var(--ka-surface);
-  font-size: 14px;
-  color: var(--ka-fg);
-  outline: none;
-  resize: vertical;
-  min-height: 80px;
-}
-
-.agent-playground-input:focus {
-  border-color: var(--ka-brand);
-  box-shadow: 0 0 0 3px var(--ka-brand-alpha);
-}
-
-.agent-playground-response {
-  padding: 16px;
-  border: 1px solid var(--ka-border);
-  border-radius: var(--ka-r-md);
-  background: var(--ka-gray-50);
-  min-height: 80px;
-}
-
-.agent-playground-response-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--ka-fg-3);
-  margin: 0 0 8px;
-}
-
-.agent-playground-response-text {
-  font-size: 14px;
-  color: var(--ka-fg);
-  line-height: 1.5;
-}
-
-.agent-playground-btn {
-  align-self: flex-start;
+  .agent-main-col { border-right: none; border-bottom: 1px solid var(--ka-border); }
 }
 </style>

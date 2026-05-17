@@ -83,9 +83,6 @@
           <Icon name="download" :size="16" />
           Exportar
         </Button>
-        <Button variant="ghost" size="icon" @click="loadContacts">
-          <Icon name="refresh" :size="16" />
-        </Button>
       </div>
     </div>
 
@@ -472,7 +469,7 @@ onMounted(loadContacts);
 
 .page-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   margin-bottom: 24px;
 }
@@ -556,9 +553,9 @@ onMounted(loadContacts);
 .toolbar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   margin-bottom: 16px;
-  flex-wrap: wrap;
+  overflow-x: auto;
 }
 
 .toolbar-search {
@@ -593,7 +590,8 @@ onMounted(loadContacts);
 
 .toolbar-chips {
   display: flex;
-  gap: 6px;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .toolbar-chip {
@@ -627,6 +625,9 @@ onMounted(loadContacts);
   display: flex;
   gap: 4px;
   margin-left: auto;
+  flex-shrink: 0;
+  padding-left: 8px;
+  border-left: 1px solid var(--ka-border);
 }
 
 .bulk-bar {

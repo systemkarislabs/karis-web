@@ -993,10 +993,10 @@ button {
     margin: 0;
     color: var(--ka-fg);
     font-family: var(--ka-font-display);
-    font-size: 28px;
+    font-size: 22px;
     font-weight: 700;
-    letter-spacing: 0;
-    line-height: 1.18;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
   }
 
   .page-header-eyebrow {
@@ -4109,7 +4109,7 @@ button {
 
 /* Layout base de página */
 .page {
-  padding: 24px 28px;
+  padding: 18px 22px;
   max-width: 1440px;
   margin: 0 auto;
 }
@@ -4117,37 +4117,37 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
-  gap: 16px;
+  margin-bottom: 18px;
+  gap: 14px;
 }
 .page-header h1 {
   font-family: var(--ka-font-display);
   font-weight: 700;
-  font-size: 28px;
+  font-size: 22px;
   letter-spacing: -0.015em;
   color: var(--ka-fg);
 }
 .page-header .sub {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--ka-fg-2);
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 /* Quick Actions (Dashboard shortcuts) */
 .quick-actions {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: 10px;
+  margin-bottom: 18px;
 }
 .quick {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   background: var(--ka-surface);
   border: 1px solid var(--ka-border);
-  border-radius: 12px;
-  padding: 14px 16px;
+  border-radius: 10px;
+  padding: 10px 14px;
   cursor: pointer;
   transition: all 200ms var(--ka-ease-out, ease);
   text-align: left;
@@ -4158,9 +4158,9 @@ button {
   background: var(--ka-brand-50);
 }
 .quick .ico {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
   background: var(--ka-brand-50);
   color: var(--ka-brand);
   display: flex;
@@ -4170,7 +4170,7 @@ button {
 }
 .quick .title {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--ka-fg);
 }
 .quick .desc {
@@ -4189,8 +4189,8 @@ button {
 .kpi {
   background: var(--ka-surface);
   border: 1px solid var(--ka-border);
-  border-radius: 14px;
-  padding: 20px;
+  border-radius: 12px;
+  padding: 14px 16px;
   box-shadow: var(--ka-shadow-sm);
 }
 .kpi .label {
@@ -4201,7 +4201,7 @@ button {
 .kpi .value {
   font-family: var(--ka-font-display);
   font-weight: 700;
-  font-size: 32px;
+  font-size: 26px;
   letter-spacing: -0.02em;
   margin-top: 8px;
   line-height: 1;
@@ -7144,8 +7144,8 @@ button {
 
 .app {
   display: grid;
-  grid-template-columns: 240px 1fr;
-  grid-template-rows: 64px 1fr;
+  grid-template-columns: 210px 1fr;
+  grid-template-rows: 52px 1fr;
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
@@ -7160,28 +7160,28 @@ button {
   border-right: 1px solid var(--ka-border);
   display: flex;
   flex-direction: column;
-  padding: 18px 12px;
-  gap: 4px;
+  padding: 12px 10px;
+  gap: 2px;
 }
 .sidebar .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 8px 14px;
+  gap: 8px;
+  padding: 4px 8px 10px;
   margin-bottom: 4px;
   border-bottom: 1px solid var(--ka-divider);
 }
-.sidebar .brand img { width: 32px; height: 32px; object-fit: contain; }
+.sidebar .brand img { width: 28px; height: 28px; object-fit: contain; }
 .sidebar .brand .name {
   font-family: var(--ka-font-display);
   font-weight: 700;
-  font-size: 17px;
+  font-size: 15px;
   letter-spacing: -0.01em;
   color: var(--ka-fg);
   line-height: 1;
 }
 .sidebar .brand .sub {
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ka-fg-muted);
@@ -7194,15 +7194,15 @@ button {
   text-transform: uppercase;
   font-weight: 700;
   color: var(--ka-fg-muted);
-  padding: 12px 12px 4px;
+  padding: 8px 10px 3px;
 }
 .sidebar .nav-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-size: 14px;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 7px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--ka-fg);
   cursor: pointer;
@@ -7230,17 +7230,17 @@ button {
 }
 .sidebar .user-card {
   margin-top: auto;
-  padding: 10px;
+  padding: 8px;
   background: var(--ka-gray-50);
   border: 1px solid var(--ka-border);
-  border-radius: 12px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 .sidebar .user-card .uc-avatar {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 9999px;
   background: linear-gradient(135deg, var(--ka-brand-light), var(--ka-brand));
   color: #fff;
@@ -7248,7 +7248,7 @@ button {
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 11px;
   flex-shrink: 0;
 }
 .topbar {
@@ -7256,8 +7256,8 @@ button {
   border-bottom: 1px solid var(--ka-border);
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 0 24px;
+  gap: 12px;
+  padding: 0 20px;
 }
 .topbar .page-title strong {
   font-size: 15px;
@@ -7279,11 +7279,11 @@ button {
 }
 .topbar .ts-search input {
   width: 100%;
-  height: 38px;
+  height: 32px;
   border: 1px solid var(--ka-border);
   background: var(--ka-gray-50);
-  border-radius: 10px;
-  padding: 0 12px 0 36px;
+  border-radius: 8px;
+  padding: 0 12px 0 32px;
   font-size: 13px;
   font-family: inherit;
   outline: none;
@@ -7311,9 +7311,9 @@ button {
   gap: 6px;
 }
 .ts-icon-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   border: 1px solid var(--ka-border);
   background: var(--ka-surface);
   display: flex;
@@ -7327,7 +7327,7 @@ button {
 
 /* Mobile */
 @media (max-width: 768px) {
-  .app { grid-template-columns: 1fr; grid-template-rows: 64px 1fr; }
+  .app { grid-template-columns: 1fr; grid-template-rows: 52px 1fr; }
   .app > .sidebar { display: none; }
   .app > .topbar, .app > .content { grid-column: 1; }
   .topbar .ts-search { display: none; }

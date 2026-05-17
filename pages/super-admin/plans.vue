@@ -108,6 +108,7 @@
           <div class="module-grid">
             <label v-for="module in modules" :key="module.key">
               <input v-model="form.features.modules[module.key]" type="checkbox" />
+              <span class="toggle"></span>
               {{ module.label }}
             </label>
           </div>
@@ -116,14 +117,15 @@
           <div class="module-grid">
             <label v-for="model in models" :key="model">
               <input :checked="form.features.models.includes(model)" type="checkbox" @change="toggleModel(model)" />
+              <span class="toggle"></span>
               {{ model }}
             </label>
           </div>
 
           <div class="feature-toggles">
-            <label><input v-model="form.isActive" type="checkbox" /> Plano ativo</label>
-            <label><input v-model="form.aiEnabled" type="checkbox" /> IA ativa</label>
-            <label><input v-model="form.whatsappEnabled" type="checkbox" /> WhatsApp</label>
+            <label><input v-model="form.isActive" type="checkbox" /><span class="toggle"></span> Plano ativo</label>
+            <label><input v-model="form.aiEnabled" type="checkbox" /><span class="toggle"></span> IA ativa</label>
+            <label><input v-model="form.whatsappEnabled" type="checkbox" /><span class="toggle"></span> WhatsApp</label>
           </div>
           <p v-if="error" class="form-error">{{ error }}</p>
           <button class="primary-action" type="submit" :disabled="saving">{{ saving ? "Salvando..." : "Salvar plano" }}</button>

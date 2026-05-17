@@ -34,10 +34,10 @@
             </select>
           </label>
           <div class="feature-toggles">
-            <label><input v-model="form.active" type="checkbox" /> Empresa ativa</label>
-            <label><input v-model="form.aiEnabled" type="checkbox" /> IA ativa</label>
-            <label><input v-model="form.whatsappEnabled" type="checkbox" /> WhatsApp</label>
-            <label><input v-model="form.karisLinkEnabled" type="checkbox" /> Karis Link</label>
+            <label><input v-model="form.active" type="checkbox" /><span class="toggle"></span> Empresa ativa</label>
+            <label><input v-model="form.aiEnabled" type="checkbox" /><span class="toggle"></span> IA ativa</label>
+            <label><input v-model="form.whatsappEnabled" type="checkbox" /><span class="toggle"></span> WhatsApp</label>
+            <label><input v-model="form.karisLinkEnabled" type="checkbox" /><span class="toggle"></span> Karis Link</label>
           </div>
           <button type="button" @click="applyPlan">Aplicar plano à empresa</button>
 
@@ -46,6 +46,7 @@
           <div class="module-grid">
             <label v-for="feature in features" :key="feature.key">
               <input v-model="featureOverrides[feature.key]" type="checkbox" />
+              <span class="toggle"></span>
               {{ feature.label }}
             </label>
           </div>

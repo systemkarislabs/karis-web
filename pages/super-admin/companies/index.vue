@@ -96,9 +96,9 @@
             </select>
           </label>
           <div class="feature-toggles">
-            <label><input v-model="form.aiEnabled" type="checkbox" /> IA</label>
-            <label><input v-model="form.whatsappEnabled" type="checkbox" /> WhatsApp</label>
-            <label><input v-model="form.karisLinkEnabled" type="checkbox" /> Karis Link</label>
+            <label><input v-model="form.aiEnabled" type="checkbox" /><span class="toggle"></span> IA</label>
+            <label><input v-model="form.whatsappEnabled" type="checkbox" /><span class="toggle"></span> WhatsApp</label>
+            <label><input v-model="form.karisLinkEnabled" type="checkbox" /><span class="toggle"></span> Karis Link</label>
           </div>
           <p v-if="formError" class="form-error">{{ formError }}</p>
           <button class="primary-action" type="submit" :disabled="saving">{{ saving ? "Criando..." : "Cadastrar empresa" }}</button>

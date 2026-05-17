@@ -4,7 +4,7 @@
       <div>
         <p class="eyebrow">Planos</p>
         <h1>O que cada empresa pode usar</h1>
-        <p>Defina módulos, modelos de IA e limites de uso. A empresa herda o plano e ainda pode ter exceções no detalhe dela.</p>
+        <p>Defina quais módulos cada plano libera. A empresa herda o plano e ainda pode ter exceções no detalhe dela.</p>
       </div>
       <div class="super-admin-actions">
         <button type="button" @click="loadPlans">
@@ -47,8 +47,6 @@
             <div class="plan-limits">
               <span>Usuários: {{ limit(plan.maxUsers) }}</span>
               <span>WhatsApp: {{ limit(plan.maxWhatsappConnections) }}</span>
-              <span>IA/mês: {{ limit(plan.features?.limits?.aiMessages) }}</span>
-              <span>Documentos: {{ limit(plan.features?.limits?.knowledgeDocuments) }}</span>
             </div>
             <div class="module-tags">
               <span v-for="module in enabledModules(plan)" :key="module">{{ module }}</span>
@@ -79,12 +77,12 @@
 
       <section class="super-admin-panel">
         <h2>{{ form.id ? "Editar plano" : "Criar plano" }}</h2>
-        <p>Use limites vazios para ilimitado. Módulos desligados ficam bloqueados para empresas desse plano.</p>
+        <p>Módulos desligados ficam bloqueados para empresas desse plano.</p>
 
         <form class="stack-form" @submit.prevent="savePlan">
           <label>Nome<input v-model="form.name" required /></label>
-          <label>Slug<input v-model="form.slug" placeholder="pro, starter..." /></label>
-          <label>Descrição<textarea v-model="form.description" rows="3" /></label>
+          <label>Slug<input v-model="form.slug" placeholder="essencial, pro, business..." /></label>
+          <label>Descrição<textarea v-model="form.description" rows="2" /></label>
           <div class="split-fields">
             <label>Preço mensal<input v-model.number="priceReais" type="number" min="0" step="1" /></label>
             <label>Trial dias<input v-model.number="form.trialDays" type="number" min="0" /></label>
@@ -94,31 +92,12 @@
             <label>WhatsApps<input v-model.number="form.maxWhatsappConnections" type="number" min="0" /></label>
           </div>
 
-          <h3>Limites de IA</h3>
-          <div class="split-fields">
-            <label>Mensagens IA/mês<input v-model.number="form.features.limits.aiMessages" type="number" min="0" /></label>
-            <label>Conversas/mês<input v-model.number="form.features.limits.conversations" type="number" min="0" /></label>
-          </div>
-          <div class="split-fields">
-            <label>Contatos<input v-model.number="form.features.limits.contacts" type="number" min="0" /></label>
-            <label>Documentos RAG<input v-model.number="form.features.limits.knowledgeDocuments" type="number" min="0" /></label>
-          </div>
-
           <h3>Módulos do plano</h3>
           <div class="module-grid">
             <label v-for="module in modules" :key="module.key">
               <input v-model="form.features.modules[module.key]" type="checkbox" />
               <span class="toggle"></span>
               {{ module.label }}
-            </label>
-          </div>
-
-          <h3>Modelos liberados</h3>
-          <div class="module-grid">
-            <label v-for="model in models" :key="model">
-              <input :checked="form.features.models.includes(model)" type="checkbox" @change="toggleModel(model)" />
-              <span class="toggle"></span>
-              {{ model }}
             </label>
           </div>
 
@@ -147,6 +126,7 @@ const saving = ref(false);
 const error = ref("");
 const deletePlanTarget = ref<any | null>(null);
 const deletingPlanId = ref<string | null>(null);
+
 const modules = [
   { key: "crm", label: "CRM" },
   { key: "sales", label: "Vendas" },
@@ -158,7 +138,6 @@ const modules = [
   { key: "playground", label: "Playground IA" },
   { key: "billing", label: "Faturamento" },
 ];
-const models = ["gemma4:e4b", "gemma4:e2b", "gpt-4.1-mini", "gpt-4.1", "gemini-1.5-pro"];
 
 function emptyForm() {
   return {
@@ -177,10 +156,7 @@ function emptyForm() {
     maxUsers: 3,
     maxWhatsappConnections: 1,
     features: {
-      limits: { aiMessages: 1000, conversations: 500, contacts: 1000, knowledgeDocuments: 20 },
-      modules: Object.fromEntries(modules.map(module => [module.key, true])),
-      models: ["gemma4:e4b"],
-      support: { humanHandoff: true, priority: false, onboarding: false },
+      modules: Object.fromEntries(modules.map(m => [m.key, true])),
     },
   };
 }
@@ -206,26 +182,14 @@ function limit(value?: number | null) {
 function enabledModules(plan: any) {
   return Object.entries(plan.features?.modules || {})
     .filter(([, enabled]) => enabled)
-    .map(([key]) => modules.find(module => module.key === key)?.label || key)
-    .slice(0, 5);
-}
-
-function toggleModel(model: string) {
-  if (form.features.models.includes(model)) {
-    form.features.models = form.features.models.filter((item: string) => item !== model);
-  } else {
-    form.features.models.push(model);
-  }
+    .map(([key]) => modules.find(m => m.key === key)?.label || key)
+    .slice(0, 6);
 }
 
 function edit(plan: any) {
   Object.assign(form, emptyForm(), JSON.parse(JSON.stringify(plan)));
   form.features = {
-    ...emptyForm().features,
-    ...(plan.features || {}),
-    limits: { ...emptyForm().features.limits, ...(plan.features?.limits || {}) },
     modules: { ...emptyForm().features.modules, ...(plan.features?.modules || {}) },
-    models: plan.features?.models || ["gemma4:e4b"],
   };
 }
 

@@ -1,432 +1,463 @@
-﻿<template>
-  <div class="campaigns-page">
-    <div class="page-header">
+<template>
+  <div class="camp-page">
+    <!-- Header -->
+    <div class="camp-header">
       <div>
-        <p class="page-eyebrow">Campanhas</p>
-        <h1 class="page-title">Envios em massa</h1>
-        <p class="page-subtitle">Marketing via WhatsApp · {{ activeCount }} {{ activeCount === 1 ? 'campanha ativa' : 'campanhas ativas' }}</p>
+        <div class="camp-eyebrow">Campanhas</div>
+        <h1 class="camp-title">Campanhas</h1>
+        <p class="camp-subtitle">Marketing via WhatsApp · {{ activeCount }} {{ activeCount === 1 ? 'campanha ativa' : 'campanhas ativas' }}</p>
       </div>
-      <div class="page-actions">
-        <Button variant="secondary" size="sm" @click="loadCampaigns">
-          <Icon name="refresh" :size="16" />
-          Atualizar
-        </Button>
-        <Button size="sm" @click="openNew">
-          <Icon name="plus" :size="16" />
-          Nova campanha
-        </Button>
-      </div>
+      <button class="btn primary sm" type="button" @click="openNew">
+        <Icon name="plus" :size="14" />
+        Nova campanha
+      </button>
     </div>
 
-    <div class="campaigns-stat-grid">
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--ka-brand-alpha); color: var(--ka-brand);">
-          <Icon name="megaphone" :size="20" />
+    <!-- Stats -->
+    <div class="camp-stats">
+      <div class="camp-stat">
+        <div class="camp-stat-icon" style="background:rgba(45,91,255,0.1);color:#2D5BFF;">
+          <Icon name="megaphone" :size="18" />
         </div>
-        <div class="stat-text">
-          <div class="stat-value">{{ activeCount }}</div>
-          <div class="stat-label">Campanhas ativas</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--ka-success-alpha); color: var(--ka-success);">
-          <Icon name="send" :size="20" />
-        </div>
-        <div class="stat-text">
-          <div class="stat-value">{{ sentLast7d.toLocaleString('pt-BR') }}</div>
-          <div class="stat-label">Enviadas (7 dias)</div>
+        <div>
+          <div class="camp-stat-value">{{ activeCount }}</div>
+          <div class="camp-stat-label">Campanhas ativas</div>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--ka-brand-alpha); color: var(--ka-brand);">
-          <Icon name="reply" :size="20" />
+      <div class="camp-stat">
+        <div class="camp-stat-icon" style="background:rgba(16,185,129,0.1);color:#10B981;">
+          <Icon name="send" :size="18" />
         </div>
-        <div class="stat-text">
-          <div class="stat-value">{{ responseRate }}%</div>
-          <div class="stat-label">Taxa de resposta</div>
+        <div>
+          <div class="camp-stat-value">{{ sentLast7d.toLocaleString('pt-BR') }}</div>
+          <div class="camp-stat-label">Enviadas (7 dias)</div>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--ka-warning-alpha); color: var(--ka-warning);">
-          <Icon name="dollar" :size="20" />
+      <div class="camp-stat">
+        <div class="camp-stat-icon" style="background:rgba(139,92,246,0.1);color:#7C3AED;">
+          <Icon name="reply" :size="18" />
         </div>
-        <div class="stat-text">
-          <div class="stat-value">{{ formatMoney(attributedRevenue) }}</div>
-          <div class="stat-label">Receita atribuída</div>
+        <div>
+          <div class="camp-stat-value">{{ responseRate }}%</div>
+          <div class="camp-stat-label">Taxa de resposta</div>
+        </div>
+      </div>
+      <div class="camp-stat">
+        <div class="camp-stat-icon" style="background:rgba(245,158,11,0.1);color:#F59E0B;">
+          <Icon name="dollar" :size="18" />
+        </div>
+        <div>
+          <div class="camp-stat-value">{{ formatMoney(attributedRevenue) }}</div>
+          <div class="camp-stat-label">Receita atribuída</div>
         </div>
       </div>
     </div>
 
-    <div class="campaigns-list">
-      <div v-if="loading" class="campaigns-list-skeletons">
-        <Skeleton v-for="i in 5" :key="i" height="80px" rounded="md" />
-      </div>
+    <!-- Campaign list -->
+    <div class="camp-list">
+      <!-- Skeletons -->
+      <template v-if="loading">
+        <div v-for="i in 5" :key="i" class="camp-row" style="pointer-events:none;">
+          <div style="width:38px;height:38px;border-radius:50%;background:var(--ka-gray-100);flex-shrink:0;animation:camp-pulse 1.5s infinite;" />
+          <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+            <div style="height:14px;width:45%;background:var(--ka-gray-100);border-radius:4px;animation:camp-pulse 1.5s infinite;" />
+            <div style="height:11px;width:30%;background:var(--ka-gray-100);border-radius:4px;animation:camp-pulse 1.5s infinite;" />
+          </div>
+          <div v-for="j in 3" :key="j" style="width:44px;height:36px;background:var(--ka-gray-100);border-radius:6px;animation:camp-pulse 1.5s infinite;" />
+        </div>
+      </template>
 
       <template v-else-if="campaigns.length">
         <div
           v-for="(camp, idx) in campaigns"
           :key="camp.id"
-          class="campaign-row"
-          :class="{ 'campaign-row-last': idx === campaigns.length - 1 }"
+          class="camp-row"
+          :class="{ last: idx === campaigns.length - 1 }"
         >
-          <div class="campaign-icon" :style="{ background: campColor(camp.status) + '22', color: campColor(camp.status) }">
-            <Icon name="megaphone" :size="18" />
+          <!-- Icon -->
+          <div class="camp-icon" :style="{ background: campColor(camp.status) + '18', color: campColor(camp.status) }">
+            <Icon name="megaphone" :size="17" />
           </div>
 
-          <div class="campaign-info">
-            <div class="campaign-name">{{ camp.name }}</div>
-            <div class="campaign-meta">
-              {{ camp.scheduledAt ? formatDateTime(camp.scheduledAt) : formatDate(camp.createdAt) }}
-              · {{ camp.channel || 'WhatsApp' }}
+          <!-- Info -->
+          <div class="camp-info">
+            <div class="camp-name">{{ camp.name }}</div>
+            <div class="camp-meta">{{ camp.scheduledAt ? formatDateTime(camp.scheduledAt) : relativeTime(camp.createdAt) }}</div>
+          </div>
+
+          <!-- Metrics -->
+          <div class="camp-metrics">
+            <div class="camp-metric">
+              <div class="camp-metric-val">{{ (camp._count?.recipients ?? camp.recipientCount ?? 0).toLocaleString('pt-BR') }}</div>
+              <div class="camp-metric-lbl">Enviadas</div>
+            </div>
+            <div class="camp-metric">
+              <div class="camp-metric-val">{{ (camp.readCount ?? 0).toLocaleString('pt-BR') }}</div>
+              <div class="camp-metric-lbl">Lidas</div>
+            </div>
+            <div class="camp-metric">
+              <div class="camp-metric-val">{{ (camp.replyCount ?? 0).toLocaleString('pt-BR') }}</div>
+              <div class="camp-metric-lbl">Respostas</div>
             </div>
           </div>
 
-          <div class="campaign-metrics">
-            <div class="campaign-metric">
-              <div class="campaign-metric-value">{{ (camp._count?.recipients ?? camp.recipientCount ?? 0).toLocaleString('pt-BR') }}</div>
-              <div class="campaign-metric-label">Enviadas</div>
-            </div>
-            <div class="campaign-metric">
-              <div class="campaign-metric-value">{{ (camp.readCount ?? 0).toLocaleString('pt-BR') }}</div>
-              <div class="campaign-metric-label">Lidas</div>
-            </div>
-            <div class="campaign-metric">
-              <div class="campaign-metric-value">{{ (camp.replyCount ?? 0).toLocaleString('pt-BR') }}</div>
-              <div class="campaign-metric-label">Respostas</div>
-            </div>
-          </div>
-
-          <Badge :variant="statusVariant(camp.status)" size="sm" style="min-width: 90px; justify-content: center;">
+          <!-- Status badge (dot style) -->
+          <div class="camp-status-badge">
+            <span class="camp-status-dot" :style="{ background: campColor(camp.status) }" />
             {{ statusLabel(camp.status) }}
-          </Badge>
+          </div>
 
-          <div class="campaign-actions">
+          <!-- Actions -->
+          <div class="camp-actions">
             <button
               v-if="camp.status === 'DRAFT'"
-              class="campaign-action-btn"
-              title="Enviar campanha"
+              class="icon-btn"
+              style="width:30px;height:30px;border:0;background:transparent;"
+              title="Enviar agora"
               @click="scheduleCampaign(camp)"
             >
-              <Icon name="send" :size="16" />
+              <Icon name="send" :size="14" />
             </button>
             <button
               v-if="['DRAFT', 'SCHEDULED'].includes(camp.status)"
-              class="campaign-action-btn campaign-action-danger"
+              class="icon-btn"
+              style="width:30px;height:30px;border:0;background:transparent;color:var(--ka-danger);"
               title="Cancelar"
               @click="cancelCampaign(camp)"
             >
-              <Icon name="x" :size="16" />
+              <Icon name="x" :size="14" />
             </button>
-            <button class="campaign-action-btn" title="Mais opções">
-              <Icon name="moreH" :size="16" />
-            </button>
+            <button
+              class="icon-btn"
+              style="width:30px;height:30px;border:0;background:transparent;font-size:16px;letter-spacing:1px;color:var(--ka-fg-muted);"
+              title="Mais opções"
+            >···</button>
           </div>
         </div>
       </template>
 
-      <EmptyState v-else icon="megaphone" title="Nenhuma campanha ainda" description="Crie sua primeira campanha para enviar mensagens em massa." />
+      <!-- Empty -->
+      <div v-else class="camp-empty">
+        <Icon name="megaphone" :size="36" style="opacity:0.18;display:block;margin:0 auto 12px;" />
+        <div style="font-size:15px;font-weight:500;margin-bottom:6px;">Nenhuma campanha ainda</div>
+        <div style="font-size:13px;margin-bottom:16px;">Crie sua primeira campanha para enviar mensagens em massa.</div>
+        <button class="btn primary sm" type="button" @click="openNew">
+          <Icon name="plus" :size="14" />
+          Nova campanha
+        </button>
+      </div>
     </div>
 
-    <Modal :open="showNew" title="Nova campanha" @close="showNew = false">
-      <form class="modal-form" @submit.prevent="createCampaign">
-        <div class="form-group">
-          <label class="form-label">Nome da campanha *</label>
-          <input v-model="form.name" class="form-input" type="text" placeholder="Ex: Promo Black Friday" required />
+    <!-- New campaign modal -->
+    <Teleport to="body">
+      <div v-if="showNew" style="position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;">
+        <button style="position:absolute;inset:0;background:rgba(0,0,0,0.4);border:none;cursor:pointer;" @click="showNew = false" />
+        <div class="camp-modal" style="position:relative;">
+          <div class="camp-modal-head">
+            <h3>Nova campanha</h3>
+            <button class="icon-btn" style="width:30px;height:30px;border:0;background:transparent;" @click="showNew = false">
+              <Icon name="x" :size="16" />
+            </button>
+          </div>
+          <form class="camp-modal-body" @submit.prevent="createCampaign">
+            <div class="form-group">
+              <label class="form-label">Nome da campanha *</label>
+              <input v-model="form.name" class="form-input" type="text" placeholder="Ex: Promo Black Friday" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mensagem *</label>
+              <textarea v-model="form.message" class="form-input" style="height:110px;resize:vertical;padding:10px 12px;" placeholder="Olá {nome}, temos uma oferta especial para você..." required />
+              <span style="font-size:12px;color:var(--ka-fg-muted);">Use {nome} para personalizar com o nome do contato.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Público-alvo *</label>
+              <select v-model="form.targetType" class="form-input" required>
+                <option value="ALL_CONTACTS">Todos os contatos</option>
+                <option value="STAGE">Etapa do CRM</option>
+              </select>
+            </div>
+            <div v-if="form.targetType === 'STAGE'" class="form-group">
+              <label class="form-label">Etapa do CRM *</label>
+              <select v-model="form.stageId" class="form-input" :required="form.targetType === 'STAGE'">
+                <option value="">Selecionar etapa</option>
+                <option v-for="stage in stages" :key="stage.id" :value="stage.id">{{ stage.name }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Canal</label>
+              <select v-model="form.channel" class="form-input">
+                <option value="WHATSAPP">WhatsApp</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Agendamento (opcional)</label>
+              <input v-model="form.scheduledAt" class="form-input" type="datetime-local" />
+              <span style="font-size:12px;color:var(--ka-fg-muted);">Deixe vazio para salvar como rascunho e enviar manualmente.</span>
+            </div>
+            <p v-if="formError" style="font-size:13px;color:var(--ka-danger);margin:0;">{{ formError }}</p>
+            <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px;">
+              <button class="btn secondary sm" type="button" @click="showNew = false">Cancelar</button>
+              <button class="btn primary sm" type="submit" :disabled="formLoading">
+                {{ formLoading ? 'Salvando…' : 'Criar campanha' }}
+              </button>
+            </div>
+          </form>
         </div>
-        <div class="form-group">
-          <label class="form-label">Mensagem *</label>
-          <textarea v-model="form.message" class="form-textarea" rows="4" placeholder="Olá {nome}, temos uma oferta especial para você..." required />
-          <p class="form-hint">Use {nome} para personalizar com o nome do contato.</p>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Público-alvo *</label>
-          <select v-model="form.targetType" class="form-input" required>
-            <option value="ALL_CONTACTS">Todos os contatos</option>
-            <option value="STAGE">Etapa do CRM</option>
-          </select>
-        </div>
-        <div v-if="form.targetType === 'STAGE'" class="form-group">
-          <label class="form-label">Etapa do CRM *</label>
-          <select v-model="form.stageId" class="form-input" :required="form.targetType === 'STAGE'">
-            <option value="">Selecionar etapa</option>
-            <option v-for="stage in stages" :key="stage.id" :value="stage.id">{{ stage.name }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Canal</label>
-          <select v-model="form.channel" class="form-input">
-            <option value="WHATSAPP">WhatsApp</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Agendamento (opcional)</label>
-          <input v-model="form.scheduledAt" class="form-input" type="datetime-local" />
-          <p class="form-hint">Deixe vazio para salvar como rascunho e enviar manualmente.</p>
-        </div>
-        <p v-if="formError" class="form-alert">{{ formError }}</p>
-        <div class="modal-actions">
-          <Button variant="secondary" type="button" @click="showNew = false">Cancelar</Button>
-          <Button type="submit" :loading="formLoading">
-            {{ formLoading ? "Salvando..." : "Criar campanha" }}
-          </Button>
-        </div>
-      </form>
-    </Modal>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-definePageMeta({ middleware: "auth" });
+import { formatMoney, formatDate, formatDateTime, unwrapList } from '~/composables/useKarisData'
 
-const api = useApi();
-const loading   = ref(true);
-const campaigns = ref<any[]>([]);
+definePageMeta({ middleware: 'auth' })
 
-const CAMP_COLORS: Record<string, string> = {
-  COMPLETED: "#10B981",
-  RUNNING:   "#2D5BFF",
-  SCHEDULED: "#F59E0B",
-  DRAFT:     "#94A3B8",
-  FAILED:    "#EF4444",
-  CANCELLED: "#94A3B8",
-  PAUSED:    "#F59E0B",
-};
+const api = useApi()
+const toast = useToast()
+const loading = ref(true)
+const campaigns = ref<any[]>([])
 
-function campColor(status: string) {
-  return CAMP_COLORS[status] || "#94A3B8";
+const STATUS_COLORS: Record<string, string> = {
+  COMPLETED: '#10B981',
+  RUNNING:   '#2D5BFF',
+  SCHEDULED: '#F59E0B',
+  DRAFT:     '#94A3B8',
+  FAILED:    '#EF4444',
+  CANCELLED: '#94A3B8',
+  PAUSED:    '#F59E0B',
 }
 
-const activeCount = computed(() => campaigns.value.filter(c => ["RUNNING", "SCHEDULED"].includes(c.status)).length);
-
-const sentLast7d = computed(() => {
-  const cutoff = Date.now() - 7 * 86400_000;
-  return campaigns.value
-    .filter(c => c.status === "COMPLETED" && new Date(c.updatedAt || c.createdAt).getTime() > cutoff)
-    .reduce((s, c) => s + (c._count?.recipients ?? c.recipientCount ?? 0), 0);
-});
-
-const totalRecipients = computed(() => campaigns.value.reduce((s, c) => s + (c._count?.recipients ?? c.recipientCount ?? 0), 0));
-const totalReplies    = computed(() => campaigns.value.reduce((s, c) => s + (c.replyCount ?? 0), 0));
-const attributedRevenue = computed(() => campaigns.value.reduce((s, c) => s + (c.attributedRevenueCents ?? 0), 0));
-
-const responseRate = computed(() => {
-  if (!totalRecipients.value) return 0;
-  return Math.round((totalReplies.value / totalRecipients.value) * 100);
-});
+function campColor(status: string) {
+  return STATUS_COLORS[status] || '#94A3B8'
+}
 
 function statusLabel(status: string) {
   const map: Record<string, string> = {
-    DRAFT: "Rascunho", SCHEDULED: "Agendada", RUNNING: "Enviando",
-    COMPLETED: "Concluída", FAILED: "Falhou", CANCELLED: "Cancelada", PAUSED: "Pausada",
-  };
-  return map[status] ?? status;
+    DRAFT: 'rascunho', SCHEDULED: 'agendada', RUNNING: 'enviando',
+    COMPLETED: 'enviada', FAILED: 'falhou', CANCELLED: 'cancelada', PAUSED: 'pausada',
+  }
+  return map[status] ?? status.toLowerCase()
 }
 
-function statusVariant(status: string) {
-  if (status === "COMPLETED")                         return "success";
-  if (status === "FAILED")                            return "destructive";
-  if (status === "RUNNING" || status === "SCHEDULED") return "default";
-  if (status === "PAUSED")                            return "warning";
-  return "neutral";
+function relativeTime(dateStr: string) {
+  if (!dateStr) return ''
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const d = Math.floor(diff / 86400000)
+  if (d === 0) return 'hoje'
+  if (d === 1) return 'ontem'
+  return `há ${d} dias`
 }
+
+const activeCount = computed(() => campaigns.value.filter(c => ['RUNNING', 'SCHEDULED'].includes(c.status)).length)
+
+const sentLast7d = computed(() => {
+  const cutoff = Date.now() - 7 * 86400_000
+  return campaigns.value
+    .filter(c => c.status === 'COMPLETED' && new Date(c.updatedAt || c.createdAt).getTime() > cutoff)
+    .reduce((s, c) => s + (c._count?.recipients ?? c.recipientCount ?? 0), 0)
+})
+
+const totalRecipients = computed(() => campaigns.value.reduce((s, c) => s + (c._count?.recipients ?? c.recipientCount ?? 0), 0))
+const totalReplies    = computed(() => campaigns.value.reduce((s, c) => s + (c.replyCount ?? 0), 0))
+const attributedRevenue = computed(() => campaigns.value.reduce((s, c) => s + (c.attributedRevenueCents ?? 0), 0))
+
+const responseRate = computed(() => {
+  if (!totalRecipients.value) return 0
+  return Math.round((totalReplies.value / totalRecipients.value) * 100)
+})
 
 async function loadCampaigns() {
-  loading.value = true;
+  loading.value = true
   try {
-    campaigns.value = unwrapList(await api.fetch<any>("/campaigns?limit=100"), ["campaigns"]);
+    campaigns.value = unwrapList(await api.fetch<any>('/campaigns?limit=100'), ['campaigns'])
   } catch {
-    campaigns.value = [];
+    campaigns.value = []
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
-async function scheduleCampaign(campaign: any) {
-  if (!confirm(`Enviar a campanha "${campaign.name}" agora?`)) return;
+async function scheduleCampaign(camp: any) {
+  if (!confirm(`Enviar a campanha "${camp.name}" agora?`)) return
   try {
-    await api.fetch<any>(`/campaigns/${campaign.id}/send`, { method: "POST" });
-    await loadCampaigns();
+    await api.fetch<any>(`/campaigns/${camp.id}/send`, { method: 'POST' })
+    toast.success('Campanha enviada.')
+    await loadCampaigns()
   } catch (e: any) {
-    alert(e?.data?.message || "Erro ao enviar campanha.");
+    toast.error(e?.data?.message || 'Erro ao enviar campanha.')
   }
 }
 
-async function cancelCampaign(campaign: any) {
-  if (!confirm(`Cancelar a campanha "${campaign.name}"?`)) return;
-  const idx = campaigns.value.findIndex(c => c.id === campaign.id);
-  if (idx !== -1) campaigns.value[idx] = { ...campaigns.value[idx], status: "CANCELLED" };
+async function cancelCampaign(camp: any) {
+  if (!confirm(`Cancelar a campanha "${camp.name}"?`)) return
+  const idx = campaigns.value.findIndex(c => c.id === camp.id)
+  if (idx !== -1) campaigns.value[idx] = { ...campaigns.value[idx], status: 'CANCELLED' }
 }
 
-const showNew     = ref(false);
-const formLoading = ref(false);
-const formError   = ref("");
-const stages      = ref<any[]>([]);
-
+// New campaign form
+const showNew     = ref(false)
+const formLoading = ref(false)
+const formError   = ref('')
+const stages      = ref<any[]>([])
 const form = reactive({
-  name: "", message: "", targetType: "ALL_CONTACTS" as "ALL_CONTACTS" | "STAGE",
-  stageId: "", channel: "WHATSAPP", scheduledAt: "",
-});
+  name: '', message: '', targetType: 'ALL_CONTACTS' as 'ALL_CONTACTS' | 'STAGE',
+  stageId: '', channel: 'WHATSAPP', scheduledAt: '',
+})
 
 async function openNew() {
-  Object.assign(form, { name: "", message: "", targetType: "ALL_CONTACTS", stageId: "", channel: "WHATSAPP", scheduledAt: "" });
-  formError.value = "";
-  showNew.value = true;
+  Object.assign(form, { name: '', message: '', targetType: 'ALL_CONTACTS', stageId: '', channel: 'WHATSAPP', scheduledAt: '' })
+  formError.value = ''
+  showNew.value = true
   if (!stages.value.length) {
-    try { const res = await api.fetch<any>("/crm/stages"); stages.value = res.stages || []; }
-    catch { stages.value = []; }
+    try { const res = await api.fetch<any>('/crm/stages'); stages.value = res.stages || [] }
+    catch { stages.value = [] }
   }
 }
 
 async function createCampaign() {
-  formError.value = "";
-  formLoading.value = true;
+  formError.value = ''
+  formLoading.value = true
   try {
-    const body: any = { name: form.name, message: form.message, targetType: form.targetType, channel: form.channel };
-    if (form.targetType === "STAGE" && form.stageId) body.stageId = form.stageId;
-    if (form.scheduledAt) body.scheduledAt = new Date(form.scheduledAt).toISOString();
-    const res = await api.fetch<any>("/campaigns", { method: "POST", body: JSON.stringify(body) });
-    campaigns.value.unshift(res.campaign || res);
-    showNew.value = false;
+    const body: any = { name: form.name, message: form.message, targetType: form.targetType, channel: form.channel }
+    if (form.targetType === 'STAGE' && form.stageId) body.stageId = form.stageId
+    if (form.scheduledAt) body.scheduledAt = new Date(form.scheduledAt).toISOString()
+    const res = await api.fetch<any>('/campaigns', { method: 'POST', body: JSON.stringify(body) })
+    campaigns.value.unshift(res.campaign || res)
+    showNew.value = false
+    toast.success('Campanha criada.')
   } catch (e: any) {
-    formError.value = e?.data?.message || "Erro ao criar campanha. Tente novamente.";
+    formError.value = e?.data?.message || 'Erro ao criar campanha.'
   } finally {
-    formLoading.value = false;
+    formLoading.value = false
   }
 }
 
-onMounted(loadCampaigns);
+onMounted(loadCampaigns)
 </script>
 
 <style scoped>
-.campaigns-page {
-  max-width: 1200px;
+@keyframes camp-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
-.page-header {
+.camp-page {
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  gap: 0;
+  height: 100%;
+  overflow-y: auto;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+/* Header */
+.camp-header {
+  display: flex;
+  align-items: flex-end;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
-.page-eyebrow {
-  font-size: 12px;
+.camp-eyebrow {
+  font-size: 11px;
   font-weight: 600;
-  color: var(--ka-fg-3);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0;
+  letter-spacing: 0.06em;
+  color: var(--ka-fg-muted);
+  margin-bottom: 2px;
 }
 
-.page-title {
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--ka-fg);
-  margin: 4px 0;
-}
-
-.page-subtitle {
-  font-size: 14px;
-  color: var(--ka-fg-2);
-  margin: 0;
-}
-
-.page-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.campaigns-stat-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-@media (max-width: 900px) {
-  .campaigns-stat-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.stat-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px;
-  border: 1px solid var(--ka-border);
-  border-radius: var(--ka-r-md);
-  background: var(--ka-surface);
-}
-
-.stat-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--ka-r-md);
-}
-
-.stat-text {
-  flex: 1;
-}
-
-.stat-value {
+.camp-title {
   font-size: 24px;
   font-weight: 700;
   color: var(--ka-fg);
-  line-height: 1;
+  margin: 0 0 2px;
 }
 
-.stat-label {
-  font-size: 12px;
-  color: var(--ka-fg-3);
-  margin-top: 4px;
+.camp-subtitle {
+  font-size: 13px;
+  color: var(--ka-fg-muted);
+  margin: 0;
 }
 
-.campaigns-list {
-  border: 1px solid var(--ka-border);
-  border-radius: var(--ka-r-md);
-  background: var(--ka-surface);
-  overflow: hidden;
-}
-
-.campaigns-list-skeletons {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
+/* Stats */
+.camp-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
+  margin-bottom: 20px;
 }
 
-.campaign-row {
+@media (max-width: 860px) {
+  .camp-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+.camp-stat {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--ka-border);
+  padding: 16px;
+  border: 1px solid var(--ka-border);
+  border-radius: 12px;
+  background: var(--ka-surface);
 }
 
-.campaign-row-last {
-  border-bottom: none;
-}
-
-.campaign-icon {
+.camp-stat-icon {
   width: 38px;
   height: 38px;
-  border-radius: var(--ka-r-md);
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.campaign-info {
-  flex: 1;
-  min-width: 0;
+.camp-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ka-fg);
+  line-height: 1;
 }
 
-.campaign-name {
+.camp-stat-label {
+  font-size: 12px;
+  color: var(--ka-fg-muted);
+  margin-top: 3px;
+}
+
+/* Campaign list */
+.camp-list {
+  border: 1px solid var(--ka-border);
+  border-radius: 12px;
+  background: var(--ka-surface);
+  overflow: hidden;
+}
+
+.camp-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--ka-border);
+}
+
+.camp-row.last { border-bottom: none; }
+
+.camp-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.camp-info { flex: 1; min-width: 0; }
+
+.camp-name {
   font-size: 14px;
   font-weight: 600;
   color: var(--ka-fg);
@@ -435,137 +466,96 @@ onMounted(loadCampaigns);
   text-overflow: ellipsis;
 }
 
-.campaign-meta {
+.camp-meta {
   font-size: 12px;
-  color: var(--ka-fg-3);
+  color: var(--ka-fg-muted);
   margin-top: 2px;
 }
 
-.campaign-metrics {
+.camp-metrics {
   display: flex;
-  gap: 24px;
-  font-size: 12px;
-  color: var(--ka-fg-2);
+  gap: 20px;
 }
 
-.campaign-metric {
-  text-align: center;
-  min-width: 52px;
-}
+.camp-metric { text-align: center; }
 
-.campaign-metric-value {
-  font-size: 16px;
+.camp-metric-val {
+  font-size: 15px;
   font-weight: 700;
   color: var(--ka-fg);
 }
 
-.campaign-metric-label {
-  font-size: 11px;
-  color: var(--ka-fg-3);
+.camp-metric-lbl {
+  font-size: 10px;
+  color: var(--ka-fg-muted);
+  margin-top: 1px;
 }
 
-.campaign-actions {
+/* Dot status badge */
+.camp-status-badge {
   display: flex;
-  gap: 4px;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ka-fg-2);
+  min-width: 80px;
   flex-shrink: 0;
 }
 
-.campaign-action-btn {
-  display: inline-flex;
+.camp-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.camp-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* Empty state */
+.camp-empty {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--ka-fg-muted);
+  font-size: 13px;
+}
+
+/* Modal */
+.camp-modal {
+  background: var(--ka-surface);
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  width: 480px;
+  max-width: calc(100vw - 40px);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.camp-modal-head {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: var(--ka-r-sm);
-  color: var(--ka-fg-3);
-  background: none;
-  border: none;
-  cursor: pointer;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--ka-border);
 }
 
-.campaign-action-btn:hover {
-  background: var(--ka-gray-100);
-  color: var(--ka-fg);
-}
-
-.campaign-action-danger:hover {
-  background: var(--ka-danger-alpha);
-  color: var(--ka-danger);
-}
-
-.modal-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding-top: 8px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.form-label {
-  font-size: 13px;
+.camp-modal-head h3 {
+  font-size: 16px;
   font-weight: 600;
-  color: var(--ka-fg-2);
-}
-
-.form-input {
-  height: 40px;
-  padding: 0 12px;
-  border: 1px solid var(--ka-border);
-  border-radius: var(--ka-r-sm);
-  background: var(--ka-surface);
-  font-size: 14px;
   color: var(--ka-fg);
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.form-input:focus {
-  border-color: var(--ka-brand);
-  box-shadow: 0 0 0 3px var(--ka-brand-alpha);
-}
-
-.form-textarea {
-  padding: 10px 12px;
-  border: 1px solid var(--ka-border);
-  border-radius: var(--ka-r-sm);
-  background: var(--ka-surface);
-  font-size: 14px;
-  color: var(--ka-fg);
-  outline: none;
-  resize: vertical;
-  min-height: 80px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.form-textarea:focus {
-  border-color: var(--ka-brand);
-  box-shadow: 0 0 0 3px var(--ka-brand-alpha);
-}
-
-.form-hint {
-  font-size: 12px;
-  color: var(--ka-fg-3);
-  margin: 4px 0 0;
-}
-
-.form-alert {
-  padding: 12px 14px;
-  border: 1px solid var(--ka-danger);
-  border-radius: var(--ka-r-md);
-  background: var(--ka-danger-alpha);
-  color: var(--ka-danger);
-  font-size: 13px;
   margin: 0;
+}
+
+.camp-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  overflow-y: auto;
 }
 </style>

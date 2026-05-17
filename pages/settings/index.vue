@@ -155,11 +155,12 @@
         </template>
 
         <template v-if="activeSection === 'usuarios'">
+          <!-- Time -->
           <div class="settings-card">
             <div class="settings-card-header">
               <div>
-                <h3 class="settings-card-title">Membros da equipe</h3>
-                <p class="settings-card-desc">Gerencie quem tem acesso à plataforma.</p>
+                <h3 class="settings-card-title">Time</h3>
+                <p class="settings-card-desc">{{ team.length }} usuário{{ team.length !== 1 ? 's' : '' }} · {{ team.length }} de 10 lugares no seu plano.</p>
               </div>
               <Button size="sm">
                 <Icon name="plus" :size="16" />
@@ -167,20 +168,67 @@
               </Button>
             </div>
             <div v-if="loadingTeam" class="settings-card-skeletons">
-              <Skeleton v-for="i in 3" :key="i" height="48px" rounded="md" />
+              <Skeleton v-for="i in 3" :key="i" height="56px" rounded="md" />
             </div>
             <div v-else>
               <div v-for="member in team" :key="member.id" class="settings-team-row">
-                <Avatar :name="member.name || member.email" size="sm" />
+                <div class="st-avatar" :style="{ background: avatarColor(member.name || member.email) }">
+                  {{ initials(member.name || member.email) }}
+                </div>
                 <div class="settings-team-info">
-                  <div class="settings-team-name">{{ member.name || "Sem nome" }}</div>
+                  <div class="settings-team-name">
+                    {{ member.name || "Sem nome" }}
+                    <span v-if="member.status === 'PENDING'" class="st-pending-badge">Convite pendente</span>
+                  </div>
                   <div class="settings-team-email">{{ member.email }}</div>
                 </div>
-                <Badge :variant="member.role === 'ADMIN' ? 'default' : 'neutral'" size="sm">
-                  {{ member.role === "ADMIN" ? "Admin" : "Agente" }}
-                </Badge>
+                <select
+                  :value="member.role"
+                  class="st-role-select"
+                  @change="updateMemberRole(member, ($event.target as HTMLSelectElement).value)"
+                >
+                  <option value="OWNER">Owner</option>
+                  <option value="ADMIN">Admin</option>
+                  <option value="AGENT">Atendente</option>
+                  <option value="VIEWER">Visualização</option>
+                </select>
+                <button class="st-more-btn" type="button">
+                  <Icon name="moreV" :size="16" />
+                </button>
               </div>
               <EmptyState v-if="!team.length" icon="users" title="Nenhum membro" description="Convide colaboradores para acessar a plataforma." />
+            </div>
+          </div>
+
+          <!-- Permissões por função -->
+          <div class="settings-card">
+            <div class="settings-card-header" style="margin-bottom: 16px;">
+              <div>
+                <h3 class="settings-card-title">Permissões por função</h3>
+                <p class="settings-card-desc">Defina o que cada tipo de usuário pode ver e fazer.</p>
+              </div>
+            </div>
+            <div class="perm-table-wrap">
+              <table class="perm-table">
+                <thead>
+                  <tr>
+                    <th class="perm-th-action"></th>
+                    <th class="perm-th-role">Owner</th>
+                    <th class="perm-th-role">Admin</th>
+                    <th class="perm-th-role">Atend.</th>
+                    <th class="perm-th-role">Visual.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="perm in permissions" :key="perm.label">
+                    <td class="perm-label">{{ perm.label }}</td>
+                    <td v-for="role in ['owner','admin','agent','viewer']" :key="role" class="perm-cell">
+                      <span v-if="perm[role]" class="perm-check">✓</span>
+                      <span v-else class="perm-x">✕</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </template>
@@ -449,6 +497,13 @@ async function saveBusiness() {
   }
 }
 
+const AVATAR_COLORS = ["#7c3aed","#2563eb","#0891b2","#059669","#d97706","#dc2626","#db2777","#6366f1"];
+function avatarColor(name: string) {
+  let h = 0;
+  for (let i = 0; i < (name || "").length; i++) h = (h * 31 + (name || "").charCodeAt(i)) & 0xffff;
+  return AVATAR_COLORS[h % AVATAR_COLORS.length];
+}
+
 const loadingTeam = ref(false);
 const team = ref<any[]>([]);
 
@@ -461,6 +516,23 @@ async function loadTeam() {
     loadingTeam.value = false;
   }
 }
+
+async function updateMemberRole(member: any, role: string) {
+  member.role = role;
+  try {
+    await api.fetch(`/companies/me/users/${member.id}`, { method: "PATCH", body: JSON.stringify({ role }) });
+  } catch { /* silently ignore */ }
+}
+
+const permissions = [
+  { label: "Ver conversas",   owner: true,  admin: true,  agent: true,  viewer: true  },
+  { label: "Responder",       owner: true,  admin: true,  agent: true,  viewer: false },
+  { label: "Editar CRM",      owner: true,  admin: true,  agent: false, viewer: false },
+  { label: "Treinar a IA",    owner: true,  admin: true,  agent: false, viewer: false },
+  { label: "Criar campanhas", owner: true,  admin: true,  agent: false, viewer: false },
+  { label: "Faturamento",     owner: true,  admin: false, agent: false, viewer: false },
+  { label: "Gerenciar time",  owner: true,  admin: false, agent: false, viewer: false },
+];
 
 const aiEnabled    = ref(true);
 const autoTransfer = ref(true);
@@ -788,6 +860,20 @@ watch(activeSection, (section) => {
   background: var(--ka-gray-50);
 }
 
+.st-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
 .settings-team-info {
   flex: 1;
   min-width: 0;
@@ -797,11 +883,122 @@ watch(activeSection, (section) => {
   font-size: 14px;
   font-weight: 500;
   color: var(--ka-fg);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.st-pending-badge {
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: var(--ka-warning-alpha);
+  color: var(--ka-warning);
+  font-size: 10px;
+  font-weight: 600;
 }
 
 .settings-team-email {
   font-size: 12px;
   color: var(--ka-fg-3);
+}
+
+.st-role-select {
+  height: 32px;
+  padding: 0 28px 0 10px;
+  border: 1px solid var(--ka-border);
+  border-radius: var(--ka-r-sm);
+  background: var(--ka-surface);
+  font-size: 13px;
+  color: var(--ka-fg);
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
+.st-role-select:focus {
+  border-color: var(--ka-brand);
+  box-shadow: 0 0 0 2px var(--ka-brand-alpha);
+}
+
+.st-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--ka-r-sm);
+  background: transparent;
+  color: var(--ka-fg-3);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.st-more-btn:hover {
+  background: var(--ka-gray-100);
+  color: var(--ka-fg);
+}
+
+.perm-table-wrap {
+  overflow-x: auto;
+}
+
+.perm-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.perm-th-action {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ka-fg-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 8px 12px 12px 0;
+}
+
+.perm-th-role {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ka-fg-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 8px 16px 12px;
+  min-width: 64px;
+}
+
+.perm-label {
+  padding: 11px 12px 11px 0;
+  font-size: 13px;
+  color: var(--ka-fg-2);
+  border-bottom: 1px solid var(--ka-border);
+}
+
+.perm-cell {
+  text-align: center;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--ka-border);
+}
+
+.perm-check {
+  color: var(--ka-success);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.perm-x {
+  color: var(--ka-fg-3);
+  font-size: 13px;
+}
+
+.perm-table tbody tr:last-child .perm-label,
+.perm-table tbody tr:last-child .perm-cell {
+  border-bottom: none;
 }
 
 .settings-switch-row {

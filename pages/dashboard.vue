@@ -58,12 +58,12 @@
         </div>
         <svg v-if="kpi.sparkData.length > 1 && kpi.sparkData.some(v => v > 0)" class="kpi-spark" viewBox="0 0 100 36" preserveAspectRatio="none">
           <defs>
-            <linearGradient :id="`sg-${kpi.label}`" x1="0" x2="0" y1="0" y2="1">
+            <linearGradient :id="sparkId(kpi.label)" x1="0" x2="0" y1="0" y2="1">
               <stop offset="0%" stop-color="#2D5BFF" stop-opacity="0.18" />
               <stop offset="100%" stop-color="#2D5BFF" stop-opacity="0" />
             </linearGradient>
           </defs>
-          <polygon :points="sparkPoints(kpi.sparkData).area" :fill="`url(#sg-${kpi.label})`" />
+          <polygon :points="sparkPoints(kpi.sparkData).area" :fill="`url(#${sparkId(kpi.label)})`" />
           <polyline fill="none" stroke="#2D5BFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
             :points="sparkPoints(kpi.sparkData).line" />
         </svg>
@@ -197,8 +197,10 @@ function trendPct(spark: number[]) {
   if (spark.length < 2) return 0
   const prev = spark[spark.length - 2] || 0
   const curr = spark[spark.length - 1] || 0
+  if (!curr) return 0  // hide trend badge when today is zero
   if (!prev) return curr > 0 ? 100 : 0
-  return Math.round(((curr - prev) / prev) * 100)
+  const pct = Math.round(((curr - prev) / prev) * 100)
+  return Math.max(-99, Math.min(999, pct))  // clamp to readable range
 }
 
 const kpis = computed(() => {
@@ -252,6 +254,11 @@ function barH(value: number, maxVal: number) {
 
 function shortDay(day: string) {
   return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit' }).format(new Date(`${day}T12:00:00`))
+}
+
+// SVG IDs must not contain spaces — sanitize the label
+function sparkId(label: string) {
+  return 'sg-' + label.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-_]/g, '')
 }
 
 // Sparkline uses min-max normalization (like the prototype) so even small

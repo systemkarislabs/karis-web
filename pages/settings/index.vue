@@ -458,33 +458,80 @@
         </template>
 
         <template v-if="activeSection === 'seguranca'">
+          <!-- Segurança da conta -->
           <div class="settings-card">
-            <div class="settings-card-header">
+            <div class="settings-card-header" style="margin-bottom: 4px;">
               <div>
-                <h3 class="settings-card-title">Segurança</h3>
-                <p class="settings-card-desc">Senha, sessões ativas e autenticação de dois fatores.</p>
+                <h3 class="settings-card-title">Segurança da conta</h3>
+                <p class="settings-card-desc">Recomendamos ativar o 2FA para administradores.</p>
               </div>
             </div>
             <div class="settings-switch-row">
               <div class="settings-switch-text">
-                <div class="settings-switch-title">Autenticação de dois fatores (2FA)</div>
-                <div class="settings-switch-desc">Adiciona uma camada extra de segurança ao login.</div>
+                <div class="settings-switch-title">Autenticação em 2 fatores</div>
+                <div class="settings-switch-desc">Pede um código no app autenticador a cada login.</div>
               </div>
-              <Button variant="secondary" size="sm">Configurar</Button>
+              <button class="settings-toggle" :class="{ 'settings-toggle-on': sec.twofa }" type="button" @click="sec.twofa = !sec.twofa" />
             </div>
             <div class="settings-switch-row">
               <div class="settings-switch-text">
-                <div class="settings-switch-title">Alterar senha</div>
-                <div class="settings-switch-desc">Última alteração: desconhecida.</div>
+                <div class="settings-switch-title">Login só por convite</div>
+                <div class="settings-switch-desc">Bloqueia auto-cadastro mesmo com email da empresa.</div>
               </div>
-              <Button variant="secondary" size="sm">Alterar</Button>
+              <button class="settings-toggle" :class="{ 'settings-toggle-on': sec.inviteOnly }" type="button" @click="sec.inviteOnly = !sec.inviteOnly" />
             </div>
+            <div class="settings-switch-row" style="border-bottom: none;">
+              <div class="settings-switch-text">
+                <div class="settings-switch-title">Sessões automáticas</div>
+                <div class="settings-switch-desc">Encerra sessão após 12h de inatividade.</div>
+              </div>
+              <button class="settings-toggle" :class="{ 'settings-toggle-on': sec.autoLogout }" type="button" @click="sec.autoLogout = !sec.autoLogout" />
+            </div>
+          </div>
+
+          <!-- Dispositivos conectados -->
+          <div class="settings-card">
+            <div class="sec-devices-header">
+              <div>
+                <h3 class="settings-card-title">Dispositivos conectados</h3>
+                <p class="settings-card-desc">{{ devices.length }} dispositivo{{ devices.length !== 1 ? 's' : '' }} ativo{{ devices.length !== 1 ? 's' : '' }} · Encerre se não reconhecer algum.</p>
+              </div>
+              <button class="sec-danger-link" type="button" @click="revokeOtherSessions">Encerrar outras</button>
+            </div>
+            <div class="sec-devices-list">
+              <div v-for="dev in devices" :key="dev.id" class="sec-device-row">
+                <div class="sec-device-icon">{{ dev.icon }}</div>
+                <div class="sec-device-info">
+                  <div class="sec-device-name">
+                    {{ dev.name }}
+                    <span v-if="dev.current" class="sec-current-badge">Esta sessão</span>
+                  </div>
+                  <div class="sec-device-meta">{{ dev.location }} · {{ dev.time }}</div>
+                </div>
+                <button v-if="!dev.current" class="sec-revoke-btn" type="button" @click="revokeDevice(dev.id)">Encerrar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Zona de perigo -->
+          <div class="settings-card sec-danger-card">
+            <h3 class="sec-danger-title">Zona de perigo</h3>
+            <p class="sec-danger-subtitle">Ações irreversíveis. Pense duas vezes antes.</p>
             <div class="settings-switch-row">
               <div class="settings-switch-text">
-                <div class="settings-switch-title">Sessões ativas</div>
-                <div class="settings-switch-desc">Encerrar todos os outros dispositivos conectados.</div>
+                <div class="settings-switch-title">Exportar todos os dados</div>
+                <div class="settings-switch-desc">ZIP com conversas, contatos e configurações.</div>
               </div>
-              <Button variant="secondary" size="sm" style="color: var(--ka-danger);">Encerrar sessões</Button>
+              <button class="sec-export-btn" type="button">
+                <Icon name="download" :size="14" />Exportar
+              </button>
+            </div>
+            <div class="settings-switch-row" style="border-bottom: none;">
+              <div class="settings-switch-text">
+                <div class="settings-switch-title" style="color: var(--ka-danger);">Excluir conta</div>
+                <div class="settings-switch-desc">Apaga toda a empresa. Não tem volta.</div>
+              </div>
+              <button class="sec-delete-btn" type="button">Excluir</button>
             </div>
           </div>
         </template>
@@ -696,6 +743,25 @@ const notifGroups = reactive([
     ],
   },
 ]);
+
+// Segurança
+const sec = reactive({ twofa: true, inviteOnly: true, autoLogout: false });
+
+const devices = ref([
+  { id: "current", name: "MacBook Pro · Chrome", icon: "💻", location: "Curitiba, PR · Brasil", time: "agora",  current: true  },
+  { id: "iphone",  name: "iPhone 15 · App",       icon: "📱", location: "Curitiba, PR · Brasil", time: "há 2h", current: false },
+  { id: "windows", name: "Windows · Edge",         icon: "🖥️", location: "São Paulo, SP · Brasil", time: "3 dias", current: false },
+]);
+
+async function revokeDevice(id: string) {
+  devices.value = devices.value.filter(d => d.id !== id);
+  try { await api.fetch(`/auth/sessions/${id}`, { method: "DELETE" }); } catch { /* silently ignore */ }
+}
+
+async function revokeOtherSessions() {
+  devices.value = devices.value.filter(d => d.current);
+  try { await api.fetch("/auth/sessions/others", { method: "DELETE" }); } catch { /* silently ignore */ }
+}
 
 const planName       = ref("Pro Mensal");
 const planPrice      = ref("R$ 299/mês");
@@ -1570,6 +1636,151 @@ watch(activeSection, (section) => {
 .billing-invoice-dl:hover {
   background: var(--ka-gray-100);
   color: var(--ka-fg);
+}
+
+/* ── Segurança tab ────────────────────────── */
+
+.sec-devices-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.sec-danger-link {
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ka-danger);
+  cursor: pointer;
+  padding: 4px 0;
+  flex-shrink: 0;
+}
+
+.sec-danger-link:hover {
+  text-decoration: underline;
+}
+
+.sec-devices-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.sec-device-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ka-border);
+}
+
+.sec-device-row:last-child {
+  border-bottom: none;
+}
+
+.sec-device-icon {
+  font-size: 20px;
+  width: 36px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sec-device-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.sec-device-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ka-fg);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sec-current-badge {
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: var(--ka-success-alpha);
+  color: var(--ka-success);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.sec-device-meta {
+  font-size: 12px;
+  color: var(--ka-fg-3);
+  margin-top: 2px;
+}
+
+.sec-revoke-btn {
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ka-danger);
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: var(--ka-r-sm);
+  flex-shrink: 0;
+}
+
+.sec-revoke-btn:hover {
+  background: var(--ka-danger-alpha);
+}
+
+.sec-danger-card {
+  border-color: var(--ka-danger);
+}
+
+.sec-danger-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ka-danger);
+  margin: 0 0 4px;
+}
+
+.sec-danger-subtitle {
+  font-size: 13px;
+  color: var(--ka-fg-3);
+  margin: 0 0 16px;
+}
+
+.sec-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border: 1px solid var(--ka-border);
+  border-radius: var(--ka-r-sm);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ka-fg-2);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.sec-export-btn:hover {
+  background: var(--ka-gray-50);
+}
+
+.sec-delete-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--ka-danger);
+  border-radius: var(--ka-r-sm);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ka-danger);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.sec-delete-btn:hover {
+  background: var(--ka-danger-alpha);
 }
 
 /* ── WhatsApp tab ───────────────────────────── */

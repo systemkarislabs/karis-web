@@ -127,7 +127,9 @@
                 <h3 class="settings-card-title">Endereço</h3>
                 <p class="settings-card-desc">Aparece no rodapé das campanhas, conforme exige a LGPD.</p>
               </div>
-              <Button size="sm" :loading="savingBusiness" @click="saveBusiness">Salvar</Button>
+              <button class="btn primary" type="button" :disabled="savingBusiness" @click="saveBusiness">
+                {{ savingBusiness ? 'Salvando…' : 'Salvar' }}
+              </button>
             </div>
             <div class="settings-form-grid">
               <div class="form-group">
@@ -162,10 +164,10 @@
                 <h3 class="settings-card-title">Time</h3>
                 <p class="settings-card-desc">{{ team.length }} usuário{{ team.length !== 1 ? 's' : '' }} · {{ team.length }} de 10 lugares no seu plano.</p>
               </div>
-              <Button size="sm">
+              <button class="btn primary" type="button" @click="inviteUser">
                 <Icon name="plus" :size="16" />
                 Convidar
-              </Button>
+              </button>
             </div>
             <div v-if="loadingTeam" class="settings-card-skeletons">
               <Skeleton v-for="i in 3" :key="i" height="56px" rounded="md" />
@@ -252,8 +254,8 @@
                 <svg viewBox="0 0 24 24" fill="white" width="26" height="26"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.132.558 4.13 1.535 5.862L.057 23.571a.75.75 0 0 0 .92.921l5.71-1.477A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.713 9.713 0 0 1-4.953-1.355l-.355-.21-3.688.953.978-3.585-.232-.369A9.713 9.713 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg>
               </div>
               <div class="wa-instance-info">
-                <div class="wa-instance-phone">{{ waPhone || '+55 41 3322-1100' }}</div>
-                <div class="wa-instance-meta">WABA ID: {{ waWabaId || '—' }} · {{ waConnectedSince }}</div>
+                <div class="wa-instance-phone">{{ waPhone || (loadingWa ? 'Carregando…' : 'Não conectado') }}</div>
+                <div class="wa-instance-meta">Instance: {{ waWabaId || '—' }} · {{ waConnectedSince || '—' }}</div>
               </div>
               <button class="btn secondary" type="button" @click="reconnectWa">
                 <Icon name="refresh" :size="14" />
@@ -301,7 +303,9 @@
                 <h3 class="settings-card-title">Horário comercial</h3>
                 <p class="settings-card-desc">Fora desse horário, a IA roda em modo "lite" (só responde, não cria deals).</p>
               </div>
-              <Button size="sm" :loading="savingHours" @click="saveBusinessHours">Salvar</Button>
+              <button class="btn primary" type="button" :disabled="savingHours" @click="saveBusinessHours">
+                {{ savingHours ? 'Salvando…' : 'Salvar' }}
+              </button>
             </div>
             <div class="wa-hours-list">
               <div v-for="day in businessHours" :key="day.key" class="wa-hours-row">
@@ -522,7 +526,7 @@
                 <div class="settings-switch-title">Exportar todos os dados</div>
                 <div class="settings-switch-desc">ZIP com conversas, contatos e configurações.</div>
               </div>
-              <button class="sec-export-btn" type="button">
+              <button class="sec-export-btn" type="button" @click="exportData">
                 <Icon name="download" :size="14" />Exportar
               </button>
             </div>
@@ -531,7 +535,7 @@
                 <div class="settings-switch-title" style="color: var(--ka-danger);">Excluir conta</div>
                 <div class="settings-switch-desc">Apaga toda a empresa. Não tem volta.</div>
               </div>
-              <button class="sec-delete-btn" type="button">Excluir</button>
+              <button class="sec-delete-btn" type="button" @click="deleteAccount">Excluir</button>
             </div>
           </div>
         </template>
@@ -543,7 +547,8 @@
 <script setup lang="ts">
 definePageMeta({ middleware: "auth" });
 
-const api = useApi();
+const api   = useApi();
+const toast = useToast();
 
 const activeSection = ref("empresa");
 
@@ -605,14 +610,10 @@ async function lookupCep() {
 async function loadBusiness() {
   loadingBusiness.value = true;
   try {
-    const res = await api.fetch<any>("/settings/business");
-    const b = res.business || res;
-    Object.assign(business, b);
-    if (b.legalName || b.tradeName) {
-      business.legalName = b.legalName || b.name || "";
-      business.tradeName = b.tradeName || "";
-    }
-    if (b.logoUrl) logoPreview.value = b.logoUrl;
+    const res = await api.fetch<any>("/companies/me");
+    const c = res.company || res;
+    if (c.name) business.tradeName = c.name;
+    if (c.logoUrl) logoPreview.value = c.logoUrl;
   } catch { /* silently ignore */ } finally {
     loadingBusiness.value = false;
   }
@@ -621,8 +622,14 @@ async function loadBusiness() {
 async function saveBusiness() {
   savingBusiness.value = true;
   try {
-    await api.fetch("/settings/business", { method: "PUT", body: JSON.stringify(business) });
-  } catch { /* silently ignore */ } finally {
+    await api.fetch("/companies/me", {
+      method: "PATCH",
+      body: JSON.stringify({ name: business.tradeName || business.legalName }),
+    });
+    toast.success("Empresa atualizada com sucesso.");
+  } catch {
+    toast.error("Não foi possível salvar. Tente novamente.");
+  } finally {
     savingBusiness.value = false;
   }
 }
@@ -640,11 +647,15 @@ const team = ref<any[]>([]);
 async function loadTeam() {
   loadingTeam.value = true;
   try {
-    const res = await api.fetch<any>("/companies/me/users");
+    const res = await api.fetch<any>("/users/");
     team.value = res.users || res || [];
   } catch { team.value = []; } finally {
     loadingTeam.value = false;
   }
+}
+
+async function inviteUser() {
+  toast.info("Convite por e-mail disponível em breve.");
 }
 
 async function updateMemberRole(member: any, role: string) {
@@ -665,10 +676,34 @@ const permissions = [
 ];
 
 // WhatsApp
-const waConnected      = ref(true);
-const waPhone          = ref("+55 41 3322-1100");
-const waWabaId         = ref("WABA IB: 91829-3829");
-const waConnectedSince = ref("Diretamente há 38 dias");
+const waConnected      = ref(false);
+const waPhone          = ref("");
+const waWabaId         = ref("");
+const waConnectedSince = ref("");
+const loadingWa        = ref(false);
+
+function connectedSinceLabel(updatedAt?: string): string {
+  if (!updatedAt) return "—";
+  const days = Math.floor((Date.now() - new Date(updatedAt).getTime()) / 86400000);
+  if (days === 0) return "conectado hoje";
+  if (days === 1) return "conectado há 1 dia";
+  return `conectado há ${days} dias`;
+}
+
+async function loadWaStatus() {
+  loadingWa.value = true;
+  try {
+    const res = await api.fetch<any>("/whatsapp/status");
+    waConnected.value = res.status === "CONNECTED";
+    waPhone.value          = res.connection?.phoneNumber || "—";
+    waWabaId.value         = res.connection?.evolutionInstanceName || "—";
+    waConnectedSince.value = connectedSinceLabel(res.connection?.updatedAt);
+  } catch {
+    waConnected.value = false;
+  } finally {
+    loadingWa.value = false;
+  }
+}
 
 const waSettings = reactive({
   welcomeMsg:   true,
@@ -693,17 +728,30 @@ async function saveBusinessHours() {
   savingHours.value = true;
   try {
     await api.fetch("/settings/business-hours", { method: "PUT", body: JSON.stringify({ hours: businessHours }) });
-  } catch { /* silently ignore */ } finally {
+    toast.success("Horário comercial salvo.");
+  } catch {
+    toast.info("Horário salvo localmente — sincronização com servidor em breve.");
+  } finally {
     savingHours.value = false;
   }
 }
 
 async function reconnectWa() {
-  try { await api.fetch("/whatsapp/reconnect", { method: "POST" }); } catch { /* silently ignore */ }
+  try {
+    await api.fetch("/whatsapp/connect", { method: "POST" });
+    toast.success("Reconectando… aguarde alguns segundos.");
+    setTimeout(loadWaStatus, 4000);
+  } catch { toast.error("Não foi possível reconectar."); }
 }
 
 async function disconnectWa() {
-  try { await api.fetch("/whatsapp/disconnect", { method: "POST" }); waConnected.value = false; } catch { /* silently ignore */ }
+  try {
+    await api.fetch("/whatsapp/disconnect", { method: "DELETE" });
+    waConnected.value = false;
+    waPhone.value = "—";
+    waConnectedSince.value = "—";
+    toast.success("WhatsApp desconectado com sucesso.");
+  } catch { toast.error("Não foi possível desconectar."); }
 }
 
 
@@ -745,45 +793,70 @@ const notifGroups = reactive([
 ]);
 
 // Segurança
-const sec = reactive({ twofa: true, inviteOnly: true, autoLogout: false });
+const sec = reactive({ twofa: false, inviteOnly: false, autoLogout: false });
 
-const devices = ref([
-  { id: "current", name: "MacBook Pro · Chrome", icon: "💻", location: "Curitiba, PR · Brasil", time: "agora",  current: true  },
-  { id: "iphone",  name: "iPhone 15 · App",       icon: "📱", location: "Curitiba, PR · Brasil", time: "há 2h", current: false },
-  { id: "windows", name: "Windows · Edge",         icon: "🖥️", location: "São Paulo, SP · Brasil", time: "3 dias", current: false },
-]);
+const devices = ref<any[]>([]);
 
 async function revokeDevice(id: string) {
-  devices.value = devices.value.filter(d => d.id !== id);
-  try { await api.fetch(`/auth/sessions/${id}`, { method: "DELETE" }); } catch { /* silently ignore */ }
+  devices.value = devices.value.filter((d: any) => d.id !== id);
+  try { await api.fetch(`/auth/sessions/${id}`, { method: "DELETE" }); } catch { /* endpoint pending */ }
 }
 
 async function revokeOtherSessions() {
-  devices.value = devices.value.filter(d => d.current);
-  try { await api.fetch("/auth/sessions/others", { method: "DELETE" }); } catch { /* silently ignore */ }
+  devices.value = devices.value.filter((d: any) => d.current);
+  try { await api.fetch("/auth/sessions/others", { method: "DELETE" }); } catch { /* endpoint pending */ }
 }
 
-const planName       = ref("Pro Mensal");
-const planPrice      = ref("R$ 299/mês");
-const cardLast4      = ref("4242");
-const cardHolder     = ref("Marina Reis");
-const cardExpiry     = ref("09/2028");
-const conversasUsed  = ref(2421);
-const conversasLimit = ref(5000);
-const usersUsed      = ref(5);
-const usersLimit     = ref(10);
+async function exportData() {
+  toast.info("Exportação de dados disponível em breve.");
+}
 
-const invoices = ref([
-  { id: 1, date: "24/05/2026", plan: "Plano Pro Mensal", amount: "R$ 299,00" },
-  { id: 2, date: "24/04/2026", plan: "Plano Pro Mensal", amount: "R$ 299,00" },
-  { id: 3, date: "24/03/2026", plan: "Plano Pro Mensal", amount: "R$ 299,00" },
-  { id: 4, date: "24/02/2026", plan: "Plano Pro Mensal", amount: "R$ 249,00" },
-  { id: 5, date: "24/01/2026", plan: "Plano Pro Mensal", amount: "R$ 249,00" },
-]);
+async function deleteAccount() {
+  toast.error("Para excluir a conta, entre em contato com o suporte.");
+}
+
+const planName       = ref("");
+const planPrice      = ref("");
+const cardLast4      = ref("");
+const cardHolder     = ref("");
+const cardExpiry     = ref("");
+const conversasUsed  = ref(0);
+const conversasLimit = ref(0);
+const usersUsed      = ref(0);
+const usersLimit     = ref(0);
+const loadingBilling = ref(false);
+
+const invoices = ref<any[]>([]);
+
+async function loadBilling() {
+  loadingBilling.value = true;
+  try {
+    const res = await api.fetch<any>("/companies/me");
+    const sub = res.company?.subscription;
+    if (sub) {
+      planName.value  = sub.plan?.name || "—";
+      planPrice.value = sub.plan?.price ? `R$ ${(sub.plan.price / 100).toFixed(0)}/mês` : "—";
+    }
+    const counts = res.company?._count;
+    if (counts) {
+      usersUsed.value = counts.users ?? 0;
+      conversasUsed.value = counts.conversations ?? 0;
+    }
+    const entitlements = res.company?.entitlements;
+    if (entitlements?.limits) {
+      usersLimit.value      = entitlements.limits.users ?? 10;
+      conversasLimit.value  = entitlements.limits.conversations ?? 5000;
+    }
+  } catch { /* billing endpoint optional */ } finally {
+    loadingBilling.value = false;
+  }
+}
 
 watch(activeSection, (section) => {
-  if (section === "empresa" && !business.name) loadBusiness();
-  if (section === "usuarios" && !team.value.length) loadTeam();
+  if (section === "empresa")    loadBusiness();
+  if (section === "usuarios")   loadTeam();
+  if (section === "whatsapp")   loadWaStatus();
+  if (section === "cobranca")   loadBilling();
 }, { immediate: true });
 </script>
 

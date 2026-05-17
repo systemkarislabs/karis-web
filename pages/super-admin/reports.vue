@@ -3,8 +3,8 @@
     <header class="super-admin-header">
       <div>
         <p class="eyebrow">Relatórios</p>
-        <h1>Saúde da plataforma</h1>
-        <p>Relatórios agregados de operação, sem abrir conversas ou mensagens de clientes.</p>
+        <h1>Saúde e consumo da plataforma</h1>
+        <p>Métricas agregadas de operação e consumo. Sem acesso a conversas ou mensagens de clientes.</p>
       </div>
       <div class="super-admin-actions">
         <div class="period-tabs">
@@ -19,6 +19,7 @@
       </div>
     </header>
 
+    <!-- KPIs — linha 1: operacional -->
     <div class="super-admin-kpis">
       <article>
         <div class="kpi-icon brand"><Icon name="building" :size="17" /></div>
@@ -42,45 +43,105 @@
         <div class="kpi-icon amber"><Icon name="trendUp" :size="17" /></div>
         <span>IA no período</span>
         <strong>{{ data?.kpis?.aiRate ?? 0 }}%</strong>
-        <small>uso agregado</small>
+        <small>participação da IA</small>
       </article>
     </div>
 
-    <section class="super-admin-panel">
-      <div class="panel-title">
-        <div>
-          <h2>Volume agregado</h2>
-          <p>Quantidade por dia para acompanhar limite e capacidade.</p>
-        </div>
-        <div class="chart-legend">
-          <span></span> Mensagens
-          <span class="blue"></span> Conversas
-        </div>
-      </div>
+    <!-- KPIs — linha 2: consumo -->
+    <div class="super-admin-kpis" style="margin-top:0">
+      <article>
+        <div class="kpi-icon brand"><Icon name="message" :size="17" /></div>
+        <span>Mensagens no período</span>
+        <strong>{{ data?.kpis?.messagesInPeriod ?? 0 }}</strong>
+        <small>agregado global</small>
+      </article>
+      <article>
+        <div class="kpi-icon purple"><Icon name="bot" :size="17" /></div>
+        <span>Respostas IA</span>
+        <strong>{{ data?.kpis?.aiMessagesInPeriod ?? 0 }}</strong>
+        <small>geradas no período</small>
+      </article>
+      <article>
+        <div class="kpi-icon green"><Icon name="users" :size="17" /></div>
+        <span>Contatos</span>
+        <strong>{{ data?.kpis?.contacts ?? 0 }}</strong>
+        <small>base total</small>
+      </article>
+      <article>
+        <div class="kpi-icon amber"><Icon name="kanban" :size="17" /></div>
+        <span>Negócios CRM</span>
+        <strong>{{ data?.kpis?.deals ?? 0 }}</strong>
+        <small>pipeline total</small>
+      </article>
+    </div>
 
-      <div v-if="loading" class="sa-empty">
-        <Icon name="refresh" :size="24" />
-        Carregando...
-      </div>
-      <div v-else-if="error" class="sa-empty" style="color:var(--ka-danger)">
-        <Icon name="alert" :size="24" />
-        {{ error }}
-      </div>
-      <div v-else-if="!data?.series?.length" class="sa-empty">
-        <Icon name="fileText" :size="28" />
-        Nenhum dado de volume disponível ainda.<br />
-        <span style="font-size:11px;margin-top:4px;">O endpoint /overview precisa estar ativo no backend.</span>
-      </div>
-      <div v-else class="bar-chart">
-        <div v-for="item in data.series" :key="item.day" class="bar-day">
-          <div class="bars">
-            <i class="green" :style="{ height: `${(item.messages / (maxSeries || 1)) * 100}%` }"></i>
-            <i :style="{ height: `${(item.conversations / (maxSeries || 1)) * 100}%` }"></i>
+    <div class="super-admin-grid">
+      <!-- Gráfico de volume -->
+      <section class="super-admin-panel">
+        <div class="panel-title">
+          <div>
+            <h2>Volume agregado</h2>
+            <p>Quantidade por dia para acompanhar limite e capacidade.</p>
           </div>
-          <small>{{ formatDay(item.day) }}</small>
+          <div class="chart-legend">
+            <span></span> Mensagens
+            <span class="blue"></span> Conversas
+          </div>
         </div>
-      </div>
-    </section>
+
+        <div v-if="loading" class="sa-empty">
+          <Icon name="refresh" :size="24" />
+          Carregando...
+        </div>
+        <div v-else-if="error" class="sa-empty" style="color:var(--ka-danger)">
+          <Icon name="alert" :size="24" />
+          {{ error }}
+        </div>
+        <div v-else-if="!data?.series?.length" class="sa-empty">
+          <Icon name="fileText" :size="28" />
+          Nenhum dado de volume disponível ainda.
+        </div>
+        <div v-else class="bar-chart">
+          <div v-for="item in data.series" :key="item.day" class="bar-day">
+            <div class="bars">
+              <i class="green" :style="{ height: `${(item.messages / (maxSeries || 1)) * 100}%` }"></i>
+              <i :style="{ height: `${(item.conversations / (maxSeries || 1)) * 100}%` }"></i>
+            </div>
+            <small>{{ formatDay(item.day) }}</small>
+          </div>
+        </div>
+      </section>
+
+      <!-- Ranking de empresas por consumo -->
+      <section class="super-admin-panel">
+        <h2>Empresas por consumo</h2>
+        <p>Ranking no período selecionado. Sem acesso ao conteúdo das conversas.</p>
+
+        <div v-if="loading" class="sa-empty">
+          <Icon name="refresh" :size="20" />
+          Carregando...
+        </div>
+        <div v-else-if="!data?.topCompanies?.length" class="sa-empty">
+          <Icon name="building" :size="24" />
+          Nenhum dado disponível ainda.
+        </div>
+        <div v-else class="top-companies-list">
+          <div v-for="(item, index) in data.topCompanies" :key="item.company.id" class="top-company-row">
+            <span class="top-company-rank">{{ index + 1 }}</span>
+            <div class="top-company-info">
+              <strong>{{ item.company.name }}</strong>
+              <small>{{ item.messages }} mensagens</small>
+            </div>
+            <span class="top-company-bar-wrap">
+              <span
+                class="top-company-bar"
+                :style="{ width: `${(item.messages / (data.topCompanies[0].messages || 1)) * 100}%` }"
+              ></span>
+            </span>
+          </div>
+        </div>
+      </section>
+    </div>
   </section>
 </template>
 

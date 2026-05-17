@@ -29,10 +29,6 @@
         <Icon name="dollar" :size="18" />
         <span>Planos</span>
       </NuxtLink>
-      <NuxtLink class="nav-item" to="/super-admin/usage">
-        <Icon name="trendUp" :size="18" />
-        <span>Uso</span>
-      </NuxtLink>
       <NuxtLink class="nav-item" to="/super-admin/reports">
         <Icon name="fileText" :size="18" />
         <span>Relatórios</span>

@@ -377,29 +377,83 @@
         </template>
 
         <template v-if="activeSection === 'cobranca'">
-          <div class="settings-plan-card">
-            <span class="settings-plan-badge">Plano atual</span>
-            <div class="settings-plan-name">{{ planName }}</div>
-            <div class="settings-plan-price">{{ planPrice }}</div>
-            <div class="settings-plan-usage">
-              <div class="settings-plan-usage-bar">
-                <div class="settings-plan-usage-label">Conversas usadas este mês</div>
-                <div class="settings-plan-progress">
-                  <div class="settings-plan-progress-fill" :style="{ width: `${usagePct}%` }" />
+          <!-- Plan hero card -->
+          <div class="billing-plan-card">
+            <div class="billing-plan-eyebrow">Plano atual</div>
+            <div class="billing-plan-title">{{ planName }} · <span class="billing-plan-price">{{ planPrice }}</span></div>
+            <div class="billing-plan-renew">Renova em 24 de junho · cartão final {{ cardLast4 }}</div>
+
+            <div class="billing-meters">
+              <div class="billing-meter">
+                <div class="billing-meter-header">
+                  <span class="billing-meter-label">Conversas IA</span>
+                  <span class="billing-meter-value">{{ conversasUsed.toLocaleString('pt-BR') }} / {{ conversasLimit.toLocaleString('pt-BR') }}</span>
+                </div>
+                <div class="billing-meter-track">
+                  <div class="billing-meter-fill" :style="{ width: `${Math.min(conversasUsed / conversasLimit * 100, 100)}%` }" />
                 </div>
               </div>
-              <span class="settings-plan-usage-pct">{{ usagePct }}%</span>
+              <div class="billing-meter">
+                <div class="billing-meter-header">
+                  <span class="billing-meter-label">Usuários</span>
+                  <span class="billing-meter-value">{{ usersUsed }} / {{ usersLimit }}</span>
+                </div>
+                <div class="billing-meter-track">
+                  <div class="billing-meter-fill" :style="{ width: `${Math.min(usersUsed / usersLimit * 100, 100)}%` }" />
+                </div>
+              </div>
+            </div>
+
+            <div class="billing-plan-actions">
+              <button class="billing-upgrade-btn" type="button">Fazer upgrade</button>
+              <button class="billing-cancel-btn" type="button">Cancelar plano</button>
             </div>
           </div>
+
+          <!-- Payment method -->
           <div class="settings-card">
-            <div class="settings-card-header">
+            <div class="billing-section-header">
               <div>
-                <h3 class="settings-card-title">Faturamento</h3>
-                <p class="settings-card-desc">Histórico de cobranças e método de pagamento.</p>
+                <h3 class="settings-card-title">Forma de pagamento</h3>
+                <p class="settings-card-desc">Cartão usado para a próxima cobrança.</p>
               </div>
-              <Button variant="secondary" size="sm">Gerenciar assinatura</Button>
+              <button class="billing-alter-btn" type="button">
+                <Icon name="card" :size="14" />Alterar
+              </button>
             </div>
-            <EmptyState icon="creditCard" title="Sem cobranças registradas" description="Seu histórico de pagamentos aparecerá aqui." />
+            <div class="billing-card-row">
+              <span class="billing-card-brand">VISA</span>
+              <div class="billing-card-info">
+                <div class="billing-card-number">•••• •••• •••• {{ cardLast4 }}</div>
+                <div class="billing-card-meta">{{ cardHolder }} · Vence {{ cardExpiry }}</div>
+              </div>
+              <span class="billing-card-default">Padrão</span>
+            </div>
+          </div>
+
+          <!-- Recent invoices -->
+          <div class="settings-card">
+            <div class="billing-section-header" style="margin-bottom: 16px;">
+              <div>
+                <h3 class="settings-card-title">Faturas recentes</h3>
+                <p class="settings-card-desc">Baixe seus comprovantes em PDF.</p>
+              </div>
+            </div>
+            <div class="billing-invoices">
+              <div v-for="inv in invoices" :key="inv.id" class="billing-invoice-row">
+                <Icon name="fileText" :size="16" class="billing-invoice-icon" />
+                <div class="billing-invoice-info">
+                  <div class="billing-invoice-name">Fatura · {{ inv.date }}</div>
+                  <div class="billing-invoice-plan">{{ inv.plan }}</div>
+                </div>
+                <span class="billing-invoice-amount">{{ inv.amount }}</span>
+                <span class="billing-invoice-status">Pago</span>
+                <button class="billing-invoice-dl" type="button" title="Baixar PDF">
+                  <Icon name="download" :size="15" />
+                </button>
+              </div>
+              <EmptyState v-if="!invoices.length" icon="creditCard" title="Nenhuma fatura" description="Seu histórico de cobranças aparecerá aqui." />
+            </div>
           </div>
         </template>
 
@@ -643,9 +697,23 @@ const notifGroups = reactive([
   },
 ]);
 
-const planName  = ref("Profissional");
-const planPrice = ref("R$ 297/mês");
-const usagePct  = ref(42);
+const planName       = ref("Pro Mensal");
+const planPrice      = ref("R$ 299/mês");
+const cardLast4      = ref("4242");
+const cardHolder     = ref("Marina Reis");
+const cardExpiry     = ref("09/2028");
+const conversasUsed  = ref(2421);
+const conversasLimit = ref(5000);
+const usersUsed      = ref(5);
+const usersLimit     = ref(10);
+
+const invoices = ref([
+  { id: 1, date: "24/05/2026", plan: "Plano Pro Mensal", amount: "R$ 299,00" },
+  { id: 2, date: "24/04/2026", plan: "Plano Pro Mensal", amount: "R$ 299,00" },
+  { id: 3, date: "24/03/2026", plan: "Plano Pro Mensal", amount: "R$ 299,00" },
+  { id: 4, date: "24/02/2026", plan: "Plano Pro Mensal", amount: "R$ 249,00" },
+  { id: 5, date: "24/01/2026", plan: "Plano Pro Mensal", amount: "R$ 249,00" },
+]);
 
 watch(activeSection, (section) => {
   if (section === "empresa" && !business.name) loadBusiness();
@@ -1247,71 +1315,260 @@ watch(activeSection, (section) => {
   flex-shrink: 0;
 }
 
-.settings-plan-card {
-  border: 1px solid var(--ka-border);
+/* ── Cobrança tab ─────────────────────────── */
+
+.billing-plan-card {
   border-radius: var(--ka-r-md);
-  background: var(--ka-surface);
-  padding: 24px;
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%);
+  padding: 28px 24px 24px;
   margin-bottom: 16px;
+  color: white;
 }
 
-.settings-plan-badge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 12px;
-  background: var(--ka-brand-alpha);
-  color: var(--ka-brand-dark);
-  font-size: 11px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-.settings-plan-name {
-  font-size: 20px;
+.billing-plan-eyebrow {
+  font-size: 10px;
   font-weight: 700;
-  color: var(--ka-fg);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.65;
+  margin-bottom: 6px;
 }
 
-.settings-plan-price {
-  font-size: 14px;
-  color: var(--ka-fg-2);
-  margin-top: 2px;
+.billing-plan-title {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 4px;
 }
 
-.settings-plan-usage {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-top: 16px;
+.billing-plan-price {
+  font-size: 24px;
+  font-weight: 800;
 }
 
-.settings-plan-usage-bar {
-  flex: 1;
-}
-
-.settings-plan-usage-label {
+.billing-plan-renew {
   font-size: 12px;
-  color: var(--ka-fg-3);
-  margin-bottom: 8px;
+  opacity: 0.7;
+  margin-bottom: 20px;
 }
 
-.settings-plan-progress {
-  height: 8px;
-  border-radius: 4px;
-  background: var(--ka-gray-100);
+.billing-meters {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.billing-meter-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.billing-meter-label {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.billing-meter-value {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.billing-meter-track {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.2);
   overflow: hidden;
 }
 
-.settings-plan-progress-fill {
+.billing-meter-fill {
   height: 100%;
-  border-radius: 4px;
-  background: var(--ka-brand);
-  transition: width 0.3s;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.85);
+  transition: width 0.4s;
 }
 
-.settings-plan-usage-pct {
-  font-size: 15px;
+.billing-plan-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.billing-upgrade-btn {
+  padding: 8px 18px;
+  border-radius: var(--ka-r-sm);
+  border: none;
+  background: white;
+  color: #312e81;
+  font-size: 13px;
   font-weight: 700;
+  cursor: pointer;
+}
+
+.billing-upgrade-btn:hover {
+  background: #f0f0ff;
+}
+
+.billing-cancel-btn {
+  padding: 8px 18px;
+  border-radius: var(--ka-r-sm);
+  border: 1px solid rgba(255,255,255,0.35);
+  background: transparent;
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.billing-cancel-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.billing-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.billing-alter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1px solid var(--ka-border);
+  border-radius: var(--ka-r-sm);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ka-fg-2);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.billing-alter-btn:hover {
+  background: var(--ka-gray-50);
+}
+
+.billing-card-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--ka-border);
+  border-radius: var(--ka-r-md);
+  background: var(--ka-gray-50);
+}
+
+.billing-card-brand {
+  font-size: 11px;
+  font-weight: 800;
+  color: #1a1aff;
+  border: 2px solid #1a1aff;
+  border-radius: 4px;
+  padding: 2px 5px;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.billing-card-info {
+  flex: 1;
+}
+
+.billing-card-number {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ka-fg);
+  font-family: ui-monospace, monospace;
+}
+
+.billing-card-meta {
+  font-size: 12px;
+  color: var(--ka-fg-3);
+  margin-top: 2px;
+}
+
+.billing-card-default {
+  padding: 3px 9px;
+  border-radius: 10px;
+  background: var(--ka-success-alpha);
+  color: var(--ka-success);
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.billing-invoices {
+  display: flex;
+  flex-direction: column;
+}
+
+.billing-invoice-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--ka-border);
+}
+
+.billing-invoice-row:last-child {
+  border-bottom: none;
+}
+
+.billing-invoice-icon {
+  color: var(--ka-fg-3);
+  flex-shrink: 0;
+}
+
+.billing-invoice-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.billing-invoice-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ka-fg);
+}
+
+.billing-invoice-plan {
+  font-size: 11px;
+  color: var(--ka-fg-3);
+  margin-top: 1px;
+}
+
+.billing-invoice-amount {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ka-fg);
+  flex-shrink: 0;
+}
+
+.billing-invoice-status {
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--ka-success-alpha);
+  color: var(--ka-success);
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.billing-invoice-dl {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--ka-r-sm);
+  background: transparent;
+  color: var(--ka-fg-3);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.billing-invoice-dl:hover {
+  background: var(--ka-gray-100);
   color: var(--ka-fg);
 }
 

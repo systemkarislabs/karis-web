@@ -106,6 +106,31 @@
 
     <ToastHost />
 
+    <!-- Bottom navigation (mobile only) -->
+    <nav class="mobile-bottom-nav" aria-label="Navegação principal">
+      <NuxtLink to="/dashboard" title="Dashboard">
+        <Icon name="dashboard" :size="20" />
+        <span>Início</span>
+      </NuxtLink>
+      <NuxtLink to="/inbox" title="Conversas">
+        <Icon name="message" :size="20" />
+        <span>Chat</span>
+        <span v-if="unreadCount" class="mbn-badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+      </NuxtLink>
+      <NuxtLink to="/crm" title="CRM">
+        <Icon name="kanban" :size="20" />
+        <span>CRM</span>
+      </NuxtLink>
+      <NuxtLink to="/contacts" title="Contatos">
+        <Icon name="users" :size="20" />
+        <span>Contatos</span>
+      </NuxtLink>
+      <button class="mbn-more" type="button" title="Menu" @click="mobileOpen = true">
+        <Icon name="menu" :size="20" />
+        <span>Mais</span>
+      </button>
+    </nav>
+
     <!-- Mobile drawer overlay -->
     <Teleport to="body">
       <div v-if="mobileOpen" style="position: fixed; inset: 0; z-index: 50; display: flex;">

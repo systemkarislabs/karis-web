@@ -791,6 +791,19 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* suporte ao viewport seguro no iOS (notch, home indicator) */
+  -webkit-text-size-adjust: 100%;
+}
+
+/* garante que o app não sobreponha a área do notch/status bar iOS */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .app > .topbar {
+    padding-top: env(safe-area-inset-top, 0px);
+    height: calc(52px + env(safe-area-inset-top, 0px));
+  }
+  .app {
+    grid-template-rows: calc(52px + env(safe-area-inset-top, 0px)) 1fr;
+  }
 }
 
 body,
@@ -7331,7 +7344,84 @@ button {
   .app > .sidebar { display: none; }
   .app > .topbar, .app > .content { grid-column: 1; }
   .topbar .ts-search { display: none; }
-  .topbar .ts-menu-btn { display: inline-flex !important; }
+  /* Topbar hamburger fica oculto no mobile — o bottom nav tem o botão "Mais" */
+  .topbar .ts-menu-btn { display: none !important; }
+
+  /* Padding-bottom so content isn't hidden behind the bottom nav */
+  .app > .content { padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
+
+  /* Touch targets: minimum 44px */
+  .ts-icon-btn { min-width: 44px; min-height: 44px; }
+
+  /* Page padding narrower on small screens */
+  .page { padding: 14px 16px; }
+  .page-header { padding-bottom: 14px; }
+}
+
+/* ── Bottom navigation (mobile only) ────────────────────── */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    display: flex;
+    background: var(--ka-surface);
+    border-top: 1px solid var(--ka-border);
+    box-shadow: 0 -1px 0 0 var(--ka-border);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .mobile-bottom-nav a,
+  .mobile-bottom-nav button.mbn-more {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 8px 4px;
+    min-height: 52px;
+    border: none;
+    background: transparent;
+    color: var(--ka-fg-muted);
+    font-size: 10px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    position: relative;
+    transition: color 140ms;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-bottom-nav a.router-link-active,
+  .mobile-bottom-nav a.router-link-active svg {
+    color: var(--ka-brand);
+  }
+
+  .mobile-bottom-nav .mbn-badge {
+    position: absolute;
+    top: 7px;
+    left: 50%;
+    transform: translateX(6px);
+    min-width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    background: var(--ka-brand);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
 }
 
 /* Tweaks panel */
@@ -7572,8 +7662,53 @@ button {
   .inbox-page.panel-open { grid-template-columns: 190px 300px minmax(0, 1fr); }
   .contact-panel { display: none; }
 }
+
 @media (max-width: 860px) {
   .inbox-page,
-  .inbox-page.panel-open { grid-template-columns: minmax(0, 1fr); }
-  .inbox-filters, .inbox-list { display: none; }
+  .inbox-page.panel-open {
+    grid-template-columns: 1fr;
+    /* height precisa descontar topbar (52px) + bottom nav (52px) + safe-area */
+    height: calc(100dvh - 52px - 56px - env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Filtros laterais e painel de contato não aparecem no mobile */
+  .inbox-filters,
+  .contact-panel { display: none !important; }
+
+  /* Por padrão: mostra lista de conversas */
+  .inbox-list { display: flex; }
+
+  /* Por padrão: esconde thread */
+  .thread { display: none; }
+
+  /* Quando em modo thread: mostra thread, esconde lista */
+  .inbox-page.mobile-thread .inbox-list { display: none; }
+  .inbox-page.mobile-thread .thread { display: flex; }
+}
+
+/* Botão voltar — visível apenas no mobile */
+.mobile-back-btn {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .mobile-back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: transparent;
+    color: var(--ka-fg);
+    cursor: pointer;
+    border-radius: 8px;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mobile-back-btn:hover { background: var(--ka-gray-50); }
+
+  /* Thread header adapta para mobile */
+  .thread-header .right { gap: 6px; }
+  .thread-header .right .btn.sm { display: none; } /* esconde "Resolver" no header — vai para dentro da conversa */
 }

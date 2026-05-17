@@ -47,7 +47,7 @@ export default defineNuxtConfig({
       title: "Karis Atende",
       meta: [
         { charset: "utf-8" },
-        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
         { name: "description", content: "Plataforma de atendimento inteligente com IA para WhatsApp" },
       ],
       link: [

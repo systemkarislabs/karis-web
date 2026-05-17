@@ -1,5 +1,5 @@
 ﻿<template>
-  <div class="inbox-page" :class="{ 'panel-open': showContactPanel && selectedConversation }">
+  <div class="inbox-page" :class="{ 'panel-open': showContactPanel && selectedConversation, 'mobile-thread': mobileView === 'thread' }">
     <!-- Filters column -->
     <aside class="inbox-filters">
       <h4>Caixa de entrada</h4>
@@ -113,6 +113,9 @@
     <!-- Thread -->
     <div class="thread" v-if="selectedConversation">
       <div class="thread-header">
+        <button class="mobile-back-btn" type="button" title="Voltar" @click="goBackMobile">
+          <Icon name="arrowLeft" :size="20" />
+        </button>
         <div class="avatar" :style="`background:${avatarColor(selectedContact?.name || selectedContact?.phone)};`">
           {{ initials(selectedContact?.name || selectedContact?.phone) }}
         </div>
@@ -298,6 +301,8 @@ const route = useRoute()
 const api = useApi()
 const toast = useToast()
 
+const mobileView = ref<'list' | 'thread'>('list')
+
 const search = ref('')
 const searchOpen = ref(false)
 const activeFilter = ref('all')
@@ -456,8 +461,13 @@ async function loadConversations() {
   }
 }
 
+function goBackMobile() {
+  mobileView.value = 'list'
+}
+
 async function selectConversation(id: string) {
   selectedId.value = id
+  mobileView.value = 'thread'
   dismissedSuggestion.value = false
   contactDeal.value = null
   loadingMessages.value = true

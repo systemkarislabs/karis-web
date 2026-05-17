@@ -30,7 +30,18 @@
                 <strong>{{ plan.name }}</strong>
                 <span>{{ formatMoney(plan.priceCents) }} / {{ intervalLabel(plan.billingInterval) }}</span>
               </div>
-              <span class="status-pill" :class="{ off: !plan.isActive }">{{ plan.isActive ? "Ativo" : "Inativo" }}</span>
+              <div class="plan-card-actions" @click.stop>
+                <span class="status-pill" :class="{ off: !plan.isActive }">{{ plan.isActive ? "Ativo" : "Inativo" }}</span>
+                <button
+                  class="plan-card-delete-btn"
+                  type="button"
+                  title="Excluir plano"
+                  :disabled="deletingPlanId === plan.id"
+                  @click="confirmDeletePlan(plan)"
+                >
+                  <Icon name="trash" :size="13" />
+                </button>
+              </div>
             </div>
             <p>{{ plan.description || "Sem descrição" }}</p>
             <div class="plan-limits">
@@ -43,6 +54,26 @@
               <span v-for="module in enabledModules(plan)" :key="module">{{ module }}</span>
             </div>
           </article>
+        </div>
+
+        <!-- Modal de confirmação de exclusão de plano -->
+        <div v-if="deletePlanTarget" class="sa-confirm-overlay" @click.self="deletePlanTarget = null">
+          <div class="sa-confirm-modal">
+            <div class="sa-confirm-icon">
+              <Icon name="alert" :size="24" color="var(--ka-danger)" />
+            </div>
+            <h3>Excluir plano?</h3>
+            <p>
+              Você está prestes a excluir o plano <strong>{{ deletePlanTarget.name }}</strong>.
+              Empresas vinculadas a este plano perderão a referência. Esta ação não pode ser desfeita.
+            </p>
+            <div class="sa-confirm-actions">
+              <button class="btn secondary" type="button" @click="deletePlanTarget = null">Cancelar</button>
+              <button class="btn danger" type="button" :disabled="deletingPlanId === deletePlanTarget.id" @click="deletePlan">
+                {{ deletingPlanId === deletePlanTarget.id ? 'Excluindo...' : 'Sim, excluir' }}
+              </button>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -108,9 +139,12 @@
 definePageMeta({ layout: "super-admin", middleware: "super-admin" });
 
 const api = useAdminApi();
+const toast = useToast();
 const plans = ref<any[]>([]);
 const saving = ref(false);
 const error = ref("");
+const deletePlanTarget = ref<any | null>(null);
+const deletingPlanId = ref<string | null>(null);
 const modules = [
   { key: "crm", label: "CRM" },
   { key: "sales", label: "Vendas" },
@@ -217,6 +251,26 @@ async function savePlan() {
     error.value = err?.data?.message || "Não foi possível salvar o plano.";
   } finally {
     saving.value = false;
+  }
+}
+
+function confirmDeletePlan(plan: any) {
+  deletePlanTarget.value = plan;
+}
+
+async function deletePlan() {
+  if (!deletePlanTarget.value) return;
+  deletingPlanId.value = deletePlanTarget.value.id;
+  try {
+    await api.fetch(`/plans/${deletePlanTarget.value.id}`, { method: "DELETE" });
+    toast.success(`Plano "${deletePlanTarget.value.name}" excluído.`);
+    if (form.id === deletePlanTarget.value.id) resetForm();
+    deletePlanTarget.value = null;
+    await loadPlans();
+  } catch (err: any) {
+    toast.error(err?.data?.message || "Não foi possível excluir o plano.");
+  } finally {
+    deletingPlanId.value = null;
   }
 }
 

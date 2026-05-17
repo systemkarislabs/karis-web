@@ -513,6 +513,55 @@
 .feature-toggles label:hover,
 .module-grid label:hover { background: var(--ka-gray-50); }
 
+/* ── Custom toggle switch (replaces ugly native checkbox) ─────── */
+.feature-toggles input[type="checkbox"],
+.module-grid input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex-shrink: 0;
+  width: 32px;
+  height: 18px;
+  border-radius: 9999px;
+  background: var(--ka-border-strong);
+  border: none;
+  position: relative;
+  cursor: pointer;
+  transition: background 160ms var(--ka-ease-out);
+  outline: none;
+}
+.feature-toggles input[type="checkbox"]::after,
+.module-grid input[type="checkbox"]::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  transition: transform 160ms var(--ka-ease-out);
+}
+.feature-toggles input[type="checkbox"]:checked,
+.module-grid input[type="checkbox"]:checked {
+  background: var(--ka-brand);
+}
+.feature-toggles input[type="checkbox"]:checked::after,
+.module-grid input[type="checkbox"]:checked::after {
+  transform: translateX(14px);
+}
+.feature-toggles input[type="checkbox"]:focus-visible,
+.module-grid input[type="checkbox"]:focus-visible {
+  box-shadow: var(--ka-focus-ring);
+}
+/* label highlight when checked */
+.feature-toggles label:has(input:checked),
+.module-grid label:has(input:checked) {
+  border-color: var(--ka-brand-100);
+  background: var(--ka-brand-50);
+  color: var(--ka-brand-dark);
+}
+
 /* Form messages */
 .form-error { color: var(--ka-danger) !important; font-size: 13px; font-weight: 600; }
 .success-copy { color: var(--ka-success) !important; font-size: 13px; font-weight: 600; }
@@ -718,8 +767,35 @@
 .plan-card-head {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   gap: 12px;
   margin-bottom: 10px;
+}
+
+.plan-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.plan-card-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--ka-r-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ka-fg-muted);
+  cursor: pointer;
+  transition: background 140ms, color 140ms, border-color 140ms;
+}
+.plan-card-delete-btn:hover {
+  background: var(--ka-danger-bg);
+  color: var(--ka-danger);
+  border-color: var(--ka-danger);
 }
 
 .plan-card-head strong,

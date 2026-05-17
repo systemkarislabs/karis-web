@@ -983,7 +983,7 @@ button {
 
   .page-header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 24px;
     margin-bottom: 24px;
@@ -2082,26 +2082,32 @@ button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
+    min-height: 36px;
+    padding: 0 14px;
     border: 1px solid transparent;
     border-radius: var(--ka-r-md);
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 600;
     text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
     transition: transform var(--ka-dur-fast) var(--ka-ease-out), background var(--ka-dur-fast) var(--ka-ease-out), border-color var(--ka-dur-fast) var(--ka-ease-out), color var(--ka-dur-fast) var(--ka-ease-out);
   }
 
   .btn.sm {
-    min-height: 32px;
-    padding: 0 12px;
-    font-size: 13px;
+    min-height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
     border-radius: 8px;
   }
 
   .btn.lg {
     width: 100%;
-    min-height: 48px;
+    min-height: 46px;
     padding: 0 18px;
     font-size: 14px;
+    font-weight: 700;
   }
 
   .btn.primary {
@@ -2116,11 +2122,9 @@ button {
   }
 
   .btn.secondary {
-    min-height: 46px;
     background: var(--ka-surface);
     border-color: var(--ka-border);
     color: var(--ka-fg);
-    font-size: 14px;
   }
 
   .btn.secondary:hover {

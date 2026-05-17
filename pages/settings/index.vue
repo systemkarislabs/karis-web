@@ -927,6 +927,9 @@ watch(activeSection, (section) => {
 
 .form-group-full {
   grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .form-group {
@@ -959,15 +962,18 @@ watch(activeSection, (section) => {
 }
 
 .form-textarea {
+  width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--ka-border);
   border-radius: var(--ka-r-sm);
   background: var(--ka-surface);
   font-size: 14px;
   color: var(--ka-fg);
+  font-family: inherit;
   outline: none;
   resize: vertical;
-  min-height: 80px;
+  min-height: 96px;
+  box-sizing: border-box;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 

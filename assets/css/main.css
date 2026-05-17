@@ -285,6 +285,22 @@
   padding: 16px 18px;
 }
 
+.kpi-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--ka-r-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+.kpi-icon.brand  { background: var(--ka-brand-50);   color: var(--ka-brand); }
+.kpi-icon.purple { background: var(--ka-bot-bg);      color: var(--ka-bot); }
+.kpi-icon.green  { background: var(--ka-success-bg);  color: var(--ka-success); }
+.kpi-icon.amber  { background: var(--ka-warning-bg);  color: var(--ka-warning); }
+.kpi-icon.teal   { background: #e0fdf4;               color: #0d9488; }
+
 .super-admin-kpis span,
 .super-admin-kpis small {
   display: block;
@@ -295,12 +311,26 @@
 
 .super-admin-kpis strong {
   display: block;
-  margin: 8px 0 4px;
-  font-size: 26px;
+  margin: 6px 0 3px;
+  font-size: 22px;
   font-weight: 700;
   line-height: 1;
   color: var(--ka-fg);
 }
+
+/* Empty state inside panels */
+.sa-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px 20px;
+  color: var(--ka-fg-muted);
+  font-size: 13px;
+  text-align: center;
+}
+.sa-empty svg { opacity: 0.35; }
 
 /* Two-col content grid */
 .super-admin-grid {

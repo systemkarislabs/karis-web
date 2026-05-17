@@ -1,62 +1,124 @@
 <template>
-  <div class="super-admin-shell">
-    <aside class="super-admin-sidebar">
-      <NuxtLink class="super-admin-brand" to="/super-admin">
-        <img src="/karis-atende-wordmark-white.png" alt="Karis Atende" />
-        <span>Super Admin</span>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="/karis-icon.png" alt="Karis" />
+        <div>
+          <div class="name">Karis</div>
+          <div class="sub">Atende</div>
+        </div>
+        <span class="sa-mode-badge">Admin</span>
+      </div>
+
+      <p class="nav-section-label">Plataforma</p>
+      <NuxtLink
+        class="nav-item"
+        to="/super-admin"
+        exact-active-class="router-link-active"
+        active-class=""
+      >
+        <Icon name="dashboard" :size="18" />
+        <span>Dashboard</span>
+      </NuxtLink>
+      <NuxtLink class="nav-item" to="/super-admin/companies">
+        <Icon name="building" :size="18" />
+        <span>Empresas</span>
+      </NuxtLink>
+      <NuxtLink class="nav-item" to="/super-admin/plans">
+        <Icon name="dollar" :size="18" />
+        <span>Planos</span>
+      </NuxtLink>
+      <NuxtLink class="nav-item" to="/super-admin/usage">
+        <Icon name="trendUp" :size="18" />
+        <span>Uso</span>
+      </NuxtLink>
+      <NuxtLink class="nav-item" to="/super-admin/reports">
+        <Icon name="fileText" :size="18" />
+        <span>Relatórios</span>
+      </NuxtLink>
+      <NuxtLink class="nav-item" to="/super-admin/security">
+        <Icon name="shield" :size="18" />
+        <span>Segurança</span>
       </NuxtLink>
 
-      <nav>
-        <NuxtLink to="/super-admin" class="super-admin-nav" active-class="is-active">
-          <LayoutDashboard class="h-4 w-4" />
-          Dashboard
-        </NuxtLink>
-        <NuxtLink to="/super-admin/companies" class="super-admin-nav" active-class="is-active">
-          <Building2 class="h-4 w-4" />
-          Empresas
-        </NuxtLink>
-        <NuxtLink to="/super-admin/plans" class="super-admin-nav" active-class="is-active">
-          <PackageCheck class="h-4 w-4" />
-          Planos
-        </NuxtLink>
-        <NuxtLink to="/super-admin/usage" class="super-admin-nav" active-class="is-active">
-          <Gauge class="h-4 w-4" />
-          Uso
-        </NuxtLink>
-        <NuxtLink to="/super-admin/reports" class="super-admin-nav" active-class="is-active">
-          <BarChart3 class="h-4 w-4" />
-          Relatórios
-        </NuxtLink>
-        <NuxtLink to="/super-admin/security" class="super-admin-nav" active-class="is-active">
-          <ShieldCheck class="h-4 w-4" />
-          Segurança
-        </NuxtLink>
-      </nav>
-
-      <div class="super-admin-user">
-        <ShieldCheck class="h-4 w-4" />
-        <div>
-          <strong>{{ superAdmin.platformUser?.email || "Super Admin" }}</strong>
-          <button type="button" @click="logout">Sair</button>
+      <!-- User card -->
+      <div class="user-card">
+        <div class="uc-avatar" style="background:linear-gradient(135deg,var(--ka-brand-light),var(--ka-brand));">SA</div>
+        <div style="flex:1;min-width:0;">
+          <p style="font-size:12px;font-weight:600;color:var(--ka-fg);margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+            {{ superAdmin.platformUser?.email || 'Super Admin' }}
+          </p>
+          <p style="font-size:11px;color:var(--ka-fg-muted);margin:0;">Administrador</p>
         </div>
+        <button
+          class="ts-icon-btn"
+          style="width:28px;height:28px;border:0;background:transparent;"
+          title="Sair"
+          @click="logout"
+        >
+          <Icon name="logout" :size="15" />
+        </button>
       </div>
     </aside>
 
-    <main class="super-admin-main">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="sa-topbar-badge">
+          <Icon name="shield" :size="13" />
+          Modo Super Admin
+        </span>
+      </div>
+      <div class="ts-actions" style="margin-left:auto;">
+        <button class="btn secondary sm" type="button" @click="navigateTo('/dashboard')">
+          <Icon name="arrowLeft" :size="14" />
+          Voltar ao app
+        </button>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <main class="content">
       <slot />
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BarChart3, Building2, Gauge, LayoutDashboard, PackageCheck, ShieldCheck } from "lucide-vue-next";
+const superAdmin = useSuperAdminStore()
 
-const superAdmin = useSuperAdminStore();
-
-onMounted(() => superAdmin.fetchMe());
+onMounted(() => superAdmin.fetchMe())
 
 function logout() {
-  superAdmin.clear();
-  navigateTo("/super-admin/login");
+  superAdmin.clear()
+  navigateTo('/login')
 }
 </script>
+
+<style scoped>
+.sa-mode-badge {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ka-brand);
+  background: var(--ka-brand-50);
+  border-radius: 6px;
+  padding: 3px 7px;
+}
+
+.sa-topbar-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ka-brand);
+  background: var(--ka-brand-50);
+  border: 1px solid var(--ka-brand-100);
+  border-radius: 8px;
+  padding: 4px 10px;
+}
+</style>

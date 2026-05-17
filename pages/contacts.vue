@@ -7,14 +7,14 @@
         <p class="page-subtitle">{{ contacts.length }} contatos · {{ optedInCount }} ativos · {{ pendingCount }} aguardando você</p>
       </div>
       <div class="page-actions">
-        <Button variant="secondary" size="sm">
+        <button class="btn secondary" type="button">
           <Icon name="upload" :size="16" />
           Importar CSV
-        </Button>
-        <Button size="sm">
+        </button>
+        <button class="btn primary" type="button" @click="showNewContactModal = true">
           <Icon name="plus" :size="16" />
           Novo contato
-        </Button>
+        </button>
       </div>
     </div>
 

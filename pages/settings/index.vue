@@ -315,35 +315,6 @@
           </div>
         </template>
 
-        <template v-if="activeSection === 'agente'">
-          <div class="settings-card">
-            <div class="settings-card-header">
-              <div>
-                <h3 class="settings-card-title">Configurações da IA</h3>
-                <p class="settings-card-desc">Personalidade, setores e base de conhecimento.</p>
-              </div>
-              <Button size="sm" @click="navigateTo('/agent')">
-                Ir para Agente IA
-                <Icon name="chevronRight" :size="16" />
-              </Button>
-            </div>
-            <div class="settings-switch-row">
-              <div class="settings-switch-text">
-                <div class="settings-switch-title">IA habilitada</div>
-                <div class="settings-switch-desc">Quando ativa, a Karis responde automaticamente às mensagens dos clientes.</div>
-              </div>
-              <button class="settings-toggle" :class="{ 'settings-toggle-on': aiEnabled }" type="button" @click="aiEnabled = !aiEnabled" />
-            </div>
-            <div class="settings-switch-row">
-              <div class="settings-switch-text">
-                <div class="settings-switch-title">Transferência automática</div>
-                <div class="settings-switch-desc">Encaminha para humano quando a IA não tem resposta adequada.</div>
-              </div>
-              <button class="settings-toggle" :class="{ 'settings-toggle-on': autoTransfer }" type="button" @click="autoTransfer = !autoTransfer" />
-            </div>
-          </div>
-        </template>
-
         <template v-if="activeSection === 'integracoes'">
           <div class="settings-card">
             <div class="settings-card-header">
@@ -480,7 +451,6 @@ const workspaceNav = [
   { key: "empresa",      label: "Empresa",          icon: "building" },
   { key: "usuarios",     label: "Usuários e times", icon: "users" },
   { key: "whatsapp",     label: "WhatsApp",         icon: "whatsapp", badge: "Conectar" },
-  { key: "agente",       label: "Agente IA",        icon: "bot" },
   { key: "integracoes",  label: "Integrações",      icon: "zap" },
 ];
 
@@ -636,8 +606,6 @@ async function disconnectWa() {
   try { await api.fetch("/whatsapp/disconnect", { method: "POST" }); waConnected.value = false; } catch { /* silently ignore */ }
 }
 
-const aiEnabled    = ref(true);
-const autoTransfer = ref(true);
 
 const integrations = [
   { name: "Zapier",      emoji: "⚡", desc: "Automatize fluxos com mais de 5.000 apps.",  connected: false },

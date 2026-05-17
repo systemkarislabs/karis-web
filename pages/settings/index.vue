@@ -255,11 +255,11 @@
                 <div class="wa-instance-phone">{{ waPhone || '+55 41 3322-1100' }}</div>
                 <div class="wa-instance-meta">WABA ID: {{ waWabaId || '—' }} · {{ waConnectedSince }}</div>
               </div>
-              <Button variant="secondary" size="sm" @click="reconnectWa">
+              <button class="btn secondary" type="button" @click="reconnectWa">
                 <Icon name="refresh" :size="14" />
                 Reconectar
-              </Button>
-              <button class="wa-disconnect-btn" type="button" @click="disconnectWa">Desconectar</button>
+              </button>
+              <button class="btn ghost" type="button" style="color:var(--ka-danger);" @click="disconnectWa">Desconectar</button>
             </div>
 
             <div class="wa-toggles">

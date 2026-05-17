@@ -343,39 +343,35 @@
 
         <template v-if="activeSection === 'notificacoes'">
           <div class="settings-card">
-            <div class="settings-card-header">
+            <div class="notif-card-header">
               <div>
-                <h3 class="settings-card-title">Notificações</h3>
-                <p class="settings-card-desc">Escolha quando e como receber alertas.</p>
+                <h3 class="settings-card-title">Como você quer ser avisado?</h3>
+                <p class="settings-card-desc">Você pode pausar tudo durante o horário comercial fechado.</p>
               </div>
             </div>
-            <div class="settings-switch-row">
-              <div class="settings-switch-text">
-                <div class="settings-switch-title">Nova mensagem recebida</div>
-                <div class="settings-switch-desc">Notificação quando um cliente enviar mensagem.</div>
+
+            <div class="notif-table">
+              <!-- column headers -->
+              <div class="notif-col-headers">
+                <span class="notif-col-label">App</span>
+                <span class="notif-col-label">Email</span>
+                <span class="notif-col-label">Push</span>
               </div>
-              <button class="settings-toggle settings-toggle-on" type="button" />
-            </div>
-            <div class="settings-switch-row">
-              <div class="settings-switch-text">
-                <div class="settings-switch-title">Transferência para humano</div>
-                <div class="settings-switch-desc">Alerta quando a IA redirecionar para atendimento humano.</div>
-              </div>
-              <button class="settings-toggle settings-toggle-on" type="button" />
-            </div>
-            <div class="settings-switch-row">
-              <div class="settings-switch-text">
-                <div class="settings-switch-title">Resumo diário</div>
-                <div class="settings-switch-desc">Receba um resumo por email todo dia às 18h.</div>
-              </div>
-              <button class="settings-toggle" type="button" />
-            </div>
-            <div class="settings-switch-row">
-              <div class="settings-switch-text">
-                <div class="settings-switch-title">Relatório semanal</div>
-                <div class="settings-switch-desc">Receba métricas semanais de atendimento por email.</div>
-              </div>
-              <button class="settings-toggle" type="button" />
+
+              <template v-for="group in notifGroups" :key="group.key">
+                <div class="notif-group-label">{{ group.label }}</div>
+                <div v-for="n in group.items" :key="n.key" class="notif-row">
+                  <span class="notif-row-label">{{ n.label }}</span>
+                  <div v-for="ch in ['app','email','push']" :key="ch" class="notif-cell">
+                    <button
+                      class="settings-toggle"
+                      :class="{ 'settings-toggle-on': n[ch] }"
+                      type="button"
+                      @click="n[ch] = !n[ch]"
+                    />
+                  </div>
+                </div>
+              </template>
             </div>
           </div>
         </template>
@@ -620,6 +616,32 @@ const integrations = [
   { name: "Slack",            emoji: "💬", color: "#4a154b", desc: "Notificações em canais do Slack.",              connected: false },
   { name: "API Karis",        emoji: "🔌", color: "#1a1a2e", desc: "Endpoint REST para integração customizada.",    connected: true  },
 ];
+
+const notifGroups = reactive([
+  {
+    key: "conversas", label: "Conversas",
+    items: [
+      { key: "nova_conversa",  label: "Nova conversa aberta",           app: true,  email: true,  push: false },
+      { key: "aguardando",     label: "Cliente esperando há mais de 5 min", app: true,  email: true,  push: true  },
+      { key: "revisao_ia",     label: "IA precisa de revisão humana",   app: true,  email: false, push: true  },
+    ],
+  },
+  {
+    key: "crm", label: "CRM",
+    items: [
+      { key: "lead_nova",      label: "Lead nova no pipeline",          app: true,  email: true,  push: false },
+      { key: "negocio_ganho",  label: "Negócio fechado (ganho)",        app: true,  email: true,  push: false },
+      { key: "negocio_perdido",label: "Negócio perdido",                app: false, email: true,  push: false },
+    ],
+  },
+  {
+    key: "time", label: "Time",
+    items: [
+      { key: "mencao",         label: "Mencionaram você (@mention)",    app: true,  email: true,  push: true  },
+      { key: "resposta",       label: "Resposta à sua conversa",        app: true,  email: true,  push: false },
+    ],
+  },
+]);
 
 const planName  = ref("Profissional");
 const planPrice = ref("R$ 297/mês");
@@ -1455,5 +1477,68 @@ watch(activeSection, (section) => {
   font-size: 12px;
   color: var(--ka-fg-3);
   flex-shrink: 0;
+}
+
+/* ── Notificações tab ─────────────────────── */
+
+.notif-card-header {
+  margin-bottom: 20px;
+}
+
+.notif-table {
+  display: flex;
+  flex-direction: column;
+}
+
+.notif-col-headers {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0;
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--ka-border);
+}
+
+.notif-col-label {
+  width: 64px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ka-fg-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.notif-group-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ka-brand);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 14px 0 6px;
+}
+
+.notif-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ka-border);
+  gap: 0;
+}
+
+.notif-row:last-child {
+  border-bottom: none;
+}
+
+.notif-row-label {
+  flex: 1;
+  font-size: 13px;
+  color: var(--ka-fg-2);
+}
+
+.notif-cell {
+  flex: 0 0 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

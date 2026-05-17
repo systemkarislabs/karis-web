@@ -317,22 +317,25 @@
 
         <template v-if="activeSection === 'integracoes'">
           <div class="settings-card">
-            <div class="settings-card-header">
+            <div class="intg-header">
               <div>
-                <h3 class="settings-card-title">Integrações</h3>
-                <p class="settings-card-desc">Conecte ferramentas externas à plataforma.</p>
+                <h3 class="settings-card-title">Integrações disponíveis</h3>
+                <p class="settings-card-desc">Conecte as ferramentas que você já usa.</p>
               </div>
             </div>
-            <div class="settings-integrations">
-              <div v-for="intg in integrations" :key="intg.name" class="settings-integration-row">
-                <div class="settings-integration-logo">{{ intg.emoji }}</div>
-                <div class="settings-integration-info">
-                  <div class="settings-integration-name">{{ intg.name }}</div>
-                  <div class="settings-integration-desc">{{ intg.desc }}</div>
+            <div class="intg-grid">
+              <div v-for="intg in integrations" :key="intg.name" class="intg-card">
+                <div class="intg-icon" :style="{ background: intg.color }">
+                  <span class="intg-emoji">{{ intg.emoji }}</span>
                 </div>
-                <Button :variant="intg.connected ? 'success' : 'secondary'" size="sm">
-                  {{ intg.connected ? "Conectado" : "Conectar" }}
-                </Button>
+                <div class="intg-info">
+                  <div class="intg-name">{{ intg.name }}</div>
+                  <div class="intg-desc">{{ intg.desc }}</div>
+                </div>
+                <span v-if="intg.connected" class="intg-connected-badge">
+                  <Icon name="check" :size="12" />Conectado
+                </span>
+                <span v-else class="intg-soon-badge">Em breve</span>
               </div>
             </div>
           </div>
@@ -608,10 +611,14 @@ async function disconnectWa() {
 
 
 const integrations = [
-  { name: "Zapier",      emoji: "⚡", desc: "Automatize fluxos com mais de 5.000 apps.",  connected: false },
-  { name: "Google Sheets", emoji: "📊", desc: "Sincronize contatos e leads com planilhas.", connected: false },
-  { name: "HubSpot",    emoji: "🔶", desc: "Sincronize contatos e deals com o CRM.",       connected: false },
-  { name: "Webhook",    emoji: "🔗", desc: "Envie eventos para qualquer endpoint HTTP.",    connected: false },
+  { name: "Mercado Pago",     emoji: "💳", color: "#009ee3", desc: "Pagamentos automáticos via pix e cartão.",      connected: false },
+  { name: "Asaas",            emoji: "🟢", color: "#00b386", desc: "Cobranças recorrentes.",                        connected: false },
+  { name: "Google Calendar",  emoji: "📅", color: "#4285f4", desc: "Agendamentos sincronizados.",                   connected: false },
+  { name: "iFood",            emoji: "🛵", color: "#ea1d2c", desc: "Receber pedidos do iFood direto no inbox.",     connected: false },
+  { name: "Shopify",          emoji: "🛍️", color: "#96bf48", desc: "Carrinho abandonado e pós-venda.",              connected: false },
+  { name: "Zapier",           emoji: "⚡", color: "#ff4a00", desc: "5.000+ aplicativos via webhooks.",               connected: false },
+  { name: "Slack",            emoji: "💬", color: "#4a154b", desc: "Notificações em canais do Slack.",              connected: false },
+  { name: "API Karis",        emoji: "🔌", color: "#1a1a2e", desc: "Endpoint REST para integração customizada.",    connected: true  },
 ];
 
 const planName  = ref("Profissional");
@@ -1132,48 +1139,90 @@ watch(activeSection, (section) => {
   transform: translateX(20px);
 }
 
-.settings-integrations {
+.intg-header {
   display: flex;
-  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.intg-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
-.settings-integration-row {
+@media (max-width: 680px) {
+  .intg-grid { grid-template-columns: 1fr; }
+}
+
+.intg-card {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   padding: 14px;
   border: 1px solid var(--ka-border);
   border-radius: var(--ka-r-md);
 }
 
-.settings-integration-logo {
+.intg-icon {
   width: 40px;
   height: 40px;
   border-radius: var(--ka-r-md);
-  background: var(--ka-gray-50);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
   flex-shrink: 0;
 }
 
-.settings-integration-info {
+.intg-emoji {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.intg-info {
   flex: 1;
   min-width: 0;
 }
 
-.settings-integration-name {
+.intg-name {
   font-size: 14px;
   font-weight: 500;
   color: var(--ka-fg);
 }
 
-.settings-integration-desc {
-  font-size: 12px;
+.intg-desc {
+  font-size: 11px;
   color: var(--ka-fg-3);
   margin-top: 2px;
+  line-height: 1.4;
+}
+
+.intg-connected-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border-radius: 10px;
+  background: var(--ka-success-alpha);
+  color: var(--ka-success);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.intg-soon-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  border-radius: 10px;
+  background: var(--ka-gray-100);
+  color: var(--ka-fg-3);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .settings-plan-card {

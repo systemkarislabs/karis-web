@@ -4,6 +4,7 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: false, middleware: undefined })
-// A autenticação super admin é feita pela página de login principal
-await navigateTo('/login', { replace: true })
+const route = useRoute()
+const redirect = route.query.redirect ? `?redirect=${encodeURIComponent(String(route.query.redirect))}` : ''
+await navigateTo(`/login${redirect}`, { replace: true })
 </script>

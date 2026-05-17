@@ -2,17 +2,30 @@
   <div class="settings-page">
     <div class="page-header">
       <div>
-        <p class="page-eyebrow">Preferências</p>
+        <p class="page-eyebrow">Configurações</p>
         <h1 class="page-title">Configurações</h1>
-        <p class="page-subtitle">Ajuste empresa, faturamento e canais da sua conta.</p>
+        <p class="page-subtitle">Empresa, time, integrações e cobrança.</p>
       </div>
     </div>
 
     <div class="settings-layout">
       <nav class="settings-nav">
-        <h6 class="settings-nav-label">Conta</h6>
+        <h6 class="settings-nav-label">Workspace</h6>
         <button
-          v-for="item in navItems"
+          v-for="item in workspaceNav"
+          :key="item.key"
+          class="settings-nav-item"
+          :class="{ 'settings-nav-item-active': activeSection === item.key }"
+          type="button"
+          @click="activeSection = item.key"
+        >
+          <Icon :name="item.icon" :size="16" />
+          {{ item.label }}
+          <span v-if="item.badge" class="settings-nav-badge">{{ item.badge }}</span>
+        </button>
+        <h6 class="settings-nav-label" style="margin-top: 16px;">Conta</h6>
+        <button
+          v-for="item in contaNav"
           :key="item.key"
           class="settings-nav-item"
           :class="{ 'settings-nav-item-active': activeSection === item.key }"
@@ -26,42 +39,116 @@
 
       <div class="settings-content">
         <template v-if="activeSection === 'empresa'">
+          <!-- Dados da empresa -->
           <div class="settings-card">
             <div class="settings-card-header">
               <div>
                 <h3 class="settings-card-title">Dados da empresa</h3>
-                <p class="settings-card-desc">Nome, segmento e informações de contato.</p>
+                <p class="settings-card-desc">Aparecem nas suas mensagens automáticas e no recibo.</p>
               </div>
               <Button size="sm" :loading="savingBusiness" @click="saveBusiness">Salvar</Button>
             </div>
             <div v-if="loadingBusiness" class="settings-card-skeletons">
-              <Skeleton v-for="i in 4" :key="i" height="40px" rounded="md" />
+              <Skeleton v-for="i in 5" :key="i" height="40px" rounded="md" />
             </div>
-            <div v-else class="settings-form-grid">
-              <div class="form-group">
-                <label class="form-label">Nome da empresa</label>
-                <input v-model="business.name" class="form-input" placeholder="Karis Negócios" />
+            <template v-else>
+              <!-- Logo -->
+              <div class="settings-logo-row">
+                <div class="settings-logo-preview" :style="logoPreview ? { backgroundImage: `url(${logoPreview})`, backgroundSize: 'cover' } : {}">
+                  <span v-if="!logoPreview" class="settings-logo-initials">{{ initials(business.legalName || business.tradeName || 'KA') }}</span>
+                </div>
+                <div class="settings-logo-info">
+                  <div class="settings-logo-label">Logo da empresa</div>
+                  <div class="settings-logo-hint">Recomendado: PNG 256×256, fundo transparente.</div>
+                  <div class="settings-logo-actions">
+                    <label class="settings-logo-btn" for="logo-upload">
+                      <Icon name="upload" :size="14" />Trocar logo
+                    </label>
+                    <input id="logo-upload" type="file" accept="image/*" style="display:none" @change="onLogoChange" />
+                    <button v-if="logoPreview" class="settings-logo-remove" type="button" @click="logoPreview = ''">Remover</button>
+                  </div>
+                </div>
               </div>
-              <div class="form-group">
-                <label class="form-label">Segmento</label>
-                <input v-model="business.segment" class="form-input" placeholder="E-commerce, Saúde, etc." />
+
+              <div class="settings-form-grid">
+                <div class="form-group">
+                  <label class="form-label">Razão social</label>
+                  <input v-model="business.legalName" class="form-input" placeholder="Padaria do João LTDA" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Nome fantasia</label>
+                  <input v-model="business.tradeName" class="form-input" placeholder="Padaria do João" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">CNPJ</label>
+                  <input v-model="business.cnpj" class="form-input" placeholder="12.345.678/0001-90" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Telefone comercial</label>
+                  <input v-model="business.commercialPhone" class="form-input" placeholder="+55 41 3322-1100" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Fuso horário</label>
+                  <select v-model="business.timezone" class="form-input form-select">
+                    <option value="America/Sao_Paulo">(GMT-03:00) Brasília</option>
+                    <option value="America/Manaus">(GMT-04:00) Manaus</option>
+                    <option value="America/Belem">(GMT-03:00) Belém</option>
+                    <option value="America/Fortaleza">(GMT-03:00) Fortaleza</option>
+                    <option value="America/Recife">(GMT-03:00) Recife</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Setor</label>
+                  <select v-model="business.sector" class="form-input form-select">
+                    <option value="">Selecione...</option>
+                    <option>Alimentação</option>
+                    <option>E-commerce</option>
+                    <option>Saúde</option>
+                    <option>Educação</option>
+                    <option>Serviços</option>
+                    <option>Varejo</option>
+                    <option>Tecnologia</option>
+                    <option>Outro</option>
+                  </select>
+                </div>
+                <div class="form-group-full">
+                  <label class="form-label">Descrição <span class="form-label-sub">(usada pela IA)</span></label>
+                  <textarea v-model="business.description" class="form-textarea" rows="4" placeholder="Descreva sua empresa em poucas palavras..." />
+                  <p class="form-hint">Essa descrição é injetada nas instruções da IA. Quanto mais específica, melhor a resposta.</p>
+                </div>
               </div>
-              <div class="form-group">
-                <label class="form-label">Email de contato</label>
-                <input v-model="business.email" class="form-input" type="email" placeholder="contato@empresa.com" />
+            </template>
+          </div>
+
+          <!-- Endereço -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <div>
+                <h3 class="settings-card-title">Endereço</h3>
+                <p class="settings-card-desc">Aparece no rodapé das campanhas, conforme exige a LGPD.</p>
               </div>
+              <Button size="sm" :loading="savingBusiness" @click="saveBusiness">Salvar</Button>
+            </div>
+            <div class="settings-form-grid">
               <div class="form-group">
-                <label class="form-label">Telefone</label>
-                <input v-model="business.phone" class="form-input" placeholder="+55 11 99999-9999" />
+                <label class="form-label">CEP</label>
+                <input v-model="business.zipCode" class="form-input" placeholder="80060-150" @blur="lookupCep" />
               </div>
+              <div class="form-group" />
               <div class="form-group-full">
-                <label class="form-label">Site</label>
-                <input v-model="business.website" class="form-input" placeholder="https://www.empresa.com.br" />
+                <label class="form-label">Endereço</label>
+                <input v-model="business.address" class="form-input" placeholder="Rua XV de Novembro, 1024 — Centro" />
               </div>
-              <div class="form-group-full">
-                <label class="form-label">Descrição</label>
-                <textarea v-model="business.description" class="form-textarea" placeholder="Descreva sua empresa em poucas palavras..." />
-                <p class="form-hint">Usado pela IA para contextualizar as respostas.</p>
+              <div class="form-group">
+                <label class="form-label">Cidade</label>
+                <input v-model="business.city" class="form-input" placeholder="Curitiba" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Estado</label>
+                <select v-model="business.state" class="form-input form-select">
+                  <option value="">Selecione...</option>
+                  <option v-for="uf in ufs" :key="uf" :value="uf">{{ uf }}</option>
+                </select>
               </div>
             </div>
           </div>
@@ -281,26 +368,73 @@ const api = useApi();
 
 const activeSection = ref("empresa");
 
-const navItems = [
-  { key: "empresa",       label: "Empresa",           icon: "building" },
-  { key: "usuarios",      label: "Usuários e times",  icon: "users" },
-  { key: "whatsapp",      label: "WhatsApp",          icon: "whatsapp" },
-  { key: "agente",        label: "Agente IA",         icon: "bot" },
-  { key: "integracoes",   label: "Integrações",       icon: "zap" },
-  { key: "notificacoes",  label: "Notificações",      icon: "bell" },
-  { key: "cobranca",      label: "Cobrança",          icon: "card" },
-  { key: "seguranca",     label: "Segurança",         icon: "shield" },
+const workspaceNav = [
+  { key: "empresa",      label: "Empresa",          icon: "building" },
+  { key: "usuarios",     label: "Usuários e times", icon: "users" },
+  { key: "whatsapp",     label: "WhatsApp",         icon: "whatsapp", badge: "Conectar" },
+  { key: "agente",       label: "Agente IA",        icon: "bot" },
+  { key: "integracoes",  label: "Integrações",      icon: "zap" },
 ];
+
+const contaNav = [
+  { key: "notificacoes", label: "Notificações", icon: "bell" },
+  { key: "cobranca",     label: "Cobrança",     icon: "card" },
+  { key: "seguranca",    label: "Segurança",    icon: "shield" },
+];
+
+const ufs = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
+
+function initials(name: string) {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
 const loadingBusiness = ref(false);
 const savingBusiness  = ref(false);
-const business = reactive({ name: "", segment: "", email: "", phone: "", website: "", description: "" });
+const logoPreview     = ref("");
+
+const business = reactive({
+  legalName: "", tradeName: "", cnpj: "", commercialPhone: "",
+  timezone: "America/Sao_Paulo", sector: "", description: "",
+  zipCode: "", address: "", city: "", state: "",
+  // backwards compat
+  name: "", email: "", phone: "", website: "", segment: "",
+});
+
+function onLogoChange(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => { logoPreview.value = ev.target?.result as string; };
+  reader.readAsDataURL(file);
+}
+
+async function lookupCep() {
+  const cep = business.zipCode.replace(/\D/g, "");
+  if (cep.length !== 8) return;
+  try {
+    const data = await $fetch<any>(`https://viacep.com.br/ws/${cep}/json/`);
+    if (!data.erro) {
+      business.address = `${data.logradouro}${data.complemento ? ", " + data.complemento : ""} — ${data.bairro}`;
+      business.city  = data.localidade;
+      business.state = data.uf;
+    }
+  } catch { /* silently ignore */ }
+}
 
 async function loadBusiness() {
   loadingBusiness.value = true;
   try {
     const res = await api.fetch<any>("/settings/business");
-    Object.assign(business, res.business || res);
+    const b = res.business || res;
+    Object.assign(business, b);
+    if (b.legalName || b.tradeName) {
+      business.legalName = b.legalName || b.name || "";
+      business.tradeName = b.tradeName || "";
+    }
+    if (b.logoUrl) logoPreview.value = b.logoUrl;
   } catch { /* silently ignore */ } finally {
     loadingBusiness.value = false;
   }
@@ -432,6 +566,16 @@ watch(activeSection, (section) => {
   font-weight: 600;
 }
 
+.settings-nav-badge {
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: var(--ka-success-alpha);
+  color: var(--ka-success);
+  font-size: 10px;
+  font-weight: 600;
+}
+
 .settings-content {
   min-width: 0;
 }
@@ -531,6 +675,105 @@ watch(activeSection, (section) => {
   font-size: 12px;
   color: var(--ka-fg-3);
   margin: 4px 0 0;
+}
+
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 32px;
+  cursor: pointer;
+}
+
+.form-label-sub {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--ka-fg-3);
+}
+
+.settings-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--ka-border);
+  border-radius: var(--ka-r-md);
+  background: var(--ka-gray-50);
+  margin-bottom: 20px;
+}
+
+.settings-logo-preview {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--ka-r-md);
+  background: var(--ka-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.settings-logo-initials {
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.02em;
+}
+
+.settings-logo-info {
+  flex: 1;
+}
+
+.settings-logo-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ka-fg);
+}
+
+.settings-logo-hint {
+  font-size: 12px;
+  color: var(--ka-fg-3);
+  margin-top: 2px;
+}
+
+.settings-logo-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.settings-logo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1px solid var(--ka-border);
+  border-radius: var(--ka-r-sm);
+  background: var(--ka-surface);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ka-fg-2);
+  cursor: pointer;
+}
+
+.settings-logo-btn:hover {
+  background: var(--ka-gray-50);
+}
+
+.settings-logo-remove {
+  padding: 5px 12px;
+  border: none;
+  border-radius: var(--ka-r-sm);
+  background: transparent;
+  font-size: 12px;
+  color: var(--ka-danger);
+  cursor: pointer;
+}
+
+.settings-logo-remove:hover {
+  background: var(--ka-danger-alpha);
 }
 
 .settings-team-row {

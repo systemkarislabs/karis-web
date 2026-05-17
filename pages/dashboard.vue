@@ -56,16 +56,16 @@
           </span>
           <span v-else class="kpi-note" :class="kpi.noteClass">{{ kpi.note }}</span>
         </div>
-        <svg v-if="kpi.sparkData.length > 1 && kpi.sparkData.some(v => v > 0)" class="kpi-spark" viewBox="0 0 100 40" preserveAspectRatio="none">
+        <svg v-if="kpi.sparkData.length > 1 && kpi.sparkData.some(v => v > 0)" class="kpi-spark" viewBox="0 0 100 36" preserveAspectRatio="none">
           <defs>
             <linearGradient :id="`sg-${kpi.label}`" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stop-color="#2D5BFF" stop-opacity="0.15" />
+              <stop offset="0%" stop-color="#2D5BFF" stop-opacity="0.18" />
               <stop offset="100%" stop-color="#2D5BFF" stop-opacity="0" />
             </linearGradient>
           </defs>
-          <polygon :points="sparkArea(kpi.sparkData)" :fill="`url(#sg-${kpi.label})`" />
+          <polygon :points="sparkPoints(kpi.sparkData).area" :fill="`url(#sg-${kpi.label})`" />
           <polyline fill="none" stroke="#2D5BFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-            :points="sparkLine(kpi.sparkData)" />
+            :points="sparkPoints(kpi.sparkData).line" />
         </svg>
       </div>
     </div>
@@ -89,19 +89,17 @@
           <div v-for="i in 7" :key="i" :style="`flex:1;height:${30+i*20}px;background:var(--ka-gray-100);border-radius:6px 6px 2px 2px;animation:pulse 1.5s infinite;`" />
         </div>
 
-        <div v-else-if="hasChartData" style="display:flex;align-items:flex-end;gap:6px;height:200px;padding-bottom:20px;position:relative;">
-          <div v-for="day in chartDays" :key="day.day" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
-            <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;flex:1;gap:2px;width:100%;">
-              <div
-                :style="`width:100%;background:var(--ka-brand);border-radius:4px 4px 2px 2px;height:${barH(day.inbound)};transition:height 300ms;`"
-                :title="`${day.inbound} recebidas`"
-              />
-              <div
-                :style="`width:100%;background:var(--ka-bot);border-radius:2px;height:${barH(day.ai)};`"
-                :title="`${day.ai} IA`"
-              />
-            </div>
-            <small style="font-size:10px;color:var(--ka-fg-muted);margin-top:4px;">{{ shortDay(day.day) }}</small>
+        <div v-else-if="hasChartData" style="display:flex;align-items:flex-end;gap:4px;height:190px;padding-bottom:22px;">
+          <div
+            v-for="day in chartDays"
+            :key="day.day"
+            style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;"
+          >
+            <div
+              :style="`width:100%;height:${barH(Number(day.inbound||0)+Number(day.ai||0), maxMessages)}px;background:var(--ka-brand);border-radius:5px 5px 2px 2px;transition:height 300ms;`"
+              :title="`${day.inbound} recebidas · ${day.ai} IA`"
+            />
+            <small style="font-size:10px;color:var(--ka-fg-muted);line-height:1;">{{ shortDay(day.day) }}</small>
           </div>
         </div>
 
@@ -112,8 +110,7 @@
 
         <!-- Legend -->
         <div style="display:flex;gap:16px;padding-top:12px;border-top:1px solid var(--ka-divider);font-size:12px;color:var(--ka-fg-2);">
-          <span style="display:flex;align-items:center;gap:6px;"><i style="width:10px;height:10px;border-radius:2px;background:var(--ka-brand);display:inline-block;" />Recebidas</span>
-          <span style="display:flex;align-items:center;gap:6px;"><i style="width:10px;height:10px;border-radius:2px;background:var(--ka-bot);display:inline-block;" />IA</span>
+          <span style="display:flex;align-items:center;gap:6px;"><i style="width:10px;height:10px;border-radius:2px;background:var(--ka-brand);display:inline-block;" />Total de mensagens</span>
         </div>
       </div>
 
@@ -190,7 +187,7 @@ const greeting = computed(() => {
 const firstName = computed(() => auth.user?.name?.split(' ')?.[0] || 'time')
 
 const chartDays = computed(() => messageDays.value.slice(-7))
-const maxMessages = computed(() => Math.max(4, ...chartDays.value.map((d: any) => Math.max(Number(d.inbound || 0), Number(d.ai || 0)))))
+const maxMessages = computed(() => Math.max(4, ...chartDays.value.map((d: any) => Number(d.inbound || 0) + Number(d.ai || 0))))
 const hasChartData = computed(() => chartDays.value.some((d: any) => Number(d.inbound || 0) + Number(d.ai || 0) > 0))
 
 const inboundSpark = computed(() => chartDays.value.map((d: any) => Number(d.inbound || 0)))
@@ -247,29 +244,33 @@ const kpis = computed(() => {
   ]
 })
 
-function barH(value: number) {
+function barH(value: number, maxVal: number) {
   const n = Number(value || 0)
-  if (!n) return '2px'
-  return `${Math.max(6, (n / maxMessages.value) * 180)}px`
+  const pct = maxVal > 0 ? n / maxVal : 0
+  return Math.max(pct > 0 ? 4 : 0, pct * 160)
 }
 
 function shortDay(day: string) {
   return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit' }).format(new Date(`${day}T12:00:00`))
 }
 
-function sparkLine(data: number[]) {
-  const w = 100, h = 38
-  const max = Math.max(1, ...data)
-  const stepX = w / Math.max(data.length - 1, 1)
-  return data.map((v, i) => `${i * stepX},${h - (v / max) * (h - 4) - 2}`).join(' ')
-}
-
-function sparkArea(data: number[]) {
-  const w = 100, h = 38
-  const max = Math.max(1, ...data)
-  const stepX = w / Math.max(data.length - 1, 1)
-  const pts = data.map((v, i) => `${i * stepX},${h - (v / max) * (h - 4) - 2}`).join(' ')
-  return `0,${h} ${pts} ${w},${h}`
+// Sparkline uses min-max normalization (like the prototype) so even small
+// variations fill the chart height — avoids flat lines when values are close.
+function sparkPoints(data: number[]) {
+  if (data.length < 2) return { line: '', area: '' }
+  const w = 100, h = 36
+  const max = Math.max(...data)
+  const min = Math.min(...data)
+  const range = max - min || 1
+  const pts = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * w
+    const y = h - ((v - min) / range) * (h - 4) - 2
+    return `${x},${y}`
+  })
+  return {
+    line: pts.join(' '),
+    area: `0,${h} ${pts.join(' ')} ${w},${h}`,
+  }
 }
 
 function initials(name?: string) {

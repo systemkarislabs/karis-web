@@ -2,8 +2,8 @@
   <div class="contacts-page">
     <div class="page-header">
       <div>
-        <p class="page-eyebrow">Contatos</p>
-        <h1 class="page-title">Base de clientes</h1>
+        <p class="page-eyebrow">Base de clientes</p>
+        <h1 class="page-title">Contatos</h1>
         <p class="page-subtitle">{{ contacts.length }} contatos · {{ optedInCount }} ativos · {{ pendingCount }} aguardando você</p>
       </div>
       <div class="page-actions">
@@ -71,7 +71,7 @@
           type="button"
           @click="activeChip = f.key; page = 1"
         >
-          {{ f.label }}
+          {{ f.label }}<span v-if="f.count !== undefined" class="chip-count">{{ f.count }}</span>
         </button>
       </div>
       <div class="toolbar-actions">
@@ -141,7 +141,9 @@
             </td>
             <td>
               <div class="contacts-name-cell">
-                <Avatar :name="contact.name || contact.phone" size="sm" />
+                <div class="ct-avatar" :style="{ background: avatarColor(contact.name || contact.phone) }">
+                  {{ initials(contact.name || contact.phone) }}
+                </div>
                 <div>
                   <div class="contacts-name-cell-name">{{ contact.name || "Sem nome" }}</div>
                   <div class="contacts-name-cell-phone">{{ contact.phone || "" }}</div>
@@ -160,22 +162,19 @@
                   v-for="tag in (contact.tags || []).slice(0, 3)"
                   :key="tag"
                   class="contacts-tag"
+                  :style="tagStyle(tag)"
                 >{{ tag }}</span>
               </div>
             </td>
             <td>
               <span class="contacts-status">
-                <span class="contacts-status-dot" :class="{ 'contacts-status-dot-active': contact.optedInWhatsapp }" />
-                {{ contact.optedInWhatsapp ? 'Ativo' : 'Inativo' }}
+                <span class="contacts-status-dot" :style="{ background: contactStatusColor(contact) }" />
+                {{ contactStatusLabel(contact) }}
               </span>
             </td>
             <td class="contacts-table-time">{{ contact.updatedAt ? relativeTime(contact.updatedAt) : '—' }}</td>
             <td>
-              <span
-                v-if="contact.aiScore"
-                class="contacts-ai-score"
-                :class="aiScoreClass(contact.aiScore)"
-              >{{ contact.aiScore }}</span>
+              <span v-if="contact.aiScore" class="contacts-ai-score">{{ contact.aiScore }}</span>
               <span v-else class="contacts-table-empty">—</span>
             </td>
             <td class="contacts-table-actions" @click.stop>
@@ -212,7 +211,9 @@
         <aside class="drawer">
           <div class="drawer-header">
             <div class="drawer-header-info">
-              <Avatar :name="drawerContact.name || drawerContact.phone" size="md" />
+              <div class="ct-avatar ct-avatar-lg" :style="{ background: avatarColor(drawerContact.name || drawerContact.phone) }">
+                {{ initials(drawerContact.name || drawerContact.phone) }}
+              </div>
               <div>
                 <h3 class="drawer-contact-name">{{ drawerContact.name || "Sem nome" }}</h3>
                 <div class="drawer-contact-phone">{{ drawerContact.phone }}</div>
@@ -253,7 +254,7 @@
             <div v-if="(drawerContact.tags || []).length" class="drawer-section">
               <h5 class="drawer-section-title">Tags</h5>
               <div class="drawer-tags">
-                <span v-for="tag in drawerContact.tags" :key="tag" class="drawer-tag">{{ tag }}</span>
+                <span v-for="tag in drawerContact.tags" :key="tag" class="drawer-tag" :style="tagStyle(tag)">{{ tag }}</span>
                 <button class="drawer-tag-add">
                   <Icon name="plus" :size="12" />Adicionar
                 </button>
@@ -343,14 +344,67 @@ const page = ref(1);
 const perPage = 20;
 let selected = ref(new Set<string>());
 
-const chipFilters = [
-  { key: "all",      label: "Todos" },
-  { key: "active",   label: "Ativos" },
-  { key: "pending",  label: "Aguardando" },
-  { key: "vip",      label: "VIP" },
-  { key: "leads",    label: "Só leads" },
-  { key: "inactive", label: "Inativos 30d+" },
+const TAG_PALETTES: Record<string, { bg: string; color: string }> = {
+  vip:           { bg: "#f3f0ff", color: "#7c3aed" },
+  lead:          { bg: "#eff6ff", color: "#2563eb" },
+  recente:       { bg: "#f0fdf4", color: "#15803d" },
+  urgente:       { bg: "#fefce8", color: "#a16207" },
+  "cliente-fiel":{ bg: "#eff6ff", color: "#2563eb" },
+  inativo:       { bg: "#fff7ed", color: "#c2410c" },
+};
+
+const TAG_DEFAULT = { bg: "#f1f5f9", color: "#475569" };
+
+function tagStyle(tag: string) {
+  const p = TAG_PALETTES[tag.toLowerCase()] || TAG_DEFAULT;
+  return { background: p.bg, color: p.color };
+}
+
+const AVATAR_COLORS = [
+  "#7c3aed","#2563eb","#0891b2","#059669","#d97706","#dc2626","#db2777","#6366f1",
 ];
+
+function avatarColor(name: string) {
+  let h = 0;
+  for (let i = 0; i < (name || "").length; i++) h = (h * 31 + (name || "").charCodeAt(i)) & 0xffff;
+  return AVATAR_COLORS[h % AVATAR_COLORS.length];
+}
+
+function initials(name: string) {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function contactStatusLabel(contact: any) {
+  if (!contact.optedInWhatsapp) {
+    const cutoff = Date.now() - 30 * 86400_000;
+    if (contact.updatedAt && new Date(contact.updatedAt).getTime() < cutoff) return "Inativo";
+    return "Aguardando";
+  }
+  return "Ativo";
+}
+
+function contactStatusColor(contact: any) {
+  const label = contactStatusLabel(contact);
+  if (label === "Ativo") return "var(--ka-success)";
+  if (label === "Aguardando") return "var(--ka-warning)";
+  return "var(--ka-fg-3)";
+}
+
+const chipFilters = computed(() => {
+  const all = contacts.value;
+  const cutoff = Date.now() - 30 * 86400_000;
+  return [
+    { key: "all",      label: "Todos",       count: all.length },
+    { key: "active",   label: "Ativos",      count: all.filter(c => c.optedInWhatsapp).length },
+    { key: "pending",  label: "Aguardando",  count: all.filter(c => !c.optedInWhatsapp).length },
+    { key: "vip",      label: "VIP",         count: all.filter(c => (c.tags || []).includes("vip")).length },
+    { key: "leads",    label: "Só leads",    count: all.filter(c => (c.tags || []).includes("lead")).length },
+    { key: "inactive", label: "Inativos 30d+", count: all.filter(c => c.updatedAt && new Date(c.updatedAt).getTime() < cutoff).length },
+  ];
+});
 
 const optedInCount  = computed(() => contacts.value.filter(c => c.optedInWhatsapp).length);
 const pendingCount  = computed(() => contacts.value.filter(c => !c.optedInWhatsapp).length);
@@ -380,12 +434,6 @@ const totalPages    = computed(() => Math.ceil(filteredContacts.value.length / p
 const pagedContacts = computed(() => filteredContacts.value.slice((page.value - 1) * perPage, page.value * perPage));
 
 watch(filteredContacts, () => { page.value = 1; });
-
-function aiScoreClass(score: number) {
-  if (score >= 80) return "hot";
-  if (score >= 50) return "warm";
-  return "cool";
-}
 
 function toggleSelect(id: string) {
   const s = new Set(selected.value);
@@ -569,6 +617,12 @@ onMounted(loadContacts);
   font-weight: 500;
 }
 
+.chip-count {
+  margin-left: 5px;
+  font-size: 11px;
+  opacity: 0.75;
+}
+
 .toolbar-actions {
   display: flex;
   gap: 4px;
@@ -654,6 +708,26 @@ onMounted(loadContacts);
   background: var(--ka-brand-alpha);
 }
 
+.ct-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+.ct-avatar-lg {
+  width: 40px;
+  height: 40px;
+  font-size: 14px;
+}
+
 .contacts-name-cell {
   display: flex;
   align-items: center;
@@ -694,9 +768,8 @@ onMounted(loadContacts);
 .contacts-tag {
   padding: 2px 8px;
   border-radius: 10px;
-  background: var(--ka-gray-100);
   font-size: 11px;
-  color: var(--ka-fg-3);
+  font-weight: 500;
 }
 
 .contacts-status {
@@ -711,11 +784,7 @@ onMounted(loadContacts);
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--ka-fg-3);
-}
-
-.contacts-status-dot-active {
-  background: var(--ka-success);
+  flex-shrink: 0;
 }
 
 .contacts-table-time {
@@ -727,21 +796,8 @@ onMounted(loadContacts);
   border-radius: var(--ka-r-sm);
   font-size: 12px;
   font-weight: 600;
-}
-
-.contacts-ai-score.hot {
-  background: var(--ka-danger-alpha);
-  color: var(--ka-danger);
-}
-
-.contacts-ai-score.warm {
-  background: var(--ka-warning-alpha);
-  color: var(--ka-warning);
-}
-
-.contacts-ai-score.cool {
-  background: var(--ka-gray-100);
-  color: var(--ka-fg-3);
+  background: #eff6ff;
+  color: #2563eb;
 }
 
 .contacts-table-empty {
@@ -928,9 +984,8 @@ onMounted(loadContacts);
 .drawer-tag {
   padding: 4px 10px;
   border-radius: 12px;
-  background: var(--ka-gray-100);
   font-size: 11px;
-  color: var(--ka-fg-2);
+  font-weight: 500;
 }
 
 .drawer-tag-add {

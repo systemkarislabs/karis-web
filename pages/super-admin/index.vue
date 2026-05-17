@@ -8,9 +8,9 @@
       </div>
       <div class="super-admin-actions">
         <NuxtLink to="/super-admin/plans">Configurar planos</NuxtLink>
-        <button type="button" @click="refresh">
+        <button type="button" :disabled="loading" @click="refresh">
           <Icon name="refresh" :size="15" />
-          Atualizar
+          {{ loading ? "Atualizando..." : "Atualizar" }}
         </button>
       </div>
     </header>
@@ -84,8 +84,10 @@
 definePageMeta({ layout: "super-admin", middleware: "super-admin" });
 
 const api = useAdminApi();
+const toast = useToast();
 const overview = ref<any | null>(null);
 const companies = ref<any[]>([]);
+const loading = ref(false);
 const criticalFeatures = [
   { key: "ai", label: "Agente IA" },
   { key: "whatsapp", label: "WhatsApp" },
@@ -104,12 +106,23 @@ function countFeature(key: string) {
 }
 
 async function refresh() {
-  const [overviewData, companiesData] = await Promise.all([
-    api.fetch(`/overview?period=30`),
-    api.fetch<{ companies: any[] }>(`/companies?take=100`),
-  ]);
-  overview.value = overviewData;
-  companies.value = companiesData.companies;
+  loading.value = true;
+  try {
+    const companiesData = await api.fetch<{ companies: any[] }>(`/companies?take=100`);
+    companies.value = companiesData.companies;
+
+    // overview é opcional — endpoint pode não existir ainda
+    try {
+      const overviewData = await api.fetch(`/overview?period=30`);
+      overview.value = overviewData;
+    } catch {
+      // silencioso: KPIs ficam zerados se endpoint não existir
+    }
+  } catch (err: any) {
+    toast.error(err?.data?.message || "Não foi possível carregar os dados.");
+  } finally {
+    loading.value = false;
+  }
 }
 
 onMounted(refresh);

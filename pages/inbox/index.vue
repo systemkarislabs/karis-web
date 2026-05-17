@@ -2,7 +2,7 @@
   <div class="inbox-page">
     <!-- Filters column -->
     <aside class="inbox-filters">
-      <h4>Caixa</h4>
+      <h4>Caixa de entrada</h4>
       <div
         v-for="f in filters"
         :key="f.key"
@@ -25,6 +25,21 @@
         <span style="flex:1;">{{ f.label }}</span>
         <span class="count">{{ f.count }}</span>
       </div>
+
+      <template v-if="allTags.length">
+        <h4>Tags</h4>
+        <div
+          v-for="tag in allTags"
+          :key="tag.label"
+          class="item"
+          :class="{ active: activeFilter === `tag:${tag.label}` }"
+          @click="activeFilter = `tag:${tag.label}`"
+        >
+          <span class="dot" :style="`background:${tag.color};`" />
+          <span style="flex:1;">{{ tag.label }}</span>
+          <span class="count">{{ tag.count }}</span>
+        </div>
+      </template>
     </aside>
 
     <!-- Conversation list -->
@@ -277,6 +292,8 @@ import { formatDate, formatDateTime, formatMoney, unwrapList } from '~/composabl
 
 definePageMeta({ middleware: 'auth' })
 
+const auth = useAuthStore()
+
 const route = useRoute()
 const api = useApi()
 const toast = useToast()
@@ -349,17 +366,45 @@ function msgClass(msg: any) {
   return 'out'
 }
 
-const filters = computed(() => [
-  { key: 'all', label: 'Todas', count: conversations.value.length },
-  { key: 'open', label: 'Abertas', count: conversations.value.filter(c => c.status === 'OPEN').length },
-  { key: 'unread', label: 'Não lidas', count: conversations.value.reduce((s, c) => s + Number(c.unreadCount || 0), 0) },
-  { key: 'human', label: 'Com humano', count: conversations.value.filter(c => c.aiEnabled === false).length },
-])
+const myUserId = computed(() => auth.user?.id)
 
-const statusFilters = computed(() => [
-  { key: 'closed', label: 'Fechadas', count: conversations.value.filter(c => c.status === 'CLOSED').length },
-  { key: 'snoozed', label: 'Adiadas', count: conversations.value.filter(c => c.status === 'SNOOZED').length },
-])
+const filters = computed(() => {
+  const all = conversations.value
+  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
+  return [
+    { key: 'all', label: 'Caixa de entrada', count: all.filter(c => c.status === 'OPEN').length },
+    { key: 'mine', label: 'Minhas conversas', count: all.filter(c => c.assigneeId === myUserId.value).length },
+    { key: 'unassigned', label: 'Não atribuídas', count: all.filter(c => !c.assigneeId).length },
+    { key: 'pending', label: 'Pendentes', count: all.filter(c => c.aiEnabled === false && c.status === 'OPEN').length },
+    { key: 'mentioned', label: 'Mencionei', count: 0 },
+  ]
+})
+
+const statusFilters = computed(() => {
+  const all = conversations.value
+  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
+  return [
+    { key: 'open', label: 'Abertas', count: all.filter(c => c.status === 'OPEN').length },
+    { key: 'ai', label: 'Atendidas pela IA', count: all.filter(c => c.aiEnabled !== false && c.status === 'OPEN').length },
+    { key: 'closed-today', label: 'Fechadas hoje', count: all.filter(c => c.status === 'CLOSED' && new Date(c.updatedAt) >= todayStart).length },
+  ]
+})
+
+const allTags = computed(() => {
+  const tagMap = new Map<string, { color: string; count: number }>()
+  const TAG_COLORS = ['#5B7FFF', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#EC4899', '#14B8A6']
+  for (const conv of conversations.value) {
+    const tags: string[] = Array.isArray(conv.tags) ? conv.tags : []
+    for (const tag of tags) {
+      if (!tag) continue
+      if (!tagMap.has(tag)) {
+        tagMap.set(tag, { color: TAG_COLORS[tagMap.size % TAG_COLORS.length], count: 0 })
+      }
+      tagMap.get(tag)!.count++
+    }
+  }
+  return [...tagMap.entries()].map(([label, v]) => ({ label, ...v }))
+})
 
 const selectedContact = computed(() =>
   selectedConversation.value?.contact ||
@@ -378,12 +423,22 @@ const lastAiMessage = computed(() =>
 
 const filteredConversations = computed(() => {
   const q = search.value.trim().toLowerCase()
+  const f = activeFilter.value
+  const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
   return conversations.value.filter(conv => {
-    if (activeFilter.value === 'open' && conv.status !== 'OPEN') return false
-    if (activeFilter.value === 'closed' && conv.status !== 'CLOSED') return false
-    if (activeFilter.value === 'snoozed' && conv.status !== 'SNOOZED') return false
-    if (activeFilter.value === 'unread' && !conv.unreadCount) return false
-    if (activeFilter.value === 'human' && conv.aiEnabled !== false) return false
+    if (f === 'all' && conv.status !== 'OPEN') return false
+    if (f === 'mine' && conv.assigneeId !== myUserId.value) return false
+    if (f === 'unassigned' && conv.assigneeId) return false
+    if (f === 'pending' && (conv.aiEnabled !== false || conv.status !== 'OPEN')) return false
+    if (f === 'mentioned') return false
+    if (f === 'open' && conv.status !== 'OPEN') return false
+    if (f === 'ai' && (conv.aiEnabled === false || conv.status !== 'OPEN')) return false
+    if (f === 'closed-today' && (conv.status !== 'CLOSED' || new Date(conv.updatedAt) < todayStart)) return false
+    if (f.startsWith('tag:')) {
+      const tag = f.slice(4)
+      const tags: string[] = Array.isArray(conv.tags) ? conv.tags : []
+      if (!tags.includes(tag)) return false
+    }
     if (!q) return true
     return `${conv.contact?.name || ''} ${conv.contact?.phone || ''} ${conv.lastMessage?.content || ''}`.toLowerCase().includes(q)
   })

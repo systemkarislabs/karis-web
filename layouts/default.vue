@@ -10,7 +10,7 @@
         </div>
       </div>
 
-      <p class="nav-section-label">Operação</p>
+      <p class="nav-section-label">Workspace</p>
       <NuxtLink class="nav-item" to="/dashboard" @click="mobileOpen = false">
         <Icon name="dashboard" :size="18" />
         <span>Dashboard</span>
@@ -20,10 +20,6 @@
         <span>Conversas</span>
         <span v-if="unreadCount" class="nav-badge">{{ unreadCount }}</span>
       </NuxtLink>
-      <NuxtLink class="nav-item" to="/contacts" @click="mobileOpen = false">
-        <Icon name="users" :size="18" />
-        <span>Contatos</span>
-      </NuxtLink>
       <NuxtLink class="nav-item" to="/crm" @click="mobileOpen = false">
         <Icon name="kanban" :size="18" />
         <span>CRM</span>
@@ -32,12 +28,16 @@
         <Icon name="bot" :size="18" />
         <span>Agente IA</span>
       </NuxtLink>
-
-      <p class="nav-section-label" style="margin-top: 8px;">Crescimento</p>
       <NuxtLink class="nav-item" to="/campaigns" @click="mobileOpen = false">
         <Icon name="megaphone" :size="18" />
         <span>Campanhas</span>
       </NuxtLink>
+      <NuxtLink class="nav-item" to="/contacts" @click="mobileOpen = false">
+        <Icon name="users" :size="18" />
+        <span>Contatos</span>
+      </NuxtLink>
+
+      <p class="nav-section-label" style="margin-top: 8px;">Conta</p>
       <NuxtLink class="nav-item" to="/settings" @click="mobileOpen = false">
         <Icon name="settings" :size="18" />
         <span>Configurações</span>
@@ -131,10 +131,10 @@
           </div>
           <NuxtLink class="nav-item" to="/dashboard" @click="mobileOpen = false"><Icon name="dashboard" :size="18" /><span>Dashboard</span></NuxtLink>
           <NuxtLink class="nav-item" to="/inbox" @click="mobileOpen = false"><Icon name="message" :size="18" /><span>Conversas</span></NuxtLink>
-          <NuxtLink class="nav-item" to="/contacts" @click="mobileOpen = false"><Icon name="users" :size="18" /><span>Contatos</span></NuxtLink>
           <NuxtLink class="nav-item" to="/crm" @click="mobileOpen = false"><Icon name="kanban" :size="18" /><span>CRM</span></NuxtLink>
           <NuxtLink class="nav-item" to="/agent" @click="mobileOpen = false"><Icon name="bot" :size="18" /><span>Agente IA</span></NuxtLink>
           <NuxtLink class="nav-item" to="/campaigns" @click="mobileOpen = false"><Icon name="megaphone" :size="18" /><span>Campanhas</span></NuxtLink>
+          <NuxtLink class="nav-item" to="/contacts" @click="mobileOpen = false"><Icon name="users" :size="18" /><span>Contatos</span></NuxtLink>
           <NuxtLink class="nav-item" to="/settings" @click="mobileOpen = false"><Icon name="settings" :size="18" /><span>Configurações</span></NuxtLink>
         </aside>
       </div>

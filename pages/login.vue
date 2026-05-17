@@ -1,11 +1,11 @@
 <template>
   <div class="login-shell">
     <div class="login-left">
-      <div class="login-brand">
+      <div class="login-logo-bar">
         <img src="/karis-atende-wordmark-blue.png" alt="Karis Atende" class="login-wordmark" />
       </div>
 
-      <div class="login-form-wrap">
+      <div class="login-form-panel">
         <template v-if="step === 'credentials'">
           <h1 class="login-title">Entrar na sua conta</h1>
           <p class="login-sub">Bem-vindo de volta. Continue de onde parou.</p>
@@ -102,7 +102,7 @@
       </div>
     </div>
 
-    <div class="login-right">
+    <div class="login-right" aria-hidden="true">
       <div class="login-right-content">
         <div class="login-right-badge">
           <Icon name="zap" :size="16" />
@@ -266,6 +266,8 @@ async function loginAdmin(with2FA: boolean): Promise<boolean> {
   display: grid;
   grid-template-columns: 1fr 1fr;
   min-height: 100vh;
+  /* força tema claro independente da preferência do usuário */
+  color-scheme: light;
 }
 
 @media (max-width: 900px) {
@@ -283,9 +285,20 @@ async function loginAdmin(with2FA: boolean): Promise<boolean> {
   padding: 40px 48px;
   background: #ffffff;
   color: #1a1a2e;
+  /* garante que nada do tema escuro vaze */
+  --ka-fg: #0f172a;
+  --ka-fg-2: #475569;
+  --ka-fg-muted: #94a3b8;
+  --ka-surface: #ffffff;
+  --ka-border: #e2e8f0;
+  --ka-brand-alpha: rgba(45, 91, 255, 0.12);
+  --ka-danger: #dc2626;
+  --ka-danger-alpha: rgba(220, 38, 38, 0.08);
+  --ka-gray-50: #f8fafc;
+  --ka-r-md: 10px;
 }
 
-.login-brand {
+.login-logo-bar {
   margin-bottom: 40px;
 }
 
@@ -294,7 +307,7 @@ async function loginAdmin(with2FA: boolean): Promise<boolean> {
   width: auto;
 }
 
-.login-form-wrap {
+.login-form-panel {
   max-width: 400px;
   width: 100%;
 }
@@ -333,18 +346,18 @@ async function loginAdmin(with2FA: boolean): Promise<boolean> {
 .form-input {
   height: 44px;
   padding: 0 14px;
-  border: 1px solid var(--ka-border);
-  border-radius: var(--ka-r-md);
-  background: var(--ka-surface);
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #ffffff;
   font-size: 15px;
-  color: var(--ka-fg);
+  color: #0f172a;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .form-input:focus {
-  border-color: var(--ka-brand);
-  box-shadow: 0 0 0 3px var(--ka-brand-alpha);
+  border-color: #2d5bff;
+  box-shadow: 0 0 0 3px rgba(45, 91, 255, 0.12);
 }
 
 .form-options {

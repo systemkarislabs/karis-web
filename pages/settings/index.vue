@@ -381,82 +381,45 @@
         </template>
 
         <template v-if="activeSection === 'cobranca'">
-          <!-- Plan hero card -->
-          <div class="billing-plan-card">
-            <div class="billing-plan-eyebrow">Plano atual</div>
-            <div class="billing-plan-title">{{ planName }} · <span class="billing-plan-price">{{ planPrice }}</span></div>
-            <div class="billing-plan-renew">Renova em 24 de junho · cartão final {{ cardLast4 }}</div>
-
-            <div class="billing-meters">
-              <div class="billing-meter">
-                <div class="billing-meter-header">
-                  <span class="billing-meter-label">Conversas IA</span>
-                  <span class="billing-meter-value">{{ conversasUsed.toLocaleString('pt-BR') }} / {{ conversasLimit.toLocaleString('pt-BR') }}</span>
-                </div>
-                <div class="billing-meter-track">
-                  <div class="billing-meter-fill" :style="{ width: `${Math.min(conversasUsed / conversasLimit * 100, 100)}%` }" />
-                </div>
+          <!-- Uso atual -->
+          <div class="settings-card">
+            <div class="settings-card-header" style="margin-bottom: 18px;">
+              <div>
+                <h3 class="settings-card-title">Uso do plano</h3>
+                <p class="settings-card-desc">Consumo acumulado da sua conta Karis.</p>
               </div>
-              <div class="billing-meter">
-                <div class="billing-meter-header">
-                  <span class="billing-meter-label">Usuários</span>
-                  <span class="billing-meter-value">{{ usersUsed }} / {{ usersLimit }}</span>
-                </div>
-                <div class="billing-meter-track">
-                  <div class="billing-meter-fill" :style="{ width: `${Math.min(usersUsed / usersLimit * 100, 100)}%` }" />
-                </div>
-              </div>
+              <span v-if="loadingBilling" class="billing-loading-badge">Carregando…</span>
             </div>
-
-            <div class="billing-plan-actions">
-              <button class="billing-upgrade-btn" type="button">Fazer upgrade</button>
-              <button class="billing-cancel-btn" type="button">Cancelar plano</button>
+            <div class="billing-usage-grid">
+              <div class="billing-usage-item">
+                <div class="billing-usage-value">{{ conversasUsed.toLocaleString('pt-BR') }}</div>
+                <div class="billing-usage-label">Conversas totais</div>
+              </div>
+              <div class="billing-usage-item">
+                <div class="billing-usage-value">{{ usersUsed }}</div>
+                <div class="billing-usage-label">Usuários ativos</div>
+              </div>
             </div>
           </div>
 
-          <!-- Payment method -->
-          <div class="settings-card">
-            <div class="billing-section-header">
-              <div>
-                <h3 class="settings-card-title">Forma de pagamento</h3>
-                <p class="settings-card-desc">Cartão usado para a próxima cobrança.</p>
-              </div>
-              <button class="billing-alter-btn" type="button">
-                <Icon name="card" :size="14" />Alterar
-              </button>
+          <!-- Gerenciar plano -->
+          <div class="settings-card billing-manage-card">
+            <div class="billing-manage-icon">
+              <Icon name="card" :size="28" />
             </div>
-            <div class="billing-card-row">
-              <span class="billing-card-brand">VISA</span>
-              <div class="billing-card-info">
-                <div class="billing-card-number">•••• •••• •••• {{ cardLast4 }}</div>
-                <div class="billing-card-meta">{{ cardHolder }} · Vence {{ cardExpiry }}</div>
+            <div class="billing-manage-body">
+              <h3 class="billing-manage-title">Gerencie seu plano</h3>
+              <p class="billing-manage-desc">Upgrade, cancelamento, faturas e forma de pagamento são gerenciados pelo nosso time. Entre em contato para qualquer alteração.</p>
+              <div class="billing-manage-actions">
+                <a class="btn primary" href="https://wa.me/554196019000" target="_blank" rel="noopener">
+                  <Icon name="message" :size="14" />
+                  Falar com o suporte
+                </a>
+                <a class="btn secondary" href="mailto:suporte@karisnegocios.com.br">
+                  <Icon name="mail" :size="14" />
+                  suporte@karisnegocios.com.br
+                </a>
               </div>
-              <span class="billing-card-default">Padrão</span>
-            </div>
-          </div>
-
-          <!-- Recent invoices -->
-          <div class="settings-card">
-            <div class="billing-section-header" style="margin-bottom: 16px;">
-              <div>
-                <h3 class="settings-card-title">Faturas recentes</h3>
-                <p class="settings-card-desc">Baixe seus comprovantes em PDF.</p>
-              </div>
-            </div>
-            <div class="billing-invoices">
-              <div v-for="inv in invoices" :key="inv.id" class="billing-invoice-row">
-                <Icon name="fileText" :size="16" class="billing-invoice-icon" />
-                <div class="billing-invoice-info">
-                  <div class="billing-invoice-name">Fatura · {{ inv.date }}</div>
-                  <div class="billing-invoice-plan">{{ inv.plan }}</div>
-                </div>
-                <span class="billing-invoice-amount">{{ inv.amount }}</span>
-                <span class="billing-invoice-status">Pago</span>
-                <button class="billing-invoice-dl" type="button" title="Baixar PDF">
-                  <Icon name="download" :size="15" />
-                </button>
-              </div>
-              <EmptyState v-if="!invoices.length" icon="creditCard" title="Nenhuma fatura" description="Seu histórico de cobranças aparecerá aqui." />
             </div>
           </div>
         </template>
@@ -1462,259 +1425,83 @@ watch(activeSection, (section) => {
 
 /* ── Cobrança tab ─────────────────────────── */
 
-.billing-plan-card {
-  border-radius: var(--ka-r-md);
-  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%);
-  padding: 28px 24px 24px;
-  margin-bottom: 16px;
-  color: white;
+.billing-loading-badge {
+  font-size: 11px;
+  color: var(--ka-fg-muted);
+  background: var(--ka-gray-100);
+  padding: 3px 10px;
+  border-radius: 999px;
 }
 
-.billing-plan-eyebrow {
-  font-size: 10px;
+.billing-usage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.billing-usage-item {
+  background: var(--ka-gray-50);
+  border: 1px solid var(--ka-border);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+
+.billing-usage-value {
+  font-family: var(--ka-font-display);
+  font-size: 28px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  opacity: 0.65;
-  margin-bottom: 6px;
+  color: var(--ka-fg);
+  letter-spacing: -0.02em;
+  line-height: 1;
 }
 
-.billing-plan-title {
-  font-size: 24px;
-  font-weight: 800;
-  margin-bottom: 4px;
-}
-
-.billing-plan-price {
-  font-size: 24px;
-  font-weight: 800;
-}
-
-.billing-plan-renew {
+.billing-usage-label {
   font-size: 12px;
-  opacity: 0.7;
-  margin-bottom: 20px;
+  color: var(--ka-fg-muted);
+  margin-top: 6px;
 }
 
-.billing-meters {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.billing-meter-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-
-.billing-meter-label {
-  font-size: 12px;
-  opacity: 0.8;
-}
-
-.billing-meter-value {
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.billing-meter-track {
-  height: 6px;
-  border-radius: 3px;
-  background: rgba(255,255,255,0.2);
-  overflow: hidden;
-}
-
-.billing-meter-fill {
-  height: 100%;
-  border-radius: 3px;
-  background: rgba(255,255,255,0.85);
-  transition: width 0.4s;
-}
-
-.billing-plan-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.billing-upgrade-btn {
-  padding: 8px 18px;
-  border-radius: var(--ka-r-sm);
-  border: none;
-  background: white;
-  color: #312e81;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.billing-upgrade-btn:hover {
-  background: #f0f0ff;
-}
-
-.billing-cancel-btn {
-  padding: 8px 18px;
-  border-radius: var(--ka-r-sm);
-  border: 1px solid rgba(255,255,255,0.35);
-  background: transparent;
-  color: white;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.billing-cancel-btn:hover {
-  background: rgba(255,255,255,0.1);
-}
-
-.billing-section-header {
+.billing-manage-card {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 16px;
+  gap: 18px;
 }
 
-.billing-alter-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 12px;
-  border: 1px solid var(--ka-border);
-  border-radius: var(--ka-r-sm);
-  background: transparent;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--ka-fg-2);
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.billing-alter-btn:hover {
-  background: var(--ka-gray-50);
-}
-
-.billing-card-row {
+.billing-manage-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--ka-brand-50);
+  color: var(--ka-brand);
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px;
-  border: 1px solid var(--ka-border);
-  border-radius: var(--ka-r-md);
-  background: var(--ka-gray-50);
-}
-
-.billing-card-brand {
-  font-size: 11px;
-  font-weight: 800;
-  color: #1a1aff;
-  border: 2px solid #1a1aff;
-  border-radius: 4px;
-  padding: 2px 5px;
-  letter-spacing: 0.05em;
+  justify-content: center;
   flex-shrink: 0;
 }
 
-.billing-card-info {
-  flex: 1;
-}
-
-.billing-card-number {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--ka-fg);
-  font-family: ui-monospace, monospace;
-}
-
-.billing-card-meta {
-  font-size: 12px;
-  color: var(--ka-fg-3);
-  margin-top: 2px;
-}
-
-.billing-card-default {
-  padding: 3px 9px;
-  border-radius: 10px;
-  background: var(--ka-success-alpha);
-  color: var(--ka-success);
-  font-size: 11px;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.billing-invoices {
-  display: flex;
-  flex-direction: column;
-}
-
-.billing-invoice-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 0;
-  border-bottom: 1px solid var(--ka-border);
-}
-
-.billing-invoice-row:last-child {
-  border-bottom: none;
-}
-
-.billing-invoice-icon {
-  color: var(--ka-fg-3);
-  flex-shrink: 0;
-}
-
-.billing-invoice-info {
+.billing-manage-body {
   flex: 1;
   min-width: 0;
 }
 
-.billing-invoice-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ka-fg);
-}
-
-.billing-invoice-plan {
-  font-size: 11px;
-  color: var(--ka-fg-3);
-  margin-top: 1px;
-}
-
-.billing-invoice-amount {
-  font-size: 13px;
+.billing-manage-title {
+  font-size: 15px;
   font-weight: 600;
   color: var(--ka-fg);
-  flex-shrink: 0;
+  margin: 0 0 6px;
 }
 
-.billing-invoice-status {
-  padding: 2px 8px;
-  border-radius: 10px;
-  background: var(--ka-success-alpha);
-  color: var(--ka-success);
-  font-size: 11px;
-  font-weight: 600;
-  flex-shrink: 0;
+.billing-manage-desc {
+  font-size: 13px;
+  color: var(--ka-fg-2);
+  line-height: 1.55;
+  margin: 0 0 16px;
 }
 
-.billing-invoice-dl {
+.billing-manage-actions {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: var(--ka-r-sm);
-  background: transparent;
-  color: var(--ka-fg-3);
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.billing-invoice-dl:hover {
-  background: var(--ka-gray-100);
-  color: var(--ka-fg);
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 /* ── Segurança tab ────────────────────────── */

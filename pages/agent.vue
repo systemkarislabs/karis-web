@@ -154,8 +154,8 @@
       </div>
     </div>
 
-    <!-- Transferências tab -->
-    <div v-else-if="activeTab === 'sectors'" class="agent-section">
+    <!-- Transferências / Treinamento tab -->
+    <div v-else-if="activeTab === 'sectors' || activeTab === 'training'" class="agent-section">
       <div class="agent-section-head" style="flex-direction:row;align-items:flex-start;justify-content:space-between;">
         <div>
           <h2>Setores de Transferência</h2>
@@ -292,7 +292,8 @@ const playgroundReply = ref('')
 const tabs = [
   { key: 'config',    label: 'Configuração' },
   { key: 'knowledge', label: 'Conhecimento' },
-  { key: 'sectors',   label: 'Treinamento' },
+  { key: 'training',  label: 'Treinamento' },
+  { key: 'sectors',   label: 'Transferências' },
   { key: 'playground',label: 'Playground' },
 ]
 
@@ -317,6 +318,7 @@ const personalityOptions = [
 
 watch(activeTab, (value) => {
   if (value === 'sectors' && !sectors.value.length) loadSectors()
+  if (value === 'training' && !sectors.value.length) loadSectors()
 })
 
 function formatPhone(phone: string) {

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="crm-page">
     <div class="page-header">
       <div>
@@ -201,7 +201,7 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ layout: false, middleware: "auth" });
+definePageMeta({ middleware: "auth" });
 
 const api = useApi();
 const loading = ref(true);

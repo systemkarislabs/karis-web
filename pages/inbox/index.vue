@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="inbox-page">
     <!-- Filters column -->
     <aside class="inbox-filters">
@@ -275,7 +275,7 @@
 <script setup lang="ts">
 import { formatDate, formatDateTime, formatMoney, unwrapList } from '~/composables/useKarisData'
 
-definePageMeta({ layout: false, middleware: 'auth' })
+definePageMeta({ middleware: 'auth' })
 
 const route = useRoute()
 const api = useApi()

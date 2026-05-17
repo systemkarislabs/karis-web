@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="agent-page">
     <section class="agent-hero">
       <div class="agent-hero-info">
@@ -222,7 +222,7 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ layout: false, middleware: "auth" });
+definePageMeta({ middleware: "auth" });
 
 const api = useApi();
 const toast = useToast();

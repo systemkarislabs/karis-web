@@ -7149,7 +7149,7 @@ button {
 }
 .app > .sidebar  { grid-row: 1 / span 2; }
 .app > .topbar   { grid-column: 2; }
-.app > .content  { grid-column: 2; overflow: auto; background: var(--ka-bg); }
+.app > .content  { grid-column: 2; overflow: auto; background: var(--ka-bg); min-height: 0; }
 
 .sidebar {
   background: var(--ka-surface);
@@ -7417,11 +7417,11 @@ button {
 /* Shared: status dot */
 .dot { width: 8px; height: 8px; border-radius: 999px; display: inline-block; }
 
-/* Inbox grid */
+/* Inbox grid — renders inside .content (which is already 100dvh - 64px) */
 .inbox-page {
   display: grid;
   grid-template-columns: 190px 300px minmax(0, 1fr) 280px;
-  height: calc(100dvh - 64px);
+  height: 100%;
   background: var(--ka-bg);
   overflow: hidden;
 }

@@ -63,7 +63,7 @@
 <script setup lang="ts">
 import { AlertCircle, ChevronLeft, MessageCircle, QrCode } from "lucide-vue-next";
 
-definePageMeta({ layout: false, middleware: "auth" });
+definePageMeta({ middleware: "auth" });
 
 const api = useApi();
 const toast = useToast();

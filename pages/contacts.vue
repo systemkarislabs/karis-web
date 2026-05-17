@@ -75,14 +75,14 @@
         </button>
       </div>
       <div class="toolbar-actions">
-        <Button variant="ghost" size="sm">
-          <Icon name="filter" :size="16" />
+        <button class="btn secondary" type="button">
+          <Icon name="filter" :size="15" />
           Mais filtros
-        </Button>
-        <Button variant="ghost" size="sm">
-          <Icon name="download" :size="16" />
+        </button>
+        <button class="btn secondary" type="button">
+          <Icon name="download" :size="15" />
           Exportar
-        </Button>
+        </button>
       </div>
     </div>
 

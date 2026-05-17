@@ -8,7 +8,7 @@
       </div>
       <div class="super-admin-actions">
         <button type="button" @click="impersonate">
-          <LogIn class="h-4 w-4" />
+          <Icon name="logout" :size="15" />
           Entrar como admin
         </button>
       </div>
@@ -75,7 +75,6 @@
 </template>
 
 <script setup lang="ts">
-import { LogIn } from "lucide-vue-next";
 
 definePageMeta({ layout: "super-admin", middleware: "super-admin" });
 

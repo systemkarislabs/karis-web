@@ -8,7 +8,7 @@
       </div>
       <div class="super-admin-actions">
         <button type="button" @click="loadPlans">
-          <RefreshCw class="h-4 w-4" />
+          <Icon name="refresh" :size="15" />
           Atualizar
         </button>
       </div>
@@ -104,7 +104,6 @@
 </template>
 
 <script setup lang="ts">
-import { RefreshCw } from "lucide-vue-next";
 
 definePageMeta({ layout: "super-admin", middleware: "super-admin" });
 

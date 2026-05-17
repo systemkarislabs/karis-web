@@ -517,6 +517,73 @@
 .form-error { color: var(--ka-danger) !important; font-size: 13px; font-weight: 600; }
 .success-copy { color: var(--ka-success) !important; font-size: 13px; font-weight: 600; }
 
+/* Ops row action buttons */
+.ops-row { grid-template-columns: 38px minmax(180px, 1fr) repeat(4, auto) auto; }
+.ops-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+.ops-delete-btn { color: var(--ka-danger) !important; }
+.ops-delete-btn:hover { background: var(--ka-danger-bg) !important; border-color: var(--ka-danger) !important; }
+
+/* Danger button variant */
+.btn.danger {
+  background: var(--ka-danger);
+  border-color: var(--ka-danger);
+  color: #fff;
+}
+.btn.danger:hover:not(:disabled) { background: #b91c1c; border-color: #b91c1c; }
+
+/* Delete confirmation modal */
+.sa-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.sa-confirm-modal {
+  background: var(--ka-surface);
+  border: 1px solid var(--ka-border);
+  border-radius: var(--ka-r-lg);
+  box-shadow: var(--ka-shadow-lg);
+  padding: 28px 28px 24px;
+  width: min(440px, 100%);
+  text-align: center;
+}
+.sa-confirm-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--ka-danger-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+.sa-confirm-modal h3 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ka-fg);
+  margin: 0 0 10px;
+}
+.sa-confirm-modal p {
+  font-size: 13px;
+  color: var(--ka-fg-2);
+  margin: 0 0 24px;
+  line-height: 1.55;
+}
+.sa-confirm-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
 /* Responsive */
 @media (max-width: 980px) {
   .super-admin-kpis { grid-template-columns: repeat(2, 1fr); }
@@ -525,8 +592,9 @@
 @media (max-width: 768px) {
   .super-admin-page { padding: 14px 16px; }
   .super-admin-header { flex-direction: column; }
-  .ops-row { grid-template-columns: 38px 1fr; }
-  .ops-row .status-pill, .ops-row > span:not(.company-logo) { display: none; }
+  .ops-row { grid-template-columns: 38px 1fr auto; }
+  .ops-row .status-pill { display: none; }
+  .ops-row > span:not(.status-pill) { display: none; }
 }
 
 .bar-chart {

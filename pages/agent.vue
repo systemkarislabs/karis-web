@@ -113,44 +113,98 @@
 
     <!-- Knowledge tab -->
     <div v-else-if="activeTab === 'knowledge'" class="agent-section">
+      <!-- Header -->
       <div class="agent-section-head" style="flex-direction:row;align-items:flex-start;justify-content:space-between;">
         <div>
           <h2>Base de conhecimento</h2>
-          <p>Documentos e textos que a IA consulta para responder.</p>
+          <p>Documentos e textos que a IA consulta para responder. PDFs, DOCX, TXT, XLSX, ou cole texto direto.</p>
         </div>
-        <button class="btn primary sm" type="button" @click="createKnowledge">
+        <button class="btn primary sm" type="button" @click="fileInputEl?.click()">
           <Icon name="upload" :size="14" />
-          Adicionar
+          Adicionar documento
         </button>
       </div>
 
-      <div class="knowledge-add-form">
-        <div class="form-group">
-          <label class="form-label">Título</label>
-          <input v-model="knowledgeForm.title" class="form-input" placeholder="FAQ de preços" />
+      <!-- Hidden file input -->
+      <input
+        ref="fileInputEl"
+        type="file"
+        style="display:none;"
+        accept=".pdf,.doc,.docx,.txt,.xlsx,.csv,.mp4,.mov,.webm"
+        multiple
+        @change="handleFileInput"
+      />
+
+      <!-- Drop zone -->
+      <div
+        class="drop-zone"
+        :class="{ dragging: isDragging }"
+        @dragover.prevent="isDragging = true"
+        @dragleave.self="isDragging = false"
+        @drop.prevent="handleDrop"
+        @click="fileInputEl?.click()"
+      >
+        <Icon name="upload" :size="28" class="drop-zone-icon" />
+        <div class="drop-zone-text">
+          Arraste arquivos aqui ou <span class="drop-zone-link">selecione do computador</span>
         </div>
-        <div class="form-group">
-          <label class="form-label">Conteúdo</label>
-          <input v-model="knowledgeForm.content" class="form-input" placeholder="Cole uma regra ou resposta frequente" />
+        <div class="drop-zone-sub">Max 25MB · PDF, DOCX, TXT, XLSX · Vídeos MP4/MOV até 1 min</div>
+      </div>
+
+      <!-- Quick text input (collapsible) -->
+      <details class="knowledge-text-expand">
+        <summary>Ou cole texto diretamente</summary>
+        <div class="knowledge-add-form">
+          <div class="form-group">
+            <label class="form-label">Título</label>
+            <input v-model="knowledgeForm.title" class="form-input" placeholder="FAQ de preços" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Conteúdo</label>
+            <input v-model="knowledgeForm.content" class="form-input" placeholder="Cole uma regra ou resposta frequente" />
+          </div>
+          <button class="btn secondary sm" type="button" style="align-self:flex-end;" @click="createKnowledge">Salvar texto</button>
+        </div>
+      </details>
+
+      <!-- Uploading items (in-progress) -->
+      <div v-if="uploadQueue.length" class="knowledge-list" style="margin-bottom:8px;">
+        <div v-for="item in uploadQueue" :key="item.name" class="knowledge-item">
+          <div class="knowledge-icon" style="background:rgba(45,91,255,0.06);">
+            <Icon :name="item.isVideo ? 'play' : 'fileText'" :size="18" />
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:600;color:var(--ka-fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ item.name }}</div>
+            <div class="upload-bar">
+              <div class="upload-bar-fill" :style="`width:${item.progress}%`" />
+            </div>
+          </div>
+          <span class="badge neutral" style="height:20px;padding:0 8px;font-size:11px;">Enviando…</span>
         </div>
       </div>
 
-      <div v-if="loading" style="display:flex;flex-direction:column;gap:10px;">
+      <!-- Knowledge list -->
+      <div v-if="loading" style="display:flex;flex-direction:column;gap:8px;">
         <div v-for="i in 4" :key="i" style="height:52px;background:var(--ka-gray-100);border-radius:8px;animation:agent-pulse 1.5s infinite;" />
       </div>
       <div v-else-if="knowledge.length" class="knowledge-list">
         <div v-for="item in knowledge" :key="item.id" class="knowledge-item">
-          <div class="knowledge-icon"><Icon name="fileText" :size="18" /></div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:14px;font-weight:600;color:var(--ka-fg);">{{ item.title }}</div>
-            <div style="font-size:12px;color:var(--ka-fg-muted);margin-top:2px;">{{ item.fileName || `${String(item.content || '').length} caracteres` }} · {{ formatDate(item.createdAt) }}</div>
+          <div class="knowledge-icon" :style="{ background: knowledgeIconBg(item) }">
+            <Icon :name="knowledgeIcon(item)" :size="18" :style="{ color: knowledgeIconColor(item) }" />
           </div>
-          <span class="badge success" style="height:20px;padding:0 8px;font-size:11px;">Indexado</span>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:600;color:var(--ka-fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ item.fileName || item.title }}</div>
+            <div style="font-size:12px;color:var(--ka-fg-muted);margin-top:2px;">
+              {{ item.fileSize ? formatSize(item.fileSize) : `${String(item.content || '').length} chars` }} · adicionado {{ relativeTime(item.createdAt) }}
+            </div>
+          </div>
+          <span class="badge" :class="knowledgeStatusClass(item)" style="height:20px;padding:0 8px;font-size:11px;">{{ knowledgeStatusLabel(item) }}</span>
+          <button class="icon-btn" style="width:28px;height:28px;border:0;background:transparent;font-size:16px;color:var(--ka-fg-muted);" title="Opções" @click.stop>···</button>
         </div>
       </div>
       <div v-else style="padding:40px;text-align:center;color:var(--ka-fg-muted);font-size:13px;">
         <Icon name="fileText" :size="32" style="opacity:0.2;display:block;margin:0 auto 10px;" />
-        Nenhum conhecimento adicionado ainda.
+        Nenhum documento adicionado ainda.
       </div>
     </div>
 
@@ -285,6 +339,137 @@ const form = reactive({
 
 const agentStats = reactive({ today: 0, successRate: 0 })
 const knowledgeForm = reactive({ title: '', content: '' })
+const fileInputEl = ref<HTMLInputElement | null>(null)
+const isDragging = ref(false)
+const uploadQueue = ref<Array<{ name: string; progress: number; isVideo: boolean }>>([])
+
+const ACCEPTED_EXTS = ['.pdf', '.doc', '.docx', '.txt', '.xlsx', '.csv', '.mp4', '.mov', '.webm']
+const MAX_FILE_MB = 25
+const MAX_VIDEO_SECONDS = 60
+
+function getVideoDuration(file: File): Promise<number> {
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(file)
+    const video = document.createElement('video')
+    video.preload = 'metadata'
+    video.onloadedmetadata = () => { URL.revokeObjectURL(url); resolve(video.duration) }
+    video.onerror = () => { URL.revokeObjectURL(url); resolve(0) }
+    video.src = url
+  })
+}
+
+async function validateFile(file: File): Promise<string | null> {
+  const ext = '.' + file.name.split('.').pop()?.toLowerCase()
+  if (!ACCEPTED_EXTS.includes(ext)) return `Tipo não suportado: ${ext}`
+  if (file.size > MAX_FILE_MB * 1024 * 1024) return `Arquivo muito grande. Máx ${MAX_FILE_MB}MB.`
+  if (file.type.startsWith('video/')) {
+    const dur = await getVideoDuration(file)
+    if (dur > MAX_VIDEO_SECONDS) return `Vídeo deve ter no máximo ${MAX_VIDEO_SECONDS} segundos (${Math.round(dur)}s enviado).`
+  }
+  return null
+}
+
+async function handleFileInput(e: Event) {
+  const files = (e.target as HTMLInputElement).files
+  if (!files) return
+  for (const file of Array.from(files)) await uploadFile(file)
+  if (fileInputEl.value) fileInputEl.value.value = ''
+}
+
+function handleDrop(e: DragEvent) {
+  isDragging.value = false
+  const files = e.dataTransfer?.files
+  if (!files) return
+  for (const file of Array.from(files)) uploadFile(file)
+}
+
+async function uploadFile(file: File) {
+  const err = await validateFile(file)
+  if (err) { toast.error(err); return }
+
+  const isVideo = file.type.startsWith('video/')
+  const queueItem = { name: file.name, progress: 10, isVideo }
+  uploadQueue.value.push(queueItem)
+
+  try {
+    queueItem.progress = 40
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('title', file.name.replace(/\.[^.]+$/, ''))
+
+    const config = useRuntimeConfig()
+    const baseURL = (config.public.apiBaseUrl as string).replace(/\/+$/, '')
+    const auth = useAuthStore()
+    const impersonationToken = import.meta.client ? localStorage.getItem('karis_impersonation_token') : null
+    const token = impersonationToken || auth.token
+
+    queueItem.progress = 70
+    const res = await $fetch<any>(`${baseURL}/api/knowledge/upload`, {
+      method: 'POST',
+      body: fd,
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+    knowledge.value.unshift(res.knowledge || res)
+    toast.success(`"${file.name}" enviado com sucesso.`)
+  } catch (err: any) {
+    toast.error(err?.data?.message || `Erro ao enviar "${file.name}".`)
+  } finally {
+    uploadQueue.value = uploadQueue.value.filter(u => u !== queueItem)
+  }
+}
+
+function formatSize(bytes: number) {
+  if (!bytes) return ''
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1048576) return `${(bytes / 1024).toFixed(0)} KB`
+  return `${(bytes / 1048576).toFixed(1)} MB`
+}
+
+function relativeTime(dateStr: string) {
+  if (!dateStr) return ''
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const min = Math.floor(diff / 60000)
+  if (min < 1) return 'agora'
+  if (min < 60) return `há ${min}min`
+  const h = Math.floor(min / 60)
+  if (h < 24) return `há ${h}h`
+  const d = Math.floor(h / 24)
+  return d === 1 ? 'ontem' : `há ${d} dias`
+}
+
+function knowledgeIcon(item: any) {
+  const fn = (item.fileName || item.title || '').toLowerCase()
+  if (fn.endsWith('.pdf')) return 'fileText'
+  if (fn.match(/\.(mp4|mov|webm)$/)) return 'play'
+  if (fn.match(/\.(xlsx|csv)$/)) return 'barChart'
+  return 'fileText'
+}
+
+function knowledgeIconBg(item: any) {
+  const fn = (item.fileName || item.title || '').toLowerCase()
+  if (fn.endsWith('.pdf')) return 'rgba(239,68,68,0.08)'
+  if (fn.match(/\.(mp4|mov|webm)$/)) return 'rgba(139,92,246,0.08)'
+  return 'rgba(45,91,255,0.08)'
+}
+
+function knowledgeIconColor(item: any) {
+  const fn = (item.fileName || item.title || '').toLowerCase()
+  if (fn.endsWith('.pdf')) return '#EF4444'
+  if (fn.match(/\.(mp4|mov|webm)$/)) return '#7C3AED'
+  return 'var(--ka-brand)'
+}
+
+function knowledgeStatusClass(item: any) {
+  if (item.status === 'ERROR') return 'danger'
+  if (item.status === 'PROCESSING') return 'warning'
+  return 'success'
+}
+
+function knowledgeStatusLabel(item: any) {
+  if (item.status === 'ERROR') return 'Erro'
+  if (item.status === 'PROCESSING') return 'Processando'
+  return 'Indexado'
+}
 const sectorForm = reactive({ name: '', phone: '', description: '', transferWhen: '' })
 const playgroundMessage = ref('Como vocês podem me ajudar?')
 const playgroundReply = ref('')
@@ -763,18 +948,86 @@ onMounted(loadAgent)
   left: 18px;
 }
 
+/* Drop zone */
+.drop-zone {
+  border: 1.5px dashed var(--ka-border);
+  border-radius: 12px;
+  padding: 28px 20px;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: border-color 0.15s, background 0.15s;
+  margin-bottom: 12px;
+  user-select: none;
+}
+
+.drop-zone:hover,
+.drop-zone.dragging {
+  border-color: var(--ka-brand);
+  background: rgba(45, 91, 255, 0.04);
+}
+
+.drop-zone-icon { opacity: 0.35; }
+.drop-zone.dragging .drop-zone-icon { opacity: 0.7; color: var(--ka-brand); }
+
+.drop-zone-text {
+  font-size: 14px;
+  color: var(--ka-fg-2);
+}
+
+.drop-zone-link {
+  color: var(--ka-brand);
+  font-weight: 500;
+  text-decoration: underline;
+}
+
+.drop-zone-sub {
+  font-size: 12px;
+  color: var(--ka-fg-muted);
+}
+
+/* Quick text */
+.knowledge-text-expand {
+  margin-bottom: 16px;
+}
+
+.knowledge-text-expand summary {
+  font-size: 13px;
+  color: var(--ka-fg-muted);
+  cursor: pointer;
+  padding: 6px 0;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.knowledge-text-expand summary::before {
+  content: '▸';
+  font-size: 10px;
+  transition: transform 0.15s;
+}
+
+.knowledge-text-expand[open] summary::before { transform: rotate(90deg); }
+
 /* Knowledge */
 .knowledge-add-form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: var(--ka-gray-50);
+  border-radius: 10px;
+  margin-top: 8px;
 }
 
 .knowledge-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .knowledge-item {
@@ -797,6 +1050,22 @@ onMounted(loadAgent)
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+/* Upload progress bar */
+.upload-bar {
+  height: 3px;
+  background: var(--ka-gray-100);
+  border-radius: 2px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.upload-bar-fill {
+  height: 100%;
+  background: var(--ka-brand);
+  border-radius: 2px;
+  transition: width 0.3s;
 }
 
 /* Sectors */

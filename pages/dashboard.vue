@@ -7,9 +7,9 @@
         <div class="sub">Aqui tá tudo sob controle. Hoje seu time já resolveu {{ overview?.conversations?.closed ?? 0 }} conversas.</div>
       </div>
       <div style="display:flex;gap:8px;">
-        <button class="btn secondary" type="button" @click="refresh">
-          <Icon name="refresh" :size="16" />
-          Atualizar
+        <button class="btn secondary" type="button" @click="cyclePeriod">
+          <Icon name="calendar" :size="16" />
+          {{ periodLabel }}
         </button>
         <button class="btn primary" type="button" @click="navigateTo('/inbox')">
           <Icon name="plus" :size="16" />
@@ -76,12 +76,13 @@
       <div class="card chart-card">
         <div class="header">
           <div>
-            <h3>Mensagens por dia</h3>
-            <div style="font-size:12px;color:var(--ka-fg-muted);margin-top:2px;">Entrada, IA e atendimento humano nos últimos 7 dias</div>
+            <h3>Conversas por hora</h3>
+            <div style="font-size:12px;color:var(--ka-fg-muted);margin-top:2px;">Hoje · pico às 16h</div>
           </div>
           <div class="switch">
-            <span class="on">Semana</span>
-            <span>Mês</span>
+            <span :class="{ on: chartView === 'hora' }" @click="chartView = 'hora'">Hora</span>
+            <span :class="{ on: chartView === 'dia' }"  @click="chartView = 'dia'">Dia</span>
+            <span :class="{ on: chartView === 'semana' }" @click="chartView = 'semana'">Semana</span>
           </div>
         </div>
 
@@ -176,6 +177,16 @@ const messageDays = ref<any[]>([])
 const conversations = ref<any[]>([])
 
 const AVATAR_COLORS = ['#5B7FFF', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#EC4899', '#14B8A6']
+
+const chartView = ref<'hora' | 'dia' | 'semana'>('hora')
+
+const PERIODS = ['Últimos 7 dias', 'Últimos 14 dias', 'Últimos 30 dias'] as const
+const periodIdx = ref(0)
+const periodLabel = computed(() => PERIODS[periodIdx.value])
+function cyclePeriod() {
+  periodIdx.value = (periodIdx.value + 1) % PERIODS.length
+  refresh()
+}
 
 const greeting = computed(() => {
   const h = new Date().getHours()

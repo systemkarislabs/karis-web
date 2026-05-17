@@ -76,42 +76,66 @@
       <div class="card chart-card">
         <div class="header">
           <div>
-            <h3>Conversas por hora</h3>
-            <div style="font-size:12px;color:var(--ka-fg-muted);margin-top:2px;">Hoje · pico às 16h</div>
+            <h3>Conversas por dia</h3>
+            <div style="font-size:12px;color:var(--ka-fg-muted);margin-top:2px;">Últimos 7 dias · total de mensagens</div>
           </div>
           <div class="switch">
-            <span :class="{ on: chartView === 'hora' }" @click="chartView = 'hora'">Hora</span>
-            <span :class="{ on: chartView === 'dia' }"  @click="chartView = 'dia'">Dia</span>
-            <span :class="{ on: chartView === 'semana' }" @click="chartView = 'semana'">Semana</span>
+            <span :class="{ on: chartView === 'hora' }" @click="chartView = 'hora'">7d</span>
+            <span :class="{ on: chartView === 'dia' }"  @click="chartView = 'dia'">14d</span>
+            <span :class="{ on: chartView === 'semana' }" @click="chartView = 'semana'">30d</span>
           </div>
         </div>
 
-        <div v-if="loading" style="display:flex;gap:8px;align-items:flex-end;height:200px;padding-bottom:8px;">
-          <div v-for="i in 7" :key="i" :style="`flex:1;height:${30+i*20}px;background:var(--ka-gray-100);border-radius:6px 6px 2px 2px;animation:pulse 1.5s infinite;`" />
+        <!-- Skeleton -->
+        <div v-if="loading" class="chart-area">
+          <div class="chart-grid">
+            <div v-for="i in 4" :key="i" class="chart-grid-line" />
+          </div>
+          <div class="chart-bars">
+            <div v-for="i in 7" :key="i" class="chart-bar-col">
+              <div class="chart-bar-wrap" style="justify-content:flex-end;">
+                <div :style="`width:28px;height:${25+i*18}px;background:var(--ka-gray-100);border-radius:5px 5px 2px 2px;animation:pulse 1.5s infinite;`" />
+              </div>
+              <div class="chart-bar-label" style="background:var(--ka-gray-100);width:24px;height:10px;border-radius:3px;animation:pulse 1.5s infinite;" />
+            </div>
+          </div>
         </div>
 
-        <div v-else-if="hasChartData" style="display:flex;align-items:flex-end;gap:4px;height:190px;padding-bottom:22px;">
-          <div
-            v-for="day in chartDays"
-            :key="day.day"
-            style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;"
-          >
+        <!-- Data -->
+        <div v-else-if="hasChartData" class="chart-area">
+          <div class="chart-grid">
+            <div v-for="i in 4" :key="i" class="chart-grid-line" />
+          </div>
+          <div class="chart-bars">
             <div
-              :style="`width:100%;height:${barH(Number(day.inbound||0)+Number(day.ai||0), maxMessages)}px;background:var(--ka-brand);border-radius:5px 5px 2px 2px;transition:height 300ms;`"
-              :title="`${day.inbound} recebidas · ${day.ai} IA`"
-            />
-            <small style="font-size:10px;color:var(--ka-fg-muted);line-height:1;">{{ shortDay(day.day) }}</small>
+              v-for="day in chartDays"
+              :key="day.day"
+              class="chart-bar-col"
+            >
+              <div class="chart-bar-wrap">
+                <div
+                  class="chart-bar"
+                  :style="`height:${barH(Number(day.inbound||0)+Number(day.ai||0), maxMessages)}px`"
+                  :title="`${day.inbound} recebidas · ${day.ai} IA`"
+                />
+              </div>
+              <span class="chart-bar-label">{{ shortDay(day.day) }}</span>
+            </div>
           </div>
         </div>
 
-        <div v-else style="height:200px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--ka-fg-muted);">
-          <Icon name="barChart" :size="32" style="opacity:0.3" />
-          <span style="font-size:13px;">Sem mensagens no período</span>
+        <!-- Empty -->
+        <div v-else class="chart-area" style="align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--ka-fg-muted);">
+          <Icon name="barChart" :size="28" style="opacity:0.25" />
+          <span style="font-size:13px;">Sem dados no período</span>
         </div>
 
         <!-- Legend -->
-        <div style="display:flex;gap:16px;padding-top:12px;border-top:1px solid var(--ka-divider);font-size:12px;color:var(--ka-fg-2);">
-          <span style="display:flex;align-items:center;gap:6px;"><i style="width:10px;height:10px;border-radius:2px;background:var(--ka-brand);display:inline-block;" />Total de mensagens</span>
+        <div style="display:flex;gap:16px;padding-top:10px;border-top:1px solid var(--ka-divider);font-size:12px;color:var(--ka-fg-2);">
+          <span style="display:flex;align-items:center;gap:5px;">
+            <i style="width:10px;height:10px;border-radius:3px;background:var(--ka-brand);display:inline-block;" />
+            Total de mensagens
+          </span>
         </div>
       </div>
 
@@ -355,5 +379,71 @@ onMounted(refresh)
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
+}
+
+/* ── Bar chart ── */
+.chart-area {
+  position: relative;
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  margin: 14px 0 4px;
+}
+
+.chart-grid {
+  position: absolute;
+  inset: 0 0 20px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.chart-grid-line {
+  border-top: 1px dashed var(--ka-border);
+  width: 100%;
+}
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 100%;
+  padding-bottom: 20px;
+}
+
+.chart-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.chart-bar-wrap {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  justify-content: center;
+}
+
+.chart-bar {
+  width: 28px;
+  max-width: 100%;
+  background: var(--ka-brand);
+  border-radius: 5px 5px 2px 2px;
+  transition: height 300ms ease;
+  min-height: 0;
+}
+
+.chart-bar-label {
+  font-size: 10px;
+  color: var(--ka-fg-muted);
+  line-height: 1;
+  white-space: nowrap;
 }
 </style>

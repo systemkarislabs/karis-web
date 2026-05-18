@@ -163,7 +163,9 @@
             <label class="form-label">Conteúdo</label>
             <input v-model="knowledgeForm.content" class="form-input" placeholder="Cole uma regra ou resposta frequente" />
           </div>
-          <button class="btn secondary sm" type="button" style="align-self:flex-end;" @click="createKnowledge">Salvar texto</button>
+          <button class="btn secondary sm" type="button" style="align-self:flex-end;" :disabled="knowledgeLoading" @click="createKnowledge">
+            {{ knowledgeLoading ? 'Salvando…' : 'Salvar texto' }}
+          </button>
         </div>
       </details>
 
@@ -410,6 +412,7 @@ const form = reactive({
 
 const agentStats = reactive({ today: 0, successRate: 0 })
 const knowledgeForm = reactive({ title: '', content: '' })
+const knowledgeLoading = ref(false)
 const fileInputEl = ref<HTMLInputElement | null>(null)
 const isDragging = ref(false)
 const uploadQueue = ref<Array<{ name: string; progress: number; isVideo: boolean }>>([])
@@ -718,6 +721,7 @@ async function createKnowledge() {
     toast.warning('Informe título e conteúdo.')
     return
   }
+  knowledgeLoading.value = true
   try {
     const res = await api.fetch<any>('/knowledge', {
       method: 'POST',
@@ -727,8 +731,10 @@ async function createKnowledge() {
     knowledgeForm.title = ''
     knowledgeForm.content = ''
     toast.success('Conhecimento adicionado.')
-  } catch {
-    toast.error('Erro ao adicionar conhecimento.')
+  } catch (err: any) {
+    toast.error(err?.data?.message || 'Erro ao adicionar conhecimento.')
+  } finally {
+    knowledgeLoading.value = false
   }
 }
 

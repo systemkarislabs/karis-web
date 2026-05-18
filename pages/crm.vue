@@ -399,7 +399,9 @@ async function addNote() {
     })
     notes.value.unshift(res.note || res)
     noteText.value = ''
-  } catch {} finally { noteLoading.value = false }
+  } catch (err: any) {
+    toast.error(err?.data?.message || 'Erro ao salvar nota.')
+  } finally { noteLoading.value = false }
 }
 
 async function addTask() {
@@ -415,7 +417,9 @@ async function addTask() {
     tasks.value.unshift(res.task || res)
     taskTitle.value = ''
     taskDueAt.value = ''
-  } catch {} finally { taskLoading.value = false }
+  } catch (err: any) {
+    toast.error(err?.data?.message || 'Erro ao salvar tarefa.')
+  } finally { taskLoading.value = false }
 }
 </script>
 

@@ -180,8 +180,14 @@ async function disconnectInstagram() {
 
 async function refreshInstagram() {
   instagram.loading = true;
-  await loadInstagramStatus();
-  instagram.loading = false;
+  try {
+    await loadInstagramStatus();
+    toast.success('Status do Instagram atualizado.');
+  } catch {
+    // loadInstagramStatus already handles errors silently
+  } finally {
+    instagram.loading = false;
+  }
 }
 
 onMounted(loadInstagramStatus);

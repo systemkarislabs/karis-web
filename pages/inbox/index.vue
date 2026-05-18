@@ -350,19 +350,22 @@ function dayOf(dateStr: string) {
   return new Date(dateStr).toDateString()
 }
 
+const TZ = 'America/Recife'
+
 function dayLabel(dateStr: string) {
   const d = new Date(dateStr)
-  const today = new Date()
-  if (d.toDateString() === today.toDateString()) return 'Hoje'
-  const yesterday = new Date(today)
-  yesterday.setDate(today.getDate() - 1)
-  if (d.toDateString() === yesterday.toDateString()) return 'Ontem'
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+  const todayStr = new Intl.DateTimeFormat('pt-BR', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
+  const dStr    = new Intl.DateTimeFormat('pt-BR', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d)
+  const yesterdayDate = new Date(); yesterdayDate.setDate(yesterdayDate.getDate() - 1)
+  const yStr    = new Intl.DateTimeFormat('pt-BR', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(yesterdayDate)
+  if (dStr === todayStr) return 'Hoje'
+  if (dStr === yStr) return 'Ontem'
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', timeZone: TZ })
 }
 
 function timeOf(dateStr: string) {
   if (!dateStr) return ''
-  return new Date(dateStr).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+  return new Date(dateStr).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: TZ })
 }
 
 function msgClass(msg: any) {

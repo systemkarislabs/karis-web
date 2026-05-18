@@ -9,18 +9,20 @@ export function unwrapList<T = AnyRecord>(payload: any, keys: string[] = []): T[
   return [];
 }
 
+const TZ = "America/Recife";
+
 export function formatDate(value?: string | Date | null, fallback = "--") {
   if (!value) return fallback;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return fallback;
-  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
+  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: TZ }).format(date);
 }
 
 export function formatDateTime(value?: string | Date | null, fallback = "--") {
   if (!value) return fallback;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return fallback;
-  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(date);
+  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: TZ }).format(date);
 }
 
 export function relativeTime(value?: string | Date | null) {

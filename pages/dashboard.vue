@@ -288,7 +288,7 @@ function barH(value: number, maxVal: number) {
 }
 
 function shortDay(day: string) {
-  return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit' }).format(new Date(`${day}T12:00:00`))
+  return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Recife' }).format(new Date(`${day}T12:00:00`))
 }
 
 // SVG IDs must not contain spaces — sanitize the label

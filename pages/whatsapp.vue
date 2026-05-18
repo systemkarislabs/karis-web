@@ -255,7 +255,7 @@ function formatDateTime(iso: string) {
   try {
     return new Intl.DateTimeFormat("pt-BR", {
       day: "2-digit", month: "2-digit", year: "numeric",
-      hour: "2-digit", minute: "2-digit",
+      hour: "2-digit", minute: "2-digit", timeZone: "America/Recife",
     }).format(new Date(iso));
   } catch {
     return iso;

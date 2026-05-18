@@ -601,6 +601,11 @@
   color: var(--ka-brand-dark);
 }
 
+/* Hide number input spinners */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.no-spinner { -moz-appearance: textfield; }
+
 /* Form messages */
 .form-error { color: var(--ka-danger) !important; font-size: 13px; font-weight: 600; }
 .success-copy { color: var(--ka-success) !important; font-size: 13px; font-weight: 600; }

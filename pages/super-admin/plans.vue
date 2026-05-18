@@ -84,12 +84,22 @@
           <label>Slug<input v-model="form.slug" placeholder="essencial, pro, business..." /></label>
           <label>Descrição<textarea v-model="form.description" rows="2" /></label>
           <div class="split-fields">
-            <label>Preço mensal<input v-model.number="priceReais" type="number" min="0" step="1" /></label>
-            <label>Trial dias<input v-model.number="form.trialDays" type="number" min="0" /></label>
+            <label>
+              Preço mensal (R$)
+              <input
+                :value="priceDisplay"
+                type="text"
+                inputmode="decimal"
+                placeholder="0,00"
+                @input="onPriceInput"
+                @blur="onPriceBlur"
+              />
+            </label>
+            <label>Trial dias<input v-model.number="form.trialDays" type="number" min="0" class="no-spinner" /></label>
           </div>
           <div class="split-fields">
-            <label>Usuários<input v-model.number="form.maxUsers" type="number" min="0" /></label>
-            <label>WhatsApps<input v-model.number="form.maxWhatsappConnections" type="number" min="0" /></label>
+            <label>Usuários<input v-model.number="form.maxUsers" type="number" min="0" class="no-spinner" /></label>
+            <label>WhatsApps<input v-model.number="form.maxWhatsappConnections" type="number" min="0" class="no-spinner" /></label>
           </div>
 
           <h3>Módulos do plano</h3>
@@ -162,10 +172,35 @@ function emptyForm() {
 }
 
 const form = reactive<any>(emptyForm());
-const priceReais = computed({
-  get: () => Math.round((form.priceCents || 0) / 100),
-  set: value => { form.priceCents = Number(value || 0) * 100; },
-});
+
+// Campo de preço em reais com suporte a centavos (formato pt-BR)
+const priceDisplay = ref("");
+
+function centsToDisplay(cents: number): string {
+  if (!cents) return "";
+  return (cents / 100).toFixed(2).replace(".", ",");
+}
+
+function parsePriceToCents(raw: string): number {
+  const clean = raw.replace(/\./g, "").replace(",", ".");
+  const val = parseFloat(clean);
+  return isNaN(val) ? 0 : Math.round(val * 100);
+}
+
+function onPriceInput(e: Event) {
+  const val = (e.target as HTMLInputElement).value;
+  priceDisplay.value = val;
+  form.priceCents = parsePriceToCents(val);
+}
+
+function onPriceBlur() {
+  priceDisplay.value = centsToDisplay(form.priceCents);
+}
+
+// Sincroniza display ao carregar/editar um plano existente
+watch(() => form.priceCents, (val) => {
+  priceDisplay.value = centsToDisplay(val);
+}, { immediate: true });
 
 function formatMoney(value?: number | null) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format((value || 0) / 100);

@@ -237,7 +237,7 @@
                   <Icon name="fileText" :size="11" />
                   Post
                 </span>
-                <span class="ig-comment-card-post-text">{{ msg.metadata.postCaption }}</span>
+                <span class="ig-comment-card-post-text">{{ msg.metadata.postCaption.length > 120 ? msg.metadata.postCaption.slice(0, 120) + '…' : msg.metadata.postCaption }}</span>
               </div>
 
               <!-- Comment text -->
@@ -322,7 +322,7 @@
         </div>
 
         <!-- Instagram reply context -->
-        <div v-if="selectedConversation?.source === 'instagram'" class="ig-reply-banner">
+        <div v-if="selectedConversation?.source === 'instagram' || selectedConversation?.source === 'instagram_comment'" class="ig-reply-banner">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
             <defs>
               <radialGradient id="igbanner" cx="30%" cy="107%" r="150%">
@@ -347,7 +347,7 @@
           </div>
           <textarea
             v-model="draft"
-            :placeholder="selectedConversation?.source === 'instagram' ? 'Responder no Instagram…' : 'Digite uma mensagem...'"
+            :placeholder="selectedConversation?.source === 'instagram' || selectedConversation?.source === 'instagram_comment' ? 'Responder no Instagram…' : 'Digite uma mensagem...'"
             rows="1"
             @keydown.enter.exact.prevent="sendMessage"
           />
@@ -520,13 +520,14 @@ function msgClass(msg: any) {
 }
 
 function srcBadgeClass(source?: string) {
-  if (source === 'instagram') return 'ig'
+  if (source === 'instagram' || source === 'instagram_comment') return 'ig'
   if (source === 'karis_link') return 'kl'
   return 'wa'
 }
 
 function sourceLabel(source?: string) {
-  if (source === 'instagram') return 'Instagram'
+  if (source === 'instagram_comment') return 'Instagram Comentário'
+  if (source === 'instagram') return 'Instagram DM'
   if (source === 'karis_link') return 'Karis Link'
   return 'WhatsApp'
 }

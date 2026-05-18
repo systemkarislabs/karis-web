@@ -85,8 +85,26 @@
         :class="{ active: selectedId === conv.id }"
         @click="selectConversation(conv.id)"
       >
-        <div class="avatar" :style="`background:${avatarColor(conv.contact?.name || conv.contact?.phone)};width:36px;height:36px;font-size:13px;`">
-          {{ initials(conv.contact?.name || conv.contact?.phone) }}
+        <div style="position:relative;width:36px;height:36px;flex-shrink:0;">
+          <div class="avatar" :style="`background:${avatarColor(conv.contact?.name || conv.contact?.phone)};width:100%;height:100%;font-size:13px;`">
+            {{ initials(conv.contact?.name || conv.contact?.phone) }}
+          </div>
+          <!-- Source channel badge -->
+          <span class="src-badge" :class="srcBadgeClass(conv.source)" :title="sourceLabel(conv.source)">
+            <svg v-if="conv.source === 'instagram'" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="5"/>
+              <circle cx="12" cy="12" r="4"/>
+              <circle cx="17.5" cy="6.5" r="1.5" fill="white" stroke="none"/>
+            </svg>
+            <svg v-else-if="conv.source === 'karis_link'" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 3h6v6"/><path d="M10 14 21 3"/>
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            </svg>
+            <svg v-else width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/>
+              <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"/>
+            </svg>
+          </span>
         </div>
         <div class="body">
           <div class="top-row">
@@ -116,14 +134,35 @@
         <button class="mobile-back-btn" type="button" title="Voltar" @click="goBackMobile">
           <Icon name="arrowLeft" :size="20" />
         </button>
-        <div class="avatar" :style="`background:${avatarColor(selectedContact?.name || selectedContact?.phone)};`">
-          {{ initials(selectedContact?.name || selectedContact?.phone) }}
+        <div style="position:relative;flex-shrink:0;">
+          <div class="avatar" :style="`background:${avatarColor(selectedContact?.name || selectedContact?.phone)};`">
+            {{ initials(selectedContact?.name || selectedContact?.phone) }}
+          </div>
+          <span class="src-badge" :class="srcBadgeClass(selectedConversation.source)" :title="sourceLabel(selectedConversation.source)">
+            <svg v-if="selectedConversation.source === 'instagram'" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="5"/>
+              <circle cx="12" cy="12" r="4"/>
+              <circle cx="17.5" cy="6.5" r="1.5" fill="white" stroke="none"/>
+            </svg>
+            <svg v-else-if="selectedConversation.source === 'karis_link'" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 3h6v6"/><path d="M10 14 21 3"/>
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            </svg>
+            <svg v-else width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/>
+              <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"/>
+            </svg>
+          </span>
         </div>
         <div class="info">
           <div class="name">{{ selectedContact?.name || selectedContact?.phone || 'Contato' }}</div>
           <div class="meta">
             <span class="dot" style="background:var(--ka-success);" />
-            {{ selectedContact?.phone || 'Sem telefone' }} · {{ selectedConversation.channel || 'WhatsApp' }}
+            {{ selectedContact?.phone || 'Sem telefone' }}
+            ·
+            <span class="src-chip" :class="srcBadgeClass(selectedConversation.source)">
+              {{ sourceLabel(selectedConversation.source) }}
+            </span>
           </div>
         </div>
         <div class="right">
@@ -257,7 +296,14 @@
           <span class="v">{{ [selectedContact?.city, selectedContact?.state].filter(Boolean).join(', ') }}</span>
         </div>
         <div class="kv"><span class="k">1º contato</span><span class="v">{{ selectedContact?.createdAt ? relativeTime(selectedContact.createdAt) : 'Não informado' }}</span></div>
-        <div class="kv"><span class="k">Origem</span><span class="v">{{ selectedConversation.channel || 'WhatsApp' }}</span></div>
+        <div class="kv">
+          <span class="k">Origem</span>
+          <span class="v">
+            <span class="src-chip" :class="srcBadgeClass(selectedConversation.source)">
+              {{ sourceLabel(selectedConversation.source) }}
+            </span>
+          </span>
+        </div>
       </div>
 
       <div class="field-block">
@@ -372,6 +418,18 @@ function msgClass(msg: any) {
   if (msg.direction === 'INBOUND') return 'in'
   if (msg.senderType === 'AI') return 'bot'
   return 'out'
+}
+
+function srcBadgeClass(source?: string) {
+  if (source === 'instagram') return 'ig'
+  if (source === 'karis_link') return 'kl'
+  return 'wa'
+}
+
+function sourceLabel(source?: string) {
+  if (source === 'instagram') return 'Instagram'
+  if (source === 'karis_link') return 'Karis Link'
+  return 'WhatsApp'
 }
 
 const myUserId = computed(() => auth.user?.id)
@@ -570,4 +628,38 @@ onMounted(loadConversations)
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
 }
+
+/* Source channel badge (avatar corner) */
+.src-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--ka-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.src-badge.wa { background: #25D366; }
+.src-badge.ig { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285AEB 90%); }
+.src-badge.kl { background: var(--ka-brand); }
+
+/* Source chip (thread header) */
+.src-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 99px;
+  letter-spacing: 0.02em;
+}
+.src-chip.wa { background: rgba(37,211,102,0.12); color: #16a34a; }
+.src-chip.ig { background: rgba(214,36,159,0.1); color: #d6249f; }
+.src-chip.kl { background: rgba(91,127,255,0.12); color: var(--ka-brand); }
 </style>

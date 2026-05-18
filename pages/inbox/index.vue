@@ -202,7 +202,54 @@
               class="day-divider"
             >{{ dayLabel(msg.createdAt) }}</div>
 
+            <!-- Instagram comment card -->
             <div
+              v-if="msg.type === 'COMMENT' || msg.messageType === 'comment'"
+              class="ig-comment-card"
+              :class="msg.direction === 'OUTBOUND' ? 'ig-comment-card--out' : 'ig-comment-card--in'"
+            >
+              <!-- Header: Instagram icon + label + author -->
+              <div class="ig-comment-card-header">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+                  <defs>
+                    <radialGradient id="igcc" cx="30%" cy="107%" r="150%">
+                      <stop offset="0%" stop-color="#fdf497"/>
+                      <stop offset="45%" stop-color="#fd5949"/>
+                      <stop offset="60%" stop-color="#d6249f"/>
+                      <stop offset="90%" stop-color="#285AEB"/>
+                    </radialGradient>
+                  </defs>
+                  <rect width="24" height="24" rx="6" fill="url(#igcc)"/>
+                  <rect x="6" y="6" width="12" height="12" rx="3" fill="none" stroke="white" stroke-width="1.5"/>
+                  <circle cx="12" cy="12" r="3" fill="none" stroke="white" stroke-width="1.5"/>
+                  <circle cx="16.5" cy="7.5" r="1" fill="white"/>
+                </svg>
+                <span class="ig-comment-card-label">Comentário</span>
+                <span v-if="msg.senderName" class="ig-comment-card-author">@{{ msg.senderName }}</span>
+                <span class="ig-comment-card-time">{{ timeOf(msg.createdAt) }}</span>
+              </div>
+
+              <!-- Post context (if available) -->
+              <div v-if="msg.postCaption || msg.postContext || msg.context" class="ig-comment-card-post">
+                <span class="ig-comment-card-post-label">
+                  <Icon name="fileText" :size="11" />
+                  Post
+                </span>
+                <span class="ig-comment-card-post-text">{{ msg.postCaption || msg.postContext || msg.context }}</span>
+              </div>
+
+              <!-- Comment text -->
+              <div class="ig-comment-card-body">
+                <span v-if="msg.senderType === 'AI'" class="ig-comment-ai-badge">
+                  <Icon name="sparkles" :size="10" /> IA
+                </span>
+                {{ msg.content }}
+              </div>
+            </div>
+
+            <!-- Regular message bubble -->
+            <div
+              v-else
               class="msg"
               :class="msgClass(msg)"
             >
@@ -241,6 +288,25 @@
           </div>
         </div>
 
+        <!-- Instagram reply context -->
+        <div v-if="selectedConversation?.source === 'instagram'" class="ig-reply-banner">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+            <defs>
+              <radialGradient id="igbanner" cx="30%" cy="107%" r="150%">
+                <stop offset="0%" stop-color="#fdf497"/>
+                <stop offset="45%" stop-color="#fd5949"/>
+                <stop offset="60%" stop-color="#d6249f"/>
+                <stop offset="90%" stop-color="#285AEB"/>
+              </radialGradient>
+            </defs>
+            <rect width="24" height="24" rx="6" fill="url(#igbanner)"/>
+            <rect x="6" y="6" width="12" height="12" rx="3" fill="none" stroke="white" stroke-width="1.5"/>
+            <circle cx="12" cy="12" r="3" fill="none" stroke="white" stroke-width="1.5"/>
+            <circle cx="16.5" cy="7.5" r="1" fill="white"/>
+          </svg>
+          <span>Respondendo via Instagram · a resposta será enviada como comentário ou DM</span>
+        </div>
+
         <div class="composer-input">
           <div class="composer-actions">
             <button class="icon-mini" type="button" title="Anexar"><Icon name="paperclip" :size="16" /></button>
@@ -248,7 +314,7 @@
           </div>
           <textarea
             v-model="draft"
-            placeholder="Digite uma mensagem..."
+            :placeholder="selectedConversation?.source === 'instagram' ? 'Responder no Instagram…' : 'Digite uma mensagem...'"
             rows="1"
             @keydown.enter.exact.prevent="sendMessage"
           />
@@ -647,6 +713,116 @@ onMounted(loadConversations)
 .src-badge.wa { background: #25D366; }
 .src-badge.ig { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285AEB 90%); }
 .src-badge.kl { background: var(--ka-brand); }
+
+/* ── Instagram comment card ──────────────────────────────── */
+.ig-comment-card {
+  max-width: 340px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--ka-border);
+  background: var(--ka-surface);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+.ig-comment-card--in  { align-self: flex-start; }
+.ig-comment-card--out { align-self: flex-end; }
+
+.ig-comment-card-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px 7px;
+  background: linear-gradient(135deg, rgba(253,244,151,0.18) 0%, rgba(253,89,73,0.12) 50%, rgba(214,36,159,0.12) 100%);
+  border-bottom: 1px solid rgba(214,36,159,0.1);
+}
+
+.ig-comment-card-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #d6249f;
+  letter-spacing: 0.03em;
+}
+
+.ig-comment-card-author {
+  font-size: 11px;
+  color: var(--ka-fg-2);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ig-comment-card-time {
+  font-size: 10px;
+  color: var(--ka-fg-muted);
+  flex-shrink: 0;
+}
+
+.ig-comment-card-post {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 7px 12px;
+  background: var(--ka-surface-2, var(--ka-gray-50));
+  border-bottom: 1px solid var(--ka-border);
+}
+
+.ig-comment-card-post-label {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ka-fg-muted);
+  white-space: nowrap;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.ig-comment-card-post-text {
+  font-size: 11px;
+  color: var(--ka-fg-2);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ig-comment-card-body {
+  padding: 9px 12px 10px;
+  font-size: 13px;
+  color: var(--ka-fg);
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ig-comment-ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ka-bot, #8B5CF6);
+  margin-bottom: 2px;
+}
+
+/* Instagram reply banner in composer */
+.ig-reply-banner {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  background: linear-gradient(135deg, rgba(253,244,151,0.1) 0%, rgba(253,89,73,0.08) 50%, rgba(40,90,235,0.08) 100%);
+  border-top: 1px solid rgba(214,36,159,0.12);
+  border-bottom: 1px solid rgba(214,36,159,0.08);
+  font-size: 11px;
+  color: var(--ka-fg-2);
+}
 
 /* Source chip (thread header) */
 .src-chip {

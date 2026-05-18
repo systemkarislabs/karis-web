@@ -202,9 +202,9 @@
               class="day-divider"
             >{{ dayLabel(msg.createdAt) }}</div>
 
-            <!-- Instagram comment card -->
+            <!-- Instagram COMMENT card -->
             <div
-              v-if="msg.type === 'COMMENT' || msg.messageType === 'comment'"
+              v-if="msg.metadata?.type === 'COMMENT'"
               class="ig-comment-card"
               :class="msg.direction === 'OUTBOUND' ? 'ig-comment-card--out' : 'ig-comment-card--in'"
             >
@@ -225,17 +225,19 @@
                   <circle cx="16.5" cy="7.5" r="1" fill="white"/>
                 </svg>
                 <span class="ig-comment-card-label">Comentário</span>
-                <span v-if="msg.senderName" class="ig-comment-card-author">@{{ msg.senderName }}</span>
+                <span v-if="msg.senderName || msg.metadata?.senderName" class="ig-comment-card-author">
+                  @{{ msg.senderName || msg.metadata?.senderName }}
+                </span>
                 <span class="ig-comment-card-time">{{ timeOf(msg.createdAt) }}</span>
               </div>
 
-              <!-- Post context (if available) -->
-              <div v-if="msg.postCaption || msg.postContext || msg.context" class="ig-comment-card-post">
+              <!-- Post context (only when postCaption is available) -->
+              <div v-if="msg.metadata?.postCaption" class="ig-comment-card-post">
                 <span class="ig-comment-card-post-label">
                   <Icon name="fileText" :size="11" />
                   Post
                 </span>
-                <span class="ig-comment-card-post-text">{{ msg.postCaption || msg.postContext || msg.context }}</span>
+                <span class="ig-comment-card-post-text">{{ msg.metadata.postCaption }}</span>
               </div>
 
               <!-- Comment text -->
@@ -247,7 +249,38 @@
               </div>
             </div>
 
-            <!-- Regular message bubble -->
+            <!-- Instagram DM bubble -->
+            <div
+              v-else-if="msg.metadata?.type === 'DM'"
+              class="msg"
+              :class="msgClass(msg)"
+            >
+              <!-- DM header: IG icon + badge -->
+              <div class="ig-dm-header">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+                  <defs>
+                    <radialGradient id="igdm" cx="30%" cy="107%" r="150%">
+                      <stop offset="0%" stop-color="#fdf497"/>
+                      <stop offset="45%" stop-color="#fd5949"/>
+                      <stop offset="60%" stop-color="#d6249f"/>
+                      <stop offset="90%" stop-color="#285AEB"/>
+                    </radialGradient>
+                  </defs>
+                  <rect width="24" height="24" rx="6" fill="url(#igdm)"/>
+                  <rect x="6" y="6" width="12" height="12" rx="3" fill="none" stroke="white" stroke-width="1.5"/>
+                  <circle cx="12" cy="12" r="3" fill="none" stroke="white" stroke-width="1.5"/>
+                  <circle cx="16.5" cy="7.5" r="1" fill="white"/>
+                </svg>
+                <span class="ig-dm-label">DM</span>
+                <span v-if="msg.senderType === 'AI'">· <Icon name="sparkles" :size="10" /> IA</span>
+              </div>
+              {{ msg.content }}
+              <div class="time">
+                <span>{{ timeOf(msg.createdAt) }}</span>
+              </div>
+            </div>
+
+            <!-- Regular message bubble (WhatsApp / sem metadata.type) -->
             <div
               v-else
               class="msg"
@@ -809,6 +842,25 @@ onMounted(loadConversations)
   font-weight: 600;
   color: var(--ka-bot, #8B5CF6);
   margin-bottom: 2px;
+}
+
+/* Instagram DM header inside bubble */
+.ig-dm-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #d6249f;
+  margin-bottom: 4px;
+  opacity: 0.85;
+}
+
+.ig-dm-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #d6249f;
+  letter-spacing: 0.04em;
 }
 
 /* Instagram reply banner in composer */

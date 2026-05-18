@@ -38,6 +38,10 @@
       </NuxtLink>
 
       <p class="nav-section-label" style="margin-top: 8px;">Conta</p>
+      <NuxtLink class="nav-item" to="/integrations" @click="mobileOpen = false">
+        <Icon name="link" :size="18" />
+        <span>Integrações</span>
+      </NuxtLink>
       <NuxtLink class="nav-item" to="/settings" @click="mobileOpen = false">
         <Icon name="settings" :size="18" />
         <span>Configurações</span>
@@ -160,6 +164,7 @@
           <NuxtLink class="nav-item" to="/agent" @click="mobileOpen = false"><Icon name="bot" :size="18" /><span>Agente IA</span></NuxtLink>
           <NuxtLink class="nav-item" to="/campaigns" @click="mobileOpen = false"><Icon name="megaphone" :size="18" /><span>Campanhas</span></NuxtLink>
           <NuxtLink class="nav-item" to="/contacts" @click="mobileOpen = false"><Icon name="users" :size="18" /><span>Contatos</span></NuxtLink>
+          <NuxtLink class="nav-item" to="/integrations" @click="mobileOpen = false"><Icon name="link" :size="18" /><span>Integrações</span></NuxtLink>
           <NuxtLink class="nav-item" to="/settings" @click="mobileOpen = false"><Icon name="settings" :size="18" /><span>Configurações</span></NuxtLink>
         </aside>
       </div>

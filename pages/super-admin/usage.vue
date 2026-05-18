@@ -55,8 +55,7 @@
       </div>
       <div v-else-if="!overview?.topCompanies?.length" class="sa-empty">
         <Icon name="trendUp" :size="28" />
-        Nenhum dado de consumo disponível ainda.<br />
-        <span style="font-size:11px;margin-top:4px;">O endpoint /overview precisa estar ativo no backend.</span>
+        Nenhum dado de consumo no período.
       </div>
       <div v-else>
         <div v-for="item in overview.topCompanies" :key="item.company.id" class="top-company-row">

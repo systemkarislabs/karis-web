@@ -99,7 +99,7 @@
         </div>
         <div v-else-if="!data?.series?.length" class="sa-empty">
           <Icon name="fileText" :size="28" />
-          Nenhum dado de volume disponível ainda.
+          Nenhum volume registrado no período.
         </div>
         <div v-else class="bar-chart">
           <div v-for="item in data.series" :key="item.day" class="bar-day">

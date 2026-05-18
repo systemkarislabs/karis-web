@@ -88,7 +88,6 @@
           <label>Nome do admin<input v-model="form.adminName" required /></label>
           <label>E-mail do admin<input v-model="form.adminEmail" type="email" required /></label>
           <label>Senha inicial<input v-model="form.adminPassword" type="password" required /></label>
-          <label>Logo URL<input v-model="form.logoUrl" placeholder="https://..." /></label>
           <label>Plano
             <select v-model="form.planId">
               <option value="">Sem plano inicial</option>

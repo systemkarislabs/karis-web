@@ -28,16 +28,24 @@ export const useAuthStore = defineStore("auth", () => {
   const isAuthenticated = computed(() => !!token.value);
   const isAdmin = computed(() => user.value?.role === "ADMIN");
 
-  function setAuth(data: { user: User; company: Company; token: string }) {
+  function setAuth(data: { user: User; company: Company; token: string }, remember = true) {
     user.value = data.user;
     company.value = data.company;
     token.value = data.token;
-    if (import.meta.client) localStorage.setItem("auth_token", data.token);
+    if (import.meta.client) {
+      if (remember) {
+        localStorage.setItem("auth_token", data.token);
+        sessionStorage.removeItem("auth_token");
+      } else {
+        sessionStorage.setItem("auth_token", data.token);
+        localStorage.removeItem("auth_token");
+      }
+    }
   }
 
   function loadFromStorage() {
     if (!import.meta.client) return;
-    const stored = localStorage.getItem("auth_token");
+    const stored = sessionStorage.getItem("auth_token") || localStorage.getItem("auth_token");
     if (stored) token.value = stored;
   }
 
@@ -46,7 +54,10 @@ export const useAuthStore = defineStore("auth", () => {
     company.value = null;
     token.value = null;
     impersonation.value = null;
-    if (import.meta.client) localStorage.removeItem("auth_token");
+    if (import.meta.client) {
+      localStorage.removeItem("auth_token");
+      sessionStorage.removeItem("auth_token");
+    }
   }
 
   async function fetchMe() {

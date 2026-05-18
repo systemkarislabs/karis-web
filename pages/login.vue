@@ -164,12 +164,12 @@ async function handleLogin() {
   try {
     if (step.value === "2fa") {
       if (authType.value === "tenant") {
-        await loginTenant(true);
+        await loginTenant(true, remember.value);
       } else {
         await loginAdmin(true);
       }
     } else {
-      const tenantOk = await loginTenant(false);
+      const tenantOk = await loginTenant(false, remember.value);
       if (!tenantOk) {
         await loginAdmin(false);
       }
@@ -179,7 +179,7 @@ async function handleLogin() {
   }
 }
 
-async function loginTenant(with2FA: boolean): Promise<boolean> {
+async function loginTenant(with2FA: boolean, remember = true): Promise<boolean> {
   try {
     const body: Record<string, string> = {
       email: email.value,
@@ -204,7 +204,7 @@ async function loginTenant(with2FA: boolean): Promise<boolean> {
     }
 
     if (data.token && data.user) {
-      auth.setAuth(data as { token: string; user: any; company: any });
+      auth.setAuth(data as { token: string; user: any; company: any }, remember);
       const redirect = typeof route.query.redirect === "string" ? route.query.redirect : "/dashboard";
       await navigateTo(redirect.startsWith("/super-admin") ? "/dashboard" : redirect);
       return true;

@@ -7983,6 +7983,9 @@ button {
   border-radius: var(--ka-r-lg) !important;
   border: 1.5px solid var(--ka-border) !important;
   font-size: 13px !important;
+  /* restaura padding-left para o ícone de busca não ser sobreposto */
+  padding-left: 36px !important;
+  height: 36px !important;
 }
 
 /* Icon buttons mais arredondados */

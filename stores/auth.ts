@@ -70,8 +70,13 @@ export const useAuthStore = defineStore("auth", () => {
       user.value = data.user;
       if (data.company) company.value = data.company;
       impersonation.value = data.impersonation || null;
-    } catch {
-      clear();
+    } catch (err: any) {
+      // Só invalida a sessão em 401 explícito — erros de rede ou 5xx (ex: restart do servidor)
+      // não devem deslogar o usuário nem apagar o token
+      const status = err?.response?.status ?? err?.status ?? err?.statusCode;
+      if (status === 401) {
+        clear();
+      }
     }
   }
 

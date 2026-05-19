@@ -79,6 +79,7 @@
       <slot />
     </main>
   </div>
+  <ToastHost />
 </template>
 
 <script setup lang="ts">

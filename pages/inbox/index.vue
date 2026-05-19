@@ -435,6 +435,7 @@ const auth = useAuthStore()
 const route = useRoute()
 const api = useApi()
 const toast = useToast()
+const { setFromConversations, markRead } = useUnread()
 
 const mobileView = ref<'list' | 'thread'>('list')
 
@@ -605,6 +606,7 @@ async function loadConversations() {
   try {
     const res = await api.fetch<any>('/conversations?limit=100')
     conversations.value = unwrapList(res, ['conversations'])
+    setFromConversations(conversations.value)
     if (!selectedId.value && conversations.value[0]) selectedId.value = conversations.value[0].id
     if (selectedId.value) await selectConversation(selectedId.value)
   } finally {
@@ -633,6 +635,15 @@ async function selectConversation(id: string) {
     if (cid) loadContactDeal(cid)
     await nextTick()
     if (messagesEl.value) messagesEl.value.scrollTop = messagesEl.value.scrollHeight
+
+    // Marca conversa como lida e desconta do total da sidebar
+    const conv = conversations.value.find(c => c.id === id)
+    if (conv && conv.unreadCount > 0) {
+      const prev = conv.unreadCount
+      conv.unreadCount = 0
+      markRead(prev)
+      api.fetch(`/conversations/${id}/read`, { method: 'POST' }).catch(() => {})
+    }
   } finally {
     loadingMessages.value = false
   }

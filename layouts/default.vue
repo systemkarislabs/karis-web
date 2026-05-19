@@ -18,7 +18,7 @@
       <NuxtLink class="nav-item" to="/inbox" @click="mobileOpen = false">
         <Icon name="message" :size="18" />
         <span>Conversas</span>
-        <span v-if="unreadCount" class="nav-badge">{{ unreadCount }}</span>
+        <span v-if="totalUnread" class="nav-badge">{{ totalUnread }}</span>
       </NuxtLink>
       <NuxtLink class="nav-item" to="/crm" @click="mobileOpen = false">
         <Icon name="kanban" :size="18" />
@@ -119,7 +119,7 @@
       <NuxtLink to="/inbox" title="Conversas">
         <Icon name="message" :size="20" />
         <span>Chat</span>
-        <span v-if="unreadCount" class="mbn-badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+        <span v-if="totalUnread" class="mbn-badge">{{ totalUnread > 99 ? '99+' : totalUnread }}</span>
       </NuxtLink>
       <NuxtLink to="/crm" title="CRM">
         <Icon name="kanban" :size="20" />
@@ -206,7 +206,7 @@ const auth = useAuthStore()
 const { isDark, toggle: toggleTheme, init: initTheme } = useTheme()
 const cmdK = useCmdK()
 const mobileOpen = ref(false)
-const unreadCount = ref(0)
+const { totalUnread, setFromConversations } = useUnread()
 
 const initials = computed(() => {
   const name = auth.user?.name || ''
@@ -218,7 +218,7 @@ async function refreshUnread() {
     const api = useApi()
     const res = await api.fetch<any>('/conversations?limit=100')
     const convs: any[] = res.conversations || res || []
-    unreadCount.value = convs.reduce((sum: number, c: any) => sum + Number(c.unreadCount || 0), 0)
+    setFromConversations(convs)
   } catch {
     // ignore
   }

@@ -49,11 +49,22 @@
   --ka-font-display: "Poppins", "Inter", system-ui, sans-serif;
   --ka-font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
-  --ka-r-sm: 6px;
-  --ka-r-md: 10px;
-  --ka-r-lg: 14px;
-  --ka-r-xl: 20px;
+  --ka-r-sm: 8px;
+  --ka-r-md: 12px;
+  --ka-r-lg: 16px;
+  --ka-r-xl: 24px;
   --ka-r-pill: 9999px;
+
+  /* Gradientes globais */
+  --ka-gradient-brand: linear-gradient(135deg, #5B7FFF 0%, #2D5BFF 60%, #1A3FD4 100%);
+  --ka-gradient-brand-soft: linear-gradient(135deg, rgba(91,127,255,0.12) 0%, rgba(45,91,255,0.06) 100%);
+  --ka-gradient-surface: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+
+  /* Sidebar e topbar com translucidez */
+  --ka-sidebar-bg: rgba(255, 255, 255, 0.90);
+  --ka-sidebar-border: rgba(226, 232, 240, 0.70);
+  --ka-topbar-bg: rgba(255, 255, 255, 0.85);
+  --ka-topbar-border: rgba(226, 232, 240, 0.65);
 
   --ka-shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
   --ka-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06);
@@ -122,6 +133,12 @@
   --ka-shadow-sm: 0 1px 2px rgba(0,0,0,0.40);
   --ka-shadow-md: 0 4px 12px rgba(0,0,0,0.45);
   --ka-shadow-lg: 0 16px 32px rgba(0,0,0,0.55);
+
+  --ka-sidebar-bg: rgba(17, 24, 39, 0.90);
+  --ka-sidebar-border: rgba(31, 41, 55, 0.80);
+  --ka-topbar-bg: rgba(17, 24, 39, 0.85);
+  --ka-topbar-border: rgba(31, 41, 55, 0.70);
+  --ka-gradient-surface: linear-gradient(180deg, #111827 0%, #0b0f1a 100%);
 
   --color-bg: var(--ka-bg);
   --color-surface: var(--ka-surface);
@@ -7903,4 +7920,239 @@ button {
   /* Thread header adapta para mobile */
   .thread-header .right { gap: 6px; }
   .thread-header .right .btn.sm { display: none; } /* esconde "Resolver" no header — vai para dentro da conversa */
+}
+
+/* =============================================================
+   ✦ DESIGN REFRESH — Gradientes · Glass · Harmonia global
+   ============================================================= */
+
+/* ── Sidebar translúcida ─────────────────────────────────── */
+.sidebar {
+  background: var(--ka-sidebar-bg) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-right: 1px solid var(--ka-sidebar-border) !important;
+}
+
+/* Brand area com gradiente sutil */
+.sidebar .brand {
+  background: var(--ka-gradient-brand-soft);
+  border-radius: var(--ka-r-md);
+  border-bottom: none !important;
+  margin-bottom: 6px;
+  padding: 8px 10px 12px !important;
+}
+
+/* Nav items mais arredondados e hover mais suave */
+.sidebar .nav-item {
+  border-radius: var(--ka-r-md) !important;
+  padding: 8px 12px !important;
+  transition: background 150ms, color 150ms !important;
+}
+.sidebar .nav-item:hover {
+  background: rgba(45, 91, 255, 0.06) !important;
+  color: var(--ka-brand) !important;
+}
+.sidebar .nav-item.router-link-active,
+.sidebar .nav-item.active {
+  background: var(--ka-gradient-brand-soft) !important;
+  color: var(--ka-brand) !important;
+  font-weight: 600 !important;
+}
+
+/* User card mais refinado */
+.sidebar .user-card {
+  border-radius: var(--ka-r-lg) !important;
+  background: var(--ka-gradient-brand-soft) !important;
+  border: 1px solid var(--ka-brand-100) !important;
+}
+
+/* ── Topbar translúcida ──────────────────────────────────── */
+.topbar {
+  background: var(--ka-topbar-bg) !important;
+  backdrop-filter: blur(16px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
+  border-bottom: 1px solid var(--ka-topbar-border) !important;
+}
+
+/* Search input mais arredondado */
+.topbar .ts-search {
+  border-radius: var(--ka-r-lg) !important;
+}
+.topbar .ts-search input {
+  border-radius: var(--ka-r-lg) !important;
+  border: 1.5px solid var(--ka-border) !important;
+  font-size: 13px !important;
+}
+
+/* Icon buttons mais arredondados */
+.ts-icon-btn {
+  border-radius: var(--ka-r-md) !important;
+  border: 1.5px solid var(--ka-border) !important;
+  transition: background 150ms, border-color 150ms, color 150ms !important;
+}
+.ts-icon-btn:hover {
+  background: var(--ka-brand-50) !important;
+  border-color: var(--ka-brand-100) !important;
+  color: var(--ka-brand) !important;
+}
+
+/* ── Botões com gradiente ────────────────────────────────── */
+.btn.primary,
+.btn-primary,
+.primary-action,
+.stack-form button[type="submit"] {
+  background: var(--ka-gradient-brand) !important;
+  box-shadow: 0 4px 14px rgba(45, 91, 255, 0.32) !important;
+  border-color: transparent !important;
+  border-radius: var(--ka-r-md) !important;
+}
+.btn.primary:hover:not(:disabled),
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #4F75FF 0%, #1A3FD4 100%) !important;
+  box-shadow: 0 6px 20px rgba(45, 91, 255, 0.40) !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn.secondary {
+  border-radius: var(--ka-r-md) !important;
+  border: 1.5px solid var(--ka-border) !important;
+}
+.btn.secondary:hover:not(:disabled) {
+  border-color: var(--ka-brand-100) !important;
+  background: var(--ka-brand-50) !important;
+}
+
+.btn.ghost { border-radius: var(--ka-r-md) !important; }
+.btn.sm    { border-radius: 10px !important; }
+
+/* ── Harmonia global de inputs, selects e textareas ─────── */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+select,
+textarea,
+.form-input,
+.input-field,
+.stack-form input,
+.stack-form select,
+.stack-form textarea,
+.panel-title input {
+  border-radius: var(--ka-r-md) !important;
+  border: 1.5px solid var(--ka-border) !important;
+  background: var(--ka-surface) !important;
+  color: var(--ka-fg) !important;
+  font-size: 14px !important;
+  font-family: var(--ka-font-ui) !important;
+  transition: border-color 160ms, box-shadow 160ms !important;
+  outline: none !important;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not(textarea),
+select,
+.form-input,
+.stack-form input,
+.stack-form select {
+  height: 40px !important;
+  padding: 0 13px !important;
+}
+
+textarea,
+.stack-form textarea {
+  padding: 10px 13px !important;
+  min-height: 80px !important;
+  resize: vertical !important;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):focus,
+select:focus,
+textarea:focus,
+.form-input:focus,
+.input-field:focus,
+.stack-form input:focus,
+.stack-form select:focus,
+.stack-form textarea:focus {
+  border-color: var(--ka-brand) !important;
+  box-shadow: 0 0 0 3px rgba(45, 91, 255, 0.14) !important;
+  background: var(--ka-surface) !important;
+}
+
+/* ── Cards e painéis mais arredondados ───────────────────── */
+.super-admin-panel,
+.super-admin-kpis article,
+.dashboard-kpi,
+.dashboard-panel,
+.ka-card,
+.plan-admin-card {
+  border-radius: var(--ka-r-xl) !important;
+}
+
+.dashboard-shortcut,
+.ops-row,
+.company-row {
+  border-radius: var(--ka-r-lg) !important;
+}
+
+/* ── Labels de formulário harmonizados ───────────────────── */
+.form-label,
+.stack-form label > *:first-child,
+.stack-form > label {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--ka-fg-2) !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* ── Tipografia de títulos de seção ─────────────────────── */
+.super-admin-panel h2,
+.dashboard-panel h2,
+.agent-section-head h2 {
+  font-family: var(--ka-font-display) !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* ── Separadores de seção no sidebar ───────────────────────*/
+.sidebar .nav-section-label {
+  font-size: 10px !important;
+  letter-spacing: 0.1em !important;
+  font-weight: 800 !important;
+  opacity: 0.55 !important;
+}
+
+/* ── Status pills mais arredondadas ─────────────────────── */
+.status-pill,
+.module-tags span,
+.plan-limits span,
+.src-chip {
+  border-radius: var(--ka-r-pill) !important;
+}
+
+/* ── Dark mode glass overrides ──────────────────────────── */
+[data-theme="dark"] .sidebar {
+  background: var(--ka-sidebar-bg) !important;
+}
+[data-theme="dark"] .topbar {
+  background: var(--ka-topbar-bg) !important;
+}
+[data-theme="dark"] .sidebar .brand {
+  background: rgba(45, 91, 255, 0.08) !important;
+}
+[data-theme="dark"] .sidebar .nav-item:hover {
+  background: rgba(45, 91, 255, 0.10) !important;
+}
+[data-theme="dark"] .sidebar .nav-item.router-link-active,
+[data-theme="dark"] .sidebar .nav-item.active {
+  background: rgba(45, 91, 255, 0.16) !important;
+}
+[data-theme="dark"] .sidebar .user-card {
+  background: rgba(45, 91, 255, 0.08) !important;
+  border-color: rgba(45, 91, 255, 0.20) !important;
+}
+[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+[data-theme="dark"] select,
+[data-theme="dark"] textarea,
+[data-theme="dark"] .form-input,
+[data-theme="dark"] .stack-form input,
+[data-theme="dark"] .stack-form select,
+[data-theme="dark"] .stack-form textarea {
+  background: var(--ka-surface-2) !important;
+  border-color: var(--ka-border) !important;
 }

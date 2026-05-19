@@ -209,7 +209,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatMoney, formatDate, formatDateTime, unwrapList } from '~/composables/useKarisData'
+import { formatMoney, formatDateTime, unwrapList } from '~/composables/useKarisData'
 
 definePageMeta({ middleware: 'auth' })
 

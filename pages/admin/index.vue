@@ -1,5 +1,4 @@
 ﻿<template>
-  <NuxtLayout name="default">
     <section class="ka-page space-y-6">
       <PageHeader
         eyebrow="Administracao"
@@ -23,13 +22,12 @@
         <Table :columns="columns" :rows="rows" empty-title="Nenhuma empresa encontrada" empty-description="A API retornou acesso valido, mas sem empresas para listar." />
       </Card>
     </section>
-  </NuxtLayout>
 </template>
 
 <script setup lang="ts">
 import { ShieldAlert } from "lucide-vue-next";
 
-definePageMeta({ layout: false, middleware: "auth" });
+definePageMeta({ middleware: "auth" });
 
 const api = useApi();
 const loading = ref(true);

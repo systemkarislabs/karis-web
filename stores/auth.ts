@@ -46,7 +46,10 @@ export const useAuthStore = defineStore("auth", () => {
   function loadFromStorage() {
     if (!import.meta.client) return;
     const stored = sessionStorage.getItem("auth_token") || localStorage.getItem("auth_token");
-    if (stored) token.value = stored;
+    if (stored) {
+      token.value = stored;
+      fetchMe();
+    }
   }
 
   function clear() {

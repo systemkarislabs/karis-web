@@ -1,5 +1,4 @@
 <template>
-  <NuxtLayout name="default">
     <div class="ka-page" style="max-width:960px">
 
       <!-- Header -->
@@ -186,7 +185,6 @@
       </div>
 
     </div>
-  </NuxtLayout>
 </template>
 
 <script setup lang="ts">

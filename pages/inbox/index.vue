@@ -436,7 +436,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatDate, formatDateTime, formatMoney, unwrapList } from '~/composables/useKarisData'
+import { formatMoney, unwrapList } from '~/composables/useKarisData'
 
 definePageMeta({ middleware: 'auth' })
 

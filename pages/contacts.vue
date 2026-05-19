@@ -339,7 +339,7 @@ const search = ref("");
 const activeChip = ref("all");
 const page = ref(1);
 const perPage = 20;
-let selected = ref(new Set<string>());
+const selected = ref(new Set<string>());
 
 const TAG_PALETTES: Record<string, { bg: string; color: string }> = {
   vip:           { bg: "#f3f0ff", color: "#7c3aed" },

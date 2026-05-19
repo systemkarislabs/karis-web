@@ -1,5 +1,4 @@
 ﻿<template>
-  <NuxtLayout name="default">
     <section class="ka-page space-y-6">
       <PageHeader eyebrow="Configuracoes" title="WhatsApp" description="Conecte e monitore a instancia Evolution vinculada a empresa.">
         <template #actions>
@@ -57,7 +56,6 @@
         </Card>
       </div>
     </section>
-  </NuxtLayout>
 </template>
 
 <script setup lang="ts">

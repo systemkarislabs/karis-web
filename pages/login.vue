@@ -52,12 +52,12 @@
             </button>
           </form>
 
-          <p class="login-terms">
-            Ao entrar, você aceita nossos
-            <a href="#">termos de uso</a>
-            e
-            <a href="#">política de privacidade</a>.
-          </p>
+        <p class="login-terms">
+          Ao entrar, você aceita nossos
+          <NuxtLink to="/termos">termos de uso</NuxtLink>
+          e
+          <NuxtLink to="/privacidade">política de privacidade</NuxtLink>.
+        </p>
         </template>
 
         <template v-else-if="step === '2fa'">

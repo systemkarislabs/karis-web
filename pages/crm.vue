@@ -527,6 +527,8 @@ async function addTask() {
   flex-direction: column;
   gap: 8px;
   flex: 1;
+  overflow-y: auto;
+  max-height: calc(100vh - 200px);
 }
 
 /* Deal card */

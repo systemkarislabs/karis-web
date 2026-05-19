@@ -205,6 +205,7 @@ const AVATAR_COLORS = ['#5B7FFF', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#
 const chartView = ref<'hora' | 'dia' | 'semana'>('hora')
 
 const PERIODS = ['Últimos 7 dias', 'Últimos 14 dias', 'Últimos 30 dias'] as const
+const PERIOD_DAYS = [7, 14, 30] as const
 const periodIdx = ref(0)
 const periodLabel = computed(() => PERIODS[periodIdx.value])
 function cyclePeriod() {
@@ -343,7 +344,7 @@ async function refresh() {
     const [statsRes, overviewRes, daysRes, convRes] = await Promise.allSettled([
       api.fetch<any>('/companies/me/stats'),
       api.fetch<any>('/analytics/overview'),
-      api.fetch<any>('/analytics/messages-per-day?days=7'),
+      api.fetch<any>(`/analytics/messages-per-day?days=${PERIOD_DAYS[periodIdx.value]}`),
       api.fetch<any>('/conversations?limit=6'),
     ])
 

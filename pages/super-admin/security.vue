@@ -117,6 +117,7 @@ async function changePassword() {
     pwd.message = "Senha alterada com sucesso.";
     pwd.current = "";
     pwd.new = "";
+    await superAdmin.fetchMe();
   } catch (err: any) {
     pwd.error = err?.data?.message || "Erro ao alterar senha.";
   } finally { pwd.loading = false; }

@@ -562,12 +562,20 @@ async function lookupCep() {
   if (cep.length !== 8) return;
   try {
     const data = await $fetch<any>(`https://viacep.com.br/ws/${cep}/json/`);
-    if (!data.erro) {
-      business.address = `${data.logradouro}${data.complemento ? ", " + data.complemento : ""} — ${data.bairro}`;
-      business.city  = data.localidade;
-      business.state = data.uf;
+    if (data?.erro) {
+      toast.warning("CEP não encontrado.");
+      return;
     }
-  } catch { /* silently ignore */ }
+    if (!data?.logradouro) {
+      toast.warning("CEP encontrado, mas sem dados de endereço.");
+      return;
+    }
+    business.address = `${data.logradouro}${data.complemento ? ", " + data.complemento : ""} — ${data.bairro}`;
+    business.city  = data.localidade;
+    business.state = data.uf;
+  } catch {
+    toast.warning("Não foi possível consultar o CEP. Verifique sua conexão.");
+  }
 }
 
 async function loadBusiness() {
@@ -693,7 +701,7 @@ async function saveBusinessHours() {
     await api.fetch("/settings/business-hours", { method: "PUT", body: JSON.stringify({ hours: businessHours }) });
     toast.success("Horário comercial salvo.");
   } catch {
-    toast.info("Horário salvo localmente — sincronização com servidor em breve.");
+    toast.error("Não foi possível salvar o horário comercial. Tente novamente.");
   } finally {
     savingHours.value = false;
   }
@@ -821,6 +829,30 @@ watch(activeSection, (section) => {
   if (section === "whatsapp")   loadWaStatus();
   if (section === "cobranca")   loadBilling();
 }, { immediate: true });
+
+let toggleSaveTimer: ReturnType<typeof setTimeout> | null = null;
+function debouncedSaveToggles() {
+  if (toggleSaveTimer) clearTimeout(toggleSaveTimer);
+  toggleSaveTimer = setTimeout(async () => {
+    try {
+      await api.fetch("/companies/me", {
+        method: "PATCH",
+        body: JSON.stringify({
+          welcomeMsg: waSettings.welcomeMsg,
+          afterHours: waSettings.afterHours,
+          readReceipts: waSettings.readReceipts,
+          offlineMode: waSettings.offlineMode,
+          twofa: sec.twofa,
+          inviteOnly: sec.inviteOnly,
+          autoLogout: sec.autoLogout,
+        }),
+      });
+    } catch { /* toggle persistence best-effort */ }
+  }, 500);
+}
+
+watch(() => ({ ...waSettings }), debouncedSaveToggles, { deep: true });
+watch(() => ({ ...sec }), debouncedSaveToggles, { deep: true });
 </script>
 
 <style scoped>

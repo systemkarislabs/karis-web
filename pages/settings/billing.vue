@@ -1,5 +1,4 @@
 ﻿<template>
-  <NuxtLayout name="default">
     <section class="ka-page space-y-6">
       <PageHeader eyebrow="Configuracoes" title="Faturamento" description="Assinatura e faturas carregadas da API de billing.">
         <template #actions>
@@ -43,7 +42,6 @@
         </Card>
       </div>
     </section>
-  </NuxtLayout>
 </template>
 
 <script setup lang="ts">
@@ -76,7 +74,7 @@ const subscriptionStatus = computed(() => {
 const invoiceRows = computed(() =>
   invoices.value.map((invoice) => ({
     id: invoice.stripeInvoiceId || invoice.id,
-    amount: typeof invoice.amountCents === "number" ? formatMoney(invoice.amountCents / 100) : "--",
+    amount: typeof invoice.amountCents === "number" ? formatMoney(invoice.amountCents) : "--",
     status: statusLabel(invoice.status || "UNKNOWN"),
     createdAt: invoice.createdAt ? formatDate(invoice.createdAt) : "--",
   })),

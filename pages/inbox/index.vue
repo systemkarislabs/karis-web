@@ -690,11 +690,14 @@ async function sendMessage() {
   sending.value = true
   draft.value = ''
   try {
-    await api.fetch(`/messages/conversation/${selectedId.value}`, {
-      method: 'POST',
-      body: JSON.stringify({ content }),
-    })
+    const result = await api.fetch<{ message: any; deliveryWarning?: string | null }>(
+      `/messages/conversation/${selectedId.value}`,
+      { method: 'POST', body: JSON.stringify({ content }) },
+    )
     await selectConversation(selectedId.value)
+    if (result?.deliveryWarning) {
+      toast.warning(result.deliveryWarning)
+    }
   } catch {
     toast.error('Erro ao enviar mensagem.')
     draft.value = content

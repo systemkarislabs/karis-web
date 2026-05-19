@@ -209,7 +209,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatMoney, formatDateTime, unwrapList } from '~/composables/useKarisData'
+import { formatMoney, formatDateTime, relativeTime, unwrapList } from '~/composables/useKarisData'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -238,15 +238,6 @@ function statusLabel(status: string) {
     COMPLETED: 'enviada', FAILED: 'falhou', CANCELLED: 'cancelada', PAUSED: 'pausada',
   }
   return map[status] ?? status.toLowerCase()
-}
-
-function relativeTime(dateStr: string) {
-  if (!dateStr) return ''
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const d = Math.floor(diff / 86400000)
-  if (d === 0) return 'hoje'
-  if (d === 1) return 'ontem'
-  return `há ${d} dias`
 }
 
 const activeCount = computed(() => campaigns.value.filter(c => ['RUNNING', 'SCHEDULED'].includes(c.status)).length)

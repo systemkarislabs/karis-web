@@ -220,7 +220,7 @@
           <div style="flex:1;min-width:0;">
             <div style="font-size:13px;font-weight:600;color:var(--ka-fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ item.fileName || item.title }}</div>
             <div style="font-size:12px;color:var(--ka-fg-muted);margin-top:2px;">
-              {{ item.fileSize ? formatSize(item.fileSize) : `${String(item.content || '').length} chars` }} · adicionado {{ relativeTime(item.createdAt) }}
+              {{ item.fileSize ? formatFileSize(item.fileSize) : `${String(item.content || '').length} chars` }} · adicionado {{ relativeTime(item.createdAt) }}
             </div>
           </div>
           <span class="badge" :class="knowledgeStatusClass(item)" style="height:20px;padding:0 8px;font-size:11px;">{{ knowledgeStatusLabel(item) }}</span>
@@ -403,6 +403,8 @@
 </template>
 
 <script setup lang="ts">
+import { relativeTime, formatFileSize, formatPhone } from '~/composables/useKarisData'
+
 definePageMeta({ middleware: 'auth' })
 
 const api = useApi()
@@ -514,24 +516,7 @@ async function uploadFile(file: File) {
   }
 }
 
-function formatSize(bytes: number) {
-  if (!bytes) return ''
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1048576) return `${(bytes / 1024).toFixed(0)} KB`
-  return `${(bytes / 1048576).toFixed(1)} MB`
-}
-
-function relativeTime(dateStr: string) {
-  if (!dateStr) return ''
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const min = Math.floor(diff / 60000)
-  if (min < 1) return 'agora'
-  if (min < 60) return `há ${min}min`
-  const h = Math.floor(min / 60)
-  if (h < 24) return `há ${h}h`
-  const d = Math.floor(h / 24)
-  return d === 1 ? 'ontem' : `há ${d} dias`
-}
+// formatFileSize, relativeTime e formatPhone importados de useKarisData
 
 function knowledgeIcon(item: any) {
   const fn = (item.fileName || item.title || '').toLowerCase()
@@ -606,13 +591,6 @@ watch(activeTab, (value) => {
   if (value === 'sectors' && !sectors.value.length) loadSectors()
   if (value === 'training' && !trainingCases.value.length) loadTrainingCases()
 })
-
-function formatPhone(phone: string) {
-  const p = String(phone || '').replace(/\D/g, '')
-  if (p.length === 13) return `+${p.slice(0,2)} (${p.slice(2,4)}) ${p.slice(4,9)}-${p.slice(9)}`
-  if (p.length === 12) return `+${p.slice(0,2)} (${p.slice(2,4)}) ${p.slice(4,8)}-${p.slice(8)}`
-  return phone
-}
 
 async function loadAgent() {
   loading.value = true

@@ -341,6 +341,8 @@ const page = ref(1);
 const perPage = 20;
 const selected = ref(new Set<string>());
 
+// avatarColor e initials importados de useKarisData (auto-import Nuxt)
+
 const TAG_PALETTES: Record<string, { bg: string; color: string }> = {
   vip:           { bg: "#f3f0ff", color: "#7c3aed" },
   lead:          { bg: "#eff6ff", color: "#2563eb" },
@@ -355,23 +357,6 @@ const TAG_DEFAULT = { bg: "#f1f5f9", color: "#475569" };
 function tagStyle(tag: string) {
   const p = TAG_PALETTES[tag.toLowerCase()] || TAG_DEFAULT;
   return { background: p.bg, color: p.color };
-}
-
-const AVATAR_COLORS = [
-  "#7c3aed","#2563eb","#0891b2","#059669","#d97706","#dc2626","#db2777","#6366f1",
-];
-
-function avatarColor(name: string) {
-  let h = 0;
-  for (let i = 0; i < (name || "").length; i++) h = (h * 31 + (name || "").charCodeAt(i)) & 0xffff;
-  return AVATAR_COLORS[h % AVATAR_COLORS.length];
-}
-
-function initials(name: string) {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 function contactStatusLabel(contact: any) {

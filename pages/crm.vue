@@ -12,7 +12,7 @@
           <Icon name="refresh" :size="14" />
           Atualizar
         </button>
-        <button class="btn secondary sm" type="button" @click="showFilters = !showFilters">
+        <button class="btn secondary sm" type="button" disabled title="Em breve">
           <Icon name="filter" :size="14" />
           Filtros
         </button>
@@ -246,7 +246,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatMoney, unwrapList } from '~/composables/useKarisData'
+import { formatMoney, unwrapList, relativeTime, avatarColor, initials } from '~/composables/useKarisData'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -255,32 +255,6 @@ const toast = useToast()
 const loading = ref(true)
 const stages = ref<any[]>([])
 const deals = ref<any[]>([])
-const showFilters = ref(false)
-
-const AVATAR_COLORS = ['#5B7FFF', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#EC4899', '#14B8A6']
-
-function avatarColor(name?: string) {
-  if (!name) return AVATAR_COLORS[0]
-  return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length]
-}
-
-function initials(name?: string) {
-  if (!name) return '?'
-  return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
-}
-
-function relativeTime(dateStr: string) {
-  if (!dateStr) return ''
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const min = Math.floor(diff / 60000)
-  if (min < 1) return 'agora'
-  if (min < 60) return `${min}m`
-  const h = Math.floor(min / 60)
-  if (h < 24) return `${h}h`
-  const d = Math.floor(h / 24)
-  if (d === 1) return 'ontem'
-  return `${d} dias`
-}
 
 const TAG_PALETTES: Record<string, { bg: string; fg: string }> = {
   recente:      { bg: '#D1FAE5', fg: '#065F46' },

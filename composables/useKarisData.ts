@@ -71,6 +71,47 @@ export function statusLabel(value?: string | null) {
   return map[String(value || "")] || String(value || "--");
 }
 
+// ─── Formatadores de arquivo e telefone ──────────────────────────────────────
+
+export function formatFileSize(bytes?: number | null): string {
+  if (!bytes) return '';
+  if (bytes < 1_024) return `${bytes} B`;
+  if (bytes < 1_048_576) return `${(bytes / 1_024).toFixed(0)} KB`;
+  return `${(bytes / 1_048_576).toFixed(1)} MB`;
+}
+
+export function formatPhone(phone?: string | null): string {
+  const p = String(phone || '').replace(/\D/g, '');
+  if (p.length === 13) return `+${p.slice(0, 2)} (${p.slice(2, 4)}) ${p.slice(4, 9)}-${p.slice(9)}`;
+  if (p.length === 12) return `+${p.slice(0, 2)} (${p.slice(2, 4)}) ${p.slice(4, 8)}-${p.slice(8)}`;
+  return phone || '';
+}
+
+// ─── Avatar helpers ───────────────────────────────────────────────────────────
+
+const AVATAR_PALETTE = ['#7c3aed', '#2563eb', '#0891b2', '#059669', '#d97706', '#dc2626', '#db2777', '#6366f1'];
+
+/**
+ * Gera cor determinística de avatar a partir do nome/telefone.
+ * Mesmo input → sempre a mesma cor (hash simples).
+ */
+export function avatarColor(name?: string | null): string {
+  if (!name) return AVATAR_PALETTE[0];
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
+  return AVATAR_PALETTE[h % AVATAR_PALETTE.length];
+}
+
+/** Extrai 1-2 letras iniciais do nome para exibir no avatar. */
+export function initials(name?: string | null): string {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function useKarisLoaders() {
   const api = useApi();
 

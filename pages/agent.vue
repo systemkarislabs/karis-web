@@ -741,18 +741,26 @@ async function saveAssistant() {
 async function runMagicPrompt() {
   if (!form.instructions?.trim()) return
   magicLoading.value = true
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 35_000)
   try {
     const res = await api.fetch<{ improved: string }>('/assistant/magic-prompt', {
       method: 'POST',
       body: JSON.stringify({ instructions: form.instructions }),
+      signal: controller.signal,
     })
     if (res?.improved) {
       form.instructions = res.improved
       toast.success('Prompt melhorado com sucesso!')
     }
   } catch (err: any) {
-    toast.error(err?.data?.message || 'Não foi possível melhorar o prompt. Tente novamente.')
+    if (err?.name === 'AbortError' || err?.cause?.name === 'AbortError') {
+      toast.error('A IA demorou demais para responder. Tente novamente.')
+    } else {
+      toast.error(err?.data?.message || 'Não foi possível melhorar o prompt. Tente novamente.')
+    }
   } finally {
+    clearTimeout(timer)
     magicLoading.value = false
   }
 }

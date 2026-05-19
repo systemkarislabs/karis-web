@@ -56,11 +56,34 @@
             <input v-model="form.name" class="form-input" placeholder="Agente IA da Karis" />
           </div>
           <div class="form-group" style="flex:1;">
-            <textarea
-              v-model="form.instructions"
-              class="agent-instructions"
-              placeholder="Você é o agente de atendimento da Empresa X, em Curitiba.&#10;&#10;Tom: simpático, breve, usa 'você' e responde como uma pessoa real.&#10;Use no máximo 2 emojis por mensagem (não 🎉, café ☕, obrigada 🙏).&#10;&#10;REGRAS DE NEGÓCIO:&#10;- Entregamos em toda a Grande Curitiba, frete R$ 12,90 fixo.&#10;- Cardápio do dia: consulte o documento 'cardapio-hoje.pdf'.&#10;- Pagamentos via Pix (chave: contato@empresa.com.br).&#10;- Horário: seg–sáb, 7h–19h."
-            />
+            <div class="instructions-toolbar">
+              <label class="form-label" style="margin:0;">Prompt de instruções</label>
+              <button
+                class="magic-prompt-btn"
+                type="button"
+                :disabled="magicLoading || !form.instructions?.trim()"
+                :class="{ loading: magicLoading }"
+                @click="runMagicPrompt"
+              >
+                <span v-if="magicLoading" class="magic-spinner" />
+                <Icon v-else name="sparkles" :size="13" />
+                {{ magicLoading ? 'Melhorando…' : '✨ Magic Prompt' }}
+              </button>
+            </div>
+            <div class="instructions-wrap" :class="{ 'magic-active': magicLoading }">
+              <textarea
+                v-model="form.instructions"
+                class="agent-instructions"
+                :disabled="magicLoading"
+                placeholder="Você é o agente de atendimento da Empresa X, em Curitiba.&#10;&#10;Tom: simpático, breve, usa 'você' e responde como uma pessoa real.&#10;Use no máximo 2 emojis por mensagem (não 🎉, café ☕, obrigada 🙏).&#10;&#10;REGRAS DE NEGÓCIO:&#10;- Entregamos em toda a Grande Curitiba, frete R$ 12,90 fixo.&#10;- Cardápio do dia: consulte o documento 'cardapio-hoje.pdf'.&#10;- Pagamentos via Pix (chave: contato@empresa.com.br).&#10;- Horário: seg–sáb, 7h–19h."
+              />
+              <div v-if="magicLoading" class="magic-overlay">
+                <div class="magic-overlay-inner">
+                  <span class="magic-spinner lg" />
+                  <span>A IA está melhorando seu prompt…</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -387,6 +410,7 @@ const toast = useToast()
 const activeTab = ref('config')
 const loading = ref(true)
 const saving = ref(false)
+const magicLoading = ref(false)
 const playgroundLoading = ref(false)
 const assistant = ref<any>(null)
 const knowledge = ref<any[]>([])
@@ -714,6 +738,25 @@ async function saveAssistant() {
   }
 }
 
+async function runMagicPrompt() {
+  if (!form.instructions?.trim()) return
+  magicLoading.value = true
+  try {
+    const res = await api.fetch<{ improved: string }>('/assistant/magic-prompt', {
+      method: 'POST',
+      body: JSON.stringify({ instructions: form.instructions }),
+    })
+    if (res?.improved) {
+      form.instructions = res.improved
+      toast.success('Prompt melhorado com sucesso!')
+    }
+  } catch (err: any) {
+    toast.error(err?.data?.message || 'Não foi possível melhorar o prompt. Tente novamente.')
+  } finally {
+    magicLoading.value = false
+  }
+}
+
 async function createKnowledge() {
   if (!knowledgeForm.title.trim() || !knowledgeForm.content.trim()) {
     toast.warning('Informe título e conteúdo.')
@@ -1009,6 +1052,101 @@ onMounted(loadAgent)
   border-color: var(--ka-brand);
   box-shadow: 0 0 0 3px rgba(45, 91, 255, 0.1);
   background: var(--ka-surface);
+}
+
+.agent-instructions:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Magic Prompt */
+.instructions-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.magic-prompt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #7c3aed;
+  background: linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(99,102,241,0.08) 100%);
+  border: 1px solid rgba(124,58,237,0.25);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+
+.magic-prompt-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(99,102,241,0.15) 100%);
+  border-color: rgba(124,58,237,0.5);
+  box-shadow: 0 0 12px rgba(124,58,237,0.2);
+}
+
+.magic-prompt-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.magic-prompt-btn.loading {
+  animation: magic-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes magic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(124,58,237,0.3); }
+  50%       { box-shadow: 0 0 14px 4px rgba(124,58,237,0.2); }
+}
+
+.instructions-wrap {
+  position: relative;
+}
+
+.magic-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: rgba(var(--ka-surface-rgb, 255,255,255), 0.85);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.magic-overlay-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #7c3aed;
+}
+
+.magic-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(124,58,237,0.25);
+  border-top-color: #7c3aed;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.magic-spinner.lg {
+  width: 28px;
+  height: 28px;
+  border-width: 3px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* Toggle switch */

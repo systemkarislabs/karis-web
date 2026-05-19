@@ -1,4 +1,16 @@
 ﻿<template>
+  <!-- SVG gradient sprite — definido uma vez, referenciado por todos os ícones Instagram na página -->
+  <svg width="0" height="0" style="position:absolute;overflow:hidden;pointer-events:none;" aria-hidden="true">
+    <defs>
+      <radialGradient id="ig-gradient" cx="30%" cy="107%" r="150%">
+        <stop offset="0%"  stop-color="#fdf497"/>
+        <stop offset="45%" stop-color="#fd5949"/>
+        <stop offset="60%" stop-color="#d6249f"/>
+        <stop offset="90%" stop-color="#285AEB"/>
+      </radialGradient>
+    </defs>
+  </svg>
+
   <div class="inbox-page" :class="{ 'panel-open': showContactPanel && selectedConversation, 'mobile-thread': mobileView === 'thread' }">
     <!-- Filters column -->
     <aside class="inbox-filters">
@@ -91,7 +103,7 @@
           </div>
           <!-- Source channel badge -->
           <span class="src-badge" :class="srcBadgeClass(conv.source)" :title="sourceLabel(conv.source)">
-            <svg v-if="conv.source === 'instagram'" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg v-if="conv.source === 'instagram' || conv.source === 'instagram_comment'" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="2" width="20" height="20" rx="5"/>
               <circle cx="12" cy="12" r="4"/>
               <circle cx="17.5" cy="6.5" r="1.5" fill="white" stroke="none"/>
@@ -139,7 +151,7 @@
             {{ initials(selectedContact?.name || selectedContact?.phone) }}
           </div>
           <span class="src-badge" :class="srcBadgeClass(selectedConversation.source)" :title="sourceLabel(selectedConversation.source)">
-            <svg v-if="selectedConversation.source === 'instagram'" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg v-if="selectedConversation.source === 'instagram' || selectedConversation.source === 'instagram_comment'" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="2" width="20" height="20" rx="5"/>
               <circle cx="12" cy="12" r="4"/>
               <circle cx="17.5" cy="6.5" r="1.5" fill="white" stroke="none"/>
@@ -211,15 +223,7 @@
               <!-- Header: Instagram icon + label + author -->
               <div class="ig-comment-card-header">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-                  <defs>
-                    <radialGradient id="igcc" cx="30%" cy="107%" r="150%">
-                      <stop offset="0%" stop-color="#fdf497"/>
-                      <stop offset="45%" stop-color="#fd5949"/>
-                      <stop offset="60%" stop-color="#d6249f"/>
-                      <stop offset="90%" stop-color="#285AEB"/>
-                    </radialGradient>
-                  </defs>
-                  <rect width="24" height="24" rx="6" fill="url(#igcc)"/>
+                  <rect width="24" height="24" rx="6" fill="url(#ig-gradient)"/>
                   <rect x="6" y="6" width="12" height="12" rx="3" fill="none" stroke="white" stroke-width="1.5"/>
                   <circle cx="12" cy="12" r="3" fill="none" stroke="white" stroke-width="1.5"/>
                   <circle cx="16.5" cy="7.5" r="1" fill="white"/>
@@ -258,21 +262,15 @@
               <!-- DM header: IG icon + badge -->
               <div class="ig-dm-header">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-                  <defs>
-                    <radialGradient id="igdm" cx="30%" cy="107%" r="150%">
-                      <stop offset="0%" stop-color="#fdf497"/>
-                      <stop offset="45%" stop-color="#fd5949"/>
-                      <stop offset="60%" stop-color="#d6249f"/>
-                      <stop offset="90%" stop-color="#285AEB"/>
-                    </radialGradient>
-                  </defs>
-                  <rect width="24" height="24" rx="6" fill="url(#igdm)"/>
+                  <rect width="24" height="24" rx="6" fill="url(#ig-gradient)"/>
                   <rect x="6" y="6" width="12" height="12" rx="3" fill="none" stroke="white" stroke-width="1.5"/>
                   <circle cx="12" cy="12" r="3" fill="none" stroke="white" stroke-width="1.5"/>
                   <circle cx="16.5" cy="7.5" r="1" fill="white"/>
                 </svg>
                 <span class="ig-dm-label">DM</span>
-                <span v-if="msg.senderType === 'AI'">· <Icon name="sparkles" :size="10" /> IA</span>
+                <span v-if="msg.senderType === 'AI'" style="display:inline-flex;align-items:center;gap:2px;">
+                  · <Icon name="sparkles" :size="10" /> IA
+                </span>
               </div>
               {{ msg.content }}
               <div class="time">
@@ -324,15 +322,7 @@
         <!-- Instagram reply context -->
         <div v-if="selectedConversation?.source === 'instagram' || selectedConversation?.source === 'instagram_comment'" class="ig-reply-banner">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-            <defs>
-              <radialGradient id="igbanner" cx="30%" cy="107%" r="150%">
-                <stop offset="0%" stop-color="#fdf497"/>
-                <stop offset="45%" stop-color="#fd5949"/>
-                <stop offset="60%" stop-color="#d6249f"/>
-                <stop offset="90%" stop-color="#285AEB"/>
-              </radialGradient>
-            </defs>
-            <rect width="24" height="24" rx="6" fill="url(#igbanner)"/>
+            <rect width="24" height="24" rx="6" fill="url(#ig-gradient)"/>
             <rect x="6" y="6" width="12" height="12" rx="3" fill="none" stroke="white" stroke-width="1.5"/>
             <circle cx="12" cy="12" r="3" fill="none" stroke="white" stroke-width="1.5"/>
             <circle cx="16.5" cy="7.5" r="1" fill="white"/>

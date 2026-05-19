@@ -3,6 +3,14 @@ export default defineNuxtConfig({
   nitro: { preset: "node-server" },
   compatibilityDate: "2025-05-12",
   devtools: { enabled: true },
+  // Registra components/ui/ sem prefixo → <Icon>, <ToastHost>, <Button> etc.
+  components: {
+    dirs: [
+      { path: '~/components/ui', pathPrefix: false },
+      { path: '~/components/admin', pathPrefix: true },
+      '~/components',
+    ],
+  },
   modules: [
     "@nuxtjs/tailwindcss",
     "@pinia/nuxt",

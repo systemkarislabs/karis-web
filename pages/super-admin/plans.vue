@@ -194,13 +194,9 @@ function onPriceInput(e: Event) {
 }
 
 function onPriceBlur() {
+  // Ao perder foco, formata o valor final (ex: "1" → "1,00")
   priceDisplay.value = centsToDisplay(form.priceCents);
 }
-
-// Sincroniza display ao carregar/editar um plano existente
-watch(() => form.priceCents, (val) => {
-  priceDisplay.value = centsToDisplay(val);
-}, { immediate: true });
 
 function formatMoney(value?: number | null) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format((value || 0) / 100);
@@ -226,10 +222,12 @@ function edit(plan: any) {
   form.features = {
     modules: { ...emptyForm().features.modules, ...(plan.features?.modules || {}) },
   };
+  priceDisplay.value = centsToDisplay(form.priceCents);
 }
 
 function resetForm() {
   Object.assign(form, emptyForm());
+  priceDisplay.value = "";
 }
 
 async function loadPlans() {

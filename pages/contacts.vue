@@ -325,6 +325,97 @@
         </aside>
       </template>
     </Teleport>
+
+    <!-- Modal: Novo contato -->
+    <Teleport to="body">
+      <div
+        v-if="showNewContactModal"
+        style="position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;"
+        @keydown.esc="closeNewContactModal"
+      >
+        <button
+          style="position:absolute;inset:0;background:rgba(0,0,0,0.4);border:none;cursor:pointer;"
+          aria-label="Fechar"
+          @click="closeNewContactModal"
+        />
+        <div class="ct-modal" style="position:relative;">
+          <div class="ct-modal-header">
+            <h3 class="ct-modal-title">Novo contato</h3>
+            <button
+              class="contacts-table-action-btn"
+              type="button"
+              aria-label="Fechar modal"
+              @click="closeNewContactModal"
+            >
+              <Icon name="x" :size="16" />
+            </button>
+          </div>
+
+          <form class="ct-modal-body" @submit.prevent="submitNewContact">
+            <div class="form-group">
+              <label class="form-label">Nome *</label>
+              <input
+                v-model="newContactForm.name"
+                class="form-input"
+                type="text"
+                placeholder="Nome completo do contato"
+                autocomplete="off"
+                autofocus
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Telefone (WhatsApp) *</label>
+              <input
+                v-model="newContactForm.phone"
+                class="form-input"
+                type="tel"
+                placeholder="5541999999999"
+                autocomplete="off"
+              />
+              <span class="ct-form-hint">Inclua o código do país. Ex: 5541999999999</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">E-mail</label>
+              <input
+                v-model="newContactForm.email"
+                class="form-input"
+                type="email"
+                placeholder="email@exemplo.com"
+                autocomplete="off"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Empresa</label>
+              <input
+                v-model="newContactForm.empresa"
+                class="form-input"
+                type="text"
+                placeholder="Nome da empresa (opcional)"
+                autocomplete="off"
+              />
+            </div>
+
+            <p v-if="newContactError" class="ct-modal-error">
+              <Icon name="x" :size="13" style="flex-shrink:0;" />
+              {{ newContactError }}
+            </p>
+
+            <div class="ct-modal-footer">
+              <button class="btn secondary sm" type="button" @click="closeNewContactModal">
+                Cancelar
+              </button>
+              <button class="btn primary sm" type="submit" :disabled="newContactLoading">
+                <Icon v-if="!newContactLoading" name="plus" :size="14" />
+                {{ newContactLoading ? 'Salvando…' : 'Criar contato' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -332,6 +423,7 @@
 definePageMeta({ middleware: "auth" });
 
 const api = useApi();
+const toast = useToast();
 const loading = ref(true);
 const contacts = ref<any[]>([]);
 const drawerContact = ref<any | null>(null);
@@ -340,6 +432,55 @@ const activeChip = ref("all");
 const page = ref(1);
 const perPage = 20;
 const selected = ref(new Set<string>());
+
+// ── Modal: Novo contato ────────────────────────────────────────────────────────
+const showNewContactModal = ref(false);
+const newContactLoading = ref(false);
+const newContactError = ref("");
+const newContactForm = reactive({ name: "", phone: "", email: "", empresa: "" });
+
+function closeNewContactModal() {
+  showNewContactModal.value = false;
+  newContactError.value = "";
+  Object.assign(newContactForm, { name: "", phone: "", email: "", empresa: "" });
+}
+
+async function submitNewContact() {
+  newContactError.value = "";
+
+  if (!newContactForm.name.trim()) {
+    newContactError.value = "Nome é obrigatório.";
+    return;
+  }
+  if (!newContactForm.phone.trim()) {
+    newContactError.value = "Telefone é obrigatório.";
+    return;
+  }
+
+  newContactLoading.value = true;
+  try {
+    const body: Record<string, string> = {
+      name:  newContactForm.name.trim(),
+      phone: newContactForm.phone.trim(),
+    };
+    if (newContactForm.email.trim()) body.email = newContactForm.email.trim();
+
+    const res = await api.fetch<{ contact: any }>("/contacts", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+
+    contacts.value.unshift(res.contact || res);
+    toast.success("Contato criado com sucesso.");
+    closeNewContactModal();
+  } catch (err: any) {
+    newContactError.value =
+      err?.data?.message || "Erro ao criar contato. Tente novamente.";
+  } finally {
+    newContactLoading.value = false;
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 // avatarColor e initials importados de useKarisData (auto-import Nuxt)
 
@@ -1059,5 +1200,68 @@ onMounted(loadContacts);
 
 .drawer-footer-btn {
   flex: 1;
+}
+
+/* ── Modal: Novo contato ─────────────────────────────────────────────────── */
+.ct-modal {
+  background: var(--ka-surface);
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  width: 460px;
+  max-width: calc(100vw - 40px);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.ct-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--ka-border);
+  flex-shrink: 0;
+}
+
+.ct-modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ka-fg);
+  margin: 0;
+}
+
+.ct-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.ct-modal-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ka-danger);
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--ka-r-sm);
+  padding: 8px 12px;
+  margin: 0;
+}
+
+.ct-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.ct-form-hint {
+  display: block;
+  font-size: 11px;
+  color: var(--ka-fg-3);
+  margin-top: 4px;
 }
 </style>
